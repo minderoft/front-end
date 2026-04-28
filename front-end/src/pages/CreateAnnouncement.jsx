@@ -1,12 +1,11 @@
 // filepath: front-end/src/pages/CreateAnnouncement.jsx
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { announcementService, paymentService } from '../services/api';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { announcementService, paymentService, pricingService } from '../services/api';
 
 const categories = {
   immobilier: {
     name: 'Immobilier',
-    price: 5000,
     types: ['location', 'vente'],
     subcategories: ['terrain', 'villa', 'appartement', 'bureau', 'magasin'],
     fields: [
@@ -19,7 +18,6 @@ const categories = {
   },
   vehicule: {
     name: 'Véhicule',
-    price: 4000,
     types: ['location', 'vente'],
     subcategories: ['voiture', 'moto', 'camion', 'autre'],
     fields: [
@@ -33,7 +31,6 @@ const categories = {
   },
   materiaux: {
     name: 'Matériaux de construction',
-    price: 3000,
     types: [],
     subcategories: ['ciment', 'sable', 'gravier', 'fer', 'brique', 'bois', 'peinture', 'autre'],
     fields: [
@@ -44,7 +41,6 @@ const categories = {
   },
   technicien: {
     name: 'Technicien',
-    price: 2000,
     types: [],
     subcategories: ['plombier', 'électricien', 'maçon', 'peintre', 'carreleur', 'mécanicien', 'serrurier', 'autre'],
     fields: [
@@ -57,13 +53,15 @@ const categories = {
 
 const CreateAnnouncement = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [pricing, setPricing] = useState({});
   
   const [formData, setFormData] = useState({
-    category: '',
+    category: searchParams.get('category') || '',
     type: '',
     subcategory: '',
     title: '',
@@ -75,8 +73,22 @@ const CreateAnnouncement = () => {
     announcementId: null,
   });
 
-  // Pas besoin de récupérer les méthodes depuis l'API - PayStack gère tout
-  // Les méthodes de paiement sont définies ci-dessus
+  // Charger les tarifs depuis l'API
+  useEffect(() => {
+    const fetchPricing = async () => {
+      try {
+        const response = await pricingService.getAll();
+        const pricingMap = {};
+        response.data.categories.forEach(cat => {
+          pricingMap[cat.id] = cat.price;
+        });
+        setPricing(pricingMap);
+      } catch (err) {
+        console.error('Erreur chargement tarifs:', err);
+      }
+    };
+    fetchPricing();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -129,8 +141,13 @@ const CreateAnnouncement = () => {
     setError('');
 
     try {
-      // Le prix est fixe selon la catégorie - pas le prix du bien
-      const categoryPrice = categories[formData.category].price;
+      // Le prix vient du catalogue via l'API
+      const categoryPrice = pricing[formData.category];
+      
+      if (!categoryPrice) {
+        setError('Tarif non trouvé pour cette catégorie');
+        return;
+      }
       
       // Créer le paiement Paystack directement (sans sélection de méthode)
       const response = await paymentService.create({

@@ -95,6 +95,16 @@ export const paymentService = {
 };
 
 // ============================================
+// PRICING - Catalogue des tarifs
+// ============================================
+export const pricingService = {
+  getAll: () => api.get('/pricing'),
+  getCategory: (categoryId) => api.get(`/pricing/category/${categoryId}`),
+  getOptions: () => api.get('/pricing/options'),
+  calculate: (data) => api.post('/pricing/calculate', data),
+};
+
+// ============================================
 // CONTACT
 // ============================================
 export const contactService = {

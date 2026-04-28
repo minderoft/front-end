@@ -1,7 +1,7 @@
 // filepath: front-end/src/pages/Home.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { announcementService } from '../services/api';
+import { announcementService, pricingService } from '../services/api';
 
 const categories = [
   { id: 'immobilier', name: 'Immobilier', icon: '🏠', description: 'Terrains, villas, appartements' },
@@ -12,21 +12,28 @@ const categories = [
 
 const Home = () => {
   const [announcements, setAnnouncements] = useState([]);
+  const [pricing, setPricing] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pricingLoading, setPricingLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchRecentAnnouncements = async () => {
+    const fetchData = async () => {
       try {
-        const response = await announcementService.getAll({ limit: 6 });
-        setAnnouncements(response.data.announcements);
+        const [announcementsRes, pricingRes] = await Promise.all([
+          announcementService.getAll({ limit: 6 }),
+          pricingService.getAll()
+        ]);
+        setAnnouncements(announcementsRes.data.announcements);
+        setPricing(pricingRes.data);
       } catch (error) {
         console.error('Erreur:', error);
       } finally {
         setLoading(false);
+        setPricingLoading(false);
       }
     };
-    fetchRecentAnnouncements();
+    fetchData();
   }, []);
 
   const handleCategoryClick = (categoryId) => {
@@ -69,6 +76,57 @@ const Home = () => {
               <p>{category.description}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Tarifs de publication */}
+      <section className="announcements-section" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+        <div className="announcements-header">
+          <h2>Tarifs de Publication</h2>
+          <Link to="/create" className="btn btn-primary">
+            Publier maintenant
+          </Link>
+        </div>
+        
+        {pricingLoading ? (
+          <div className="loading">
+            <div className="spinner"></div>
+          </div>
+        ) : pricing ? (
+          <div className="pricing-grid">
+            {pricing.categories.map((cat) => (
+              <div key={cat.id} className="card pricing-card">
+                <div className="pricing-header">
+                  <span className="pricing-icon">
+                    {categories.find(c => c.id === cat.id)?.icon || '📋'}
+                  </span>
+                  <h3>{cat.name}</h3>
+                </div>
+                <div className="pricing-price">
+                  <span className="price-amount">{cat.price.toLocaleString()}</span>
+                  <span className="price-currency">FCFA</span>
+                  <span className="price-period">/publication</span>
+                </div>
+                <p className="pricing-description">{cat.description}</p>
+                <ul className="pricing-features">
+                  {cat.features.map((feature, index) => (
+                    <li key={index}>✓ {feature}</li>
+                  ))}
+                </ul>
+                <Link to={`/create?category=${cat.id}`} className="btn btn-outline" style={{ width: '100%' }}>
+                  Publier dans {cat.name}
+                </Link>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-muted">Tarifs non disponibles</p>
+        )}
+        
+        <div className="text-center mt-4">
+          <p className="text-muted">
+            💳 Paiement sécurisé par Wave, Orange Money, MTN, Moov ou carte bancaire
+          </p>
         </div>
       </section>
 

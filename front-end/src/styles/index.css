@@ -851,3 +851,87 @@ a:hover {
 .gap-1 { gap: var(--spacing-sm); }
 .gap-2 { gap: var(--spacing-md); }
 .gap-3 { gap: var(--spacing-lg); }
+
+/* ============================================
+   Tarifs de Publication - Catalogue
+   ============================================ */
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+}
+
+.pricing-card {
+  padding: var(--spacing-xl);
+  text-align: center;
+  transition: var(--transition);
+  border: 2px solid transparent;
+}
+
+.pricing-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.pricing-header {
+  margin-bottom: var(--spacing-md);
+}
+
+.pricing-icon {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: var(--spacing-sm);
+}
+
+.pricing-header h3 {
+  margin: 0;
+  color: var(--primary);
+}
+
+.pricing-price {
+  margin: var(--spacing-lg) 0;
+}
+
+.price-amount {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.price-currency {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.price-period {
+  font-size: 0.875rem;
+  color: var(--text-light);
+}
+
+.pricing-description {
+  color: var(--text-light);
+  margin-bottom: var(--spacing-md);
+}
+
+.pricing-features {
+  list-style: none;
+  padding: 0;
+  margin: var(--spacing-lg) 0;
+  text-align: left;
+}
+
+.pricing-features li {
+  padding: var(--spacing-xs) 0;
+  color: var(--text);
+}
+
+.pricing-features li::before {
+  content: '✓ ';
+  color: var(--success);
+  font-weight: 600;
+  margin-right: var(--spacing-sm);
+}

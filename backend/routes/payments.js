@@ -4,26 +4,14 @@ const { v4: uuidv4 } = require('uuid');
 const { query } = require('../config/db');
 const { authenticateToken } = require('../middleware/auth');
 const { initializePayment, verifyPayment, getConfig, isConfigured } = require('../config/paystack');
+const pricing = require('../config/pricing');
 
 const router = express.Router();
-
-// Tarifs par catégorie (prix pour publier une annonce)
-const PRICES = {
-  immobilier: 5000,
-  vehicule: 4000,
-  materiaux: 3000,
-  technicien: 2000,
-};
 
 // Obtenir les méthodes de paiement disponibles
 router.get('/methods', (req, res) => {
   res.json({
-    methods: [
-      { id: 'wave', name: 'Wave', type: 'mobile_money' },
-      { id: 'orange_money', name: 'Orange Money', type: 'mobile_money' },
-      { id: 'mtn', name: 'MTN Mobile Money', type: 'mobile_money' },
-      { id: 'moov', name: 'Moov Money', type: 'mobile_money' },
-    ]
+    methods: pricing.paymentMethods
   });
 });
 
@@ -65,11 +53,13 @@ router.post('/create', authenticateToken, async (req, res) => {
 
     const announcement = announcementResult[0];
 
-    // Vérifier le montant
-    const expectedPrice = PRICES[announcement.category];
+    // Vérifier le montant en utilisant le catalogue de prix
+    const expectedPrice = pricing.getCategoryPrice(announcement.category);
     if (amount !== expectedPrice) {
       return res.status(400).json({ 
-        error: `Le montant doit être de ${expectedPrice} FCFA pour cette catégorie` 
+        error: `Le montant doit être de ${expectedPrice}FCFA pour cette catégorie`,
+        expectedAmount: expectedPrice,
+        category: announcement.category
       });
     }
 

@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth');
 const announcementRoutes = require('./routes/announcements');
 const paymentRoutes = require('./routes/payments');
 const contactRoutes = require('./routes/contact');
+const pricingRoutes = require('./routes/pricing');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -77,6 +78,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/pricing', pricingRoutes);
 
 // Route de santé
 app.get('/api/health', (req, res) => {
