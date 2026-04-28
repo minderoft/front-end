@@ -145,7 +145,7 @@ router.get('/:id', async (req, res) => {
 // CREATE
 router.post('/', authenticateToken, upload.array('images', 10), validate('announcement'), async (req, res) => {
   try {
-    const { category, type, title, description, price, location, metadata } = req.body;
+    const { category, type, title, description, price, location, phone, metadata } = req.body;
 
     if (price < PRICES[category]) {
       return res.status(400).json({ error: 'Prix trop bas' });
@@ -155,9 +155,9 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     const id = uuidv4();
 
     await query(
-      `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, images, metadata, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-      [id, req.user.id, category, type, title, description, price, location, JSON.stringify(images), metadata]
+      `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, phone, images, metadata, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+      [id, req.user.id, category, type, title, description, price, location, phone, JSON.stringify(images), metadata]
     );
 
     const result = await query('SELECT * FROM announcements WHERE id = ?', [id]);

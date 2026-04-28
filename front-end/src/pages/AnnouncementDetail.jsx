@@ -127,6 +127,7 @@ const AnnouncementDetail = () => {
 
         <div className="announcement-meta">
           <span>📍 {announcement.location}</span>
+          {announcement.phone && <span>📞 {announcement.phone}</span>}
           <span>📅 Publié le {new Date(announcement.created_at).toLocaleDateString('fr-FR')}</span>
         </div>
 

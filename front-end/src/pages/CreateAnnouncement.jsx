@@ -68,6 +68,7 @@ const CreateAnnouncement = () => {
     description: '',
     price: '',
     location: '',
+    phone: '',
     images: [],
     metadata: {},
     announcementId: null,
@@ -321,6 +322,21 @@ const CreateAnnouncement = () => {
               />
             </div>
 
+            {/* Numéro de téléphone */}
+            <div className="form-group">
+              <label className="form-label">Numéro de téléphone *</label>
+              <input
+                type="tel"
+                name="phone"
+                className="form-input"
+                placeholder="Ex: +225 07 12 34 56 78"
+                value={formData.phone}
+                onChange={handleChange}
+                required
+              />
+              <small className="text-muted">Ce numéro sera affiché avec votre annonce pour que les interessés puissent vous contacter</small>
+            </div>
+
             {/* Champs dynamiques selon la catégorie */}
             {selectedCategory?.fields?.map(field => (
               <div className="form-group" key={field.name}>
@@ -421,7 +437,7 @@ const CreateAnnouncement = () => {
           }}>
             <p style={{ marginBottom: '8px' }}>Frais de publication</p>
             <p className="text-accent" style={{ fontSize: '2rem', fontWeight: '700' }}>
-              {categories[formData.category]?.price.toLocaleString()} FCFA
+              {pricing[formData.category]?.toLocaleString() || '0'} FCFA
             </p>
             <p className="text-muted" style={{ fontSize: '0.9rem' }}>
               Paiement sécurisé par PayStack

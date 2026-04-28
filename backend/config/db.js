@@ -58,6 +58,7 @@ const initDatabase = async () => {
         description TEXT,
         price DECIMAL(12, 2),
         location VARCHAR(255),
+        phone VARCHAR(50),
         images JSON,
         status VARCHAR(20) DEFAULT 'pending',
         payment_status BOOLEAN DEFAULT false,

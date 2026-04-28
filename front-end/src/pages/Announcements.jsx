@@ -229,6 +229,7 @@ const Announcements = () => {
                   <div className="card-price">{announcement.price?.toLocaleString()} FCFA</div>
                   <div className="card-meta">
                     <span>📍 {announcement.location}</span>
+                    {announcement.phone && <span>📞 {announcement.phone}</span>}
                   </div>
                 </div>
               </Link>
