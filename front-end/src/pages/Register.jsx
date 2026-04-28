@@ -77,7 +77,7 @@ const Register = () => {
             <input
               type="email"
               name="email"
-              category="form-input"
+              className="form-input"
               placeholder="votre@email.com"
               value={formData.email}
               onChange={handleChange}
