@@ -133,18 +133,19 @@ const initDatabase = async () => {
         name VARCHAR(255) NOT NULL,
         description TEXT,
         price DECIMAL(12, 2) NOT NULL DEFAULT 0,
-        features JSON DEFAULT JSON_ARRAY(),
+        features JSON DEFAULT NULL,
         active TINYINT(1) DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
 
-    await connection.query('CREATE INDEX IF NOT EXISTS idx_announcements_category ON announcements(category)');
-    await connection.query('CREATE INDEX IF NOT EXISTS idx_announcements_status ON announcements(status)');
-    await connection.query('CREATE INDEX IF NOT EXISTS idx_announcements_user_id ON announcements(user_id)');
-    await connection.query('CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id)');
-    await connection.query('CREATE INDEX IF NOT EXISTS idx_pricing_type_category ON pricing(type, category)');
+    // Créer les index (ignorer les erreurs de duplication)
+    try { await connection.query('CREATE INDEX idx_announcements_category ON announcements(category)'); } catch (e) { if (e.code !== 'ER_DUP_KEYNAME') throw e; }
+    try { await connection.query('CREATE INDEX idx_announcements_status ON announcements(status)'); } catch (e) { if (e.code !== 'ER_DUP_KEYNAME') throw e; }
+    try { await connection.query('CREATE INDEX idx_announcements_user_id ON announcements(user_id)'); } catch (e) { if (e.code !== 'ER_DUP_KEYNAME') throw e; }
+    try { await connection.query('CREATE INDEX idx_payments_user_id ON payments(user_id)'); } catch (e) { if (e.code !== 'ER_DUP_KEYNAME') throw e; }
+    try { await connection.query('CREATE INDEX idx_pricing_type_category ON pricing(type, category)'); } catch (e) { if (e.code !== 'ER_DUP_KEYNAME') throw e; }
 
     const [pricingCountRows] = await connection.query('SELECT COUNT(*) AS count FROM pricing');
     const pricingCount = Number(pricingCountRows[0]?.count || 0);
