@@ -25,7 +25,7 @@
 
 ### Backend
 - **Node.js** + **Express.js**
-- **PostgreSQL** (base de données)
+- **MySQL** (base de données)
 - **bcryptjs** (hachage de mots de passe)
 - **jsonwebtoken** (JWT)
 - **multer** (upload de fichiers)
@@ -41,7 +41,7 @@
 
 ### Prérequis
 - Node.js 18+
-- PostgreSQL 14+
+- MySQL 8+
 
 ### 1. Cloner le projet
 
@@ -51,7 +51,7 @@ cd "mon App"
 
 ### 2. Configuration de la base de données
 
-Assurez-vous que PostgreSQL est installé et en cours d'exécution. Créez une base de données :
+Assurez-vous que MySQL est installé et en cours d'exécution. Créez une base de données :
 
 ```sql
 CREATE DATABASE locaplus;
@@ -73,9 +73,9 @@ NODE_ENV=development
 
 # Database
 DB_HOST=localhost
-DB_PORT=5432
+DB_PORT=3306
 DB_NAME=locaplus
-DB_USER=postgres
+DB_USER=root
 DB_PASSWORD=votre_mot_de_passe
 
 # JWT
@@ -112,7 +112,7 @@ Le frontend sera disponible sur `http://localhost:5173`
 mon App/
 ├── backend/
 │   ├── config/
-│   │   └── db.js          # Connexion PostgreSQL
+│   │   └── db.js          # Connexion MySQL
 │   ├── middleware/
 │   │   ├── auth.js        # Authentification JWT
 │   │   └── validation.js  # Validation des entrées
@@ -222,4 +222,4 @@ MIT License - Voir le fichier LICENSE pour plus de détails.
 
 ---
 
-Développé avec ❤️ par LocaPlus
+Développé par HKa service

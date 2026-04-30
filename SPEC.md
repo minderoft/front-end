@@ -14,7 +14,7 @@
 ### Stack Technique
 - **Frontend :** React.js 18 + Vite
 - **Backend :** Node.js + Express.js
-- **Base de données :** PostgreSQL
+- **Base de données :** MySQL
 - **Authentification :** JWT + bcrypt
 - **Upload d'images :** Stockage local sécurisé (uploads/)
 - **Paiement :** PayStack (Wave, Orange Money, MTN, Moov, cartes bancaires)

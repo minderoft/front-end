@@ -24,7 +24,7 @@ const formatPricingRow = (row) => ({
 
 const getAllPricing = async () => {
   const rows = await query(
-    'SELECT id, type, category, name, description, price, features FROM pricing WHERE active = true ORDER BY type, category NULLS LAST'
+    'SELECT id, type, category, name, description, price, features FROM pricing WHERE active = true ORDER BY type, category IS NULL ASC, category'
   );
   return rows.map(formatPricingRow);
 };
@@ -39,7 +39,7 @@ const getPricingByCategory = async (category) => {
 
 const getPricingByType = async (type) => {
   const rows = await query(
-    'SELECT id, type, category, name, description, price, features FROM pricing WHERE type = ? AND active = true ORDER BY category NULLS LAST',
+    'SELECT id, type, category, name, description, price, features FROM pricing WHERE type = ? AND active = true ORDER BY category IS NULL ASC, category',
     [type]
   );
   return rows.map(formatPricingRow);
