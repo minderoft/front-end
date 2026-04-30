@@ -7,6 +7,7 @@ const { v4: uuidv4 } = require('uuid');
 const { query } = require('../config/db');
 const { authenticateToken } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
+const { getCategoryPrice } = require('../config/pricing');
 
 const router = express.Router();
 
@@ -39,14 +40,6 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter,
 });
-
-// Tarifs
-const PRICES = {
-  immobilier: 5000,
-  vehicule: 4000,
-  materiaux: 3000,
-  technicien: 2000,
-};
 
 // GET ALL
 router.get('/', async (req, res) => {
@@ -121,6 +114,31 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET MY ANNOUNCEMENTS
+router.get('/user/my-announcements', authenticateToken, async (req, res) => {
+  try {
+    const result = await query(
+      'SELECT * FROM announcements WHERE user_id = ? ORDER BY created_at DESC',
+      [req.user.id]
+    );
+    res.json({ announcements: result });
+  } catch (error) {
+    console.error('Erreur my-announcements:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Obtenir les prix des annonces (utilisé par le frontend)
+router.get('/prices', async (req, res) => {
+  try {
+    const result = await query('SELECT category, price FROM pricing WHERE type = ? AND active = true', ['publication']);
+    res.json({ prices: result });
+  } catch (error) {
+    console.error('Erreur récupération tarifs annonces:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // GET ONE
 router.get('/:id', async (req, res) => {
   try {
@@ -146,18 +164,25 @@ router.get('/:id', async (req, res) => {
 router.post('/', authenticateToken, upload.array('images', 10), validate('announcement'), async (req, res) => {
   try {
     const { category, type, title, description, price, location, phone, metadata } = req.body;
+    const listingPrice = Number(price);
 
-    if (price < PRICES[category]) {
-      return res.status(400).json({ error: 'Prix trop bas' });
+    if (Number.isNaN(listingPrice) || listingPrice <= 0) {
+      return res.status(400).json({ error: 'Le prix doit être un nombre positif' });
     }
 
-    const images = req.files?.map(f => '/uploads/' + f.filename) || [];
+    const categoryPrice = await getCategoryPrice(category);
+    if (categoryPrice === null) {
+      return res.status(400).json({ error: 'Tarif de publication introuvable pour cette catégorie' });
+    }
+
+    const images = req.files?.map((f) => '/uploads/' + f.filename) || [];
+    const metadataValue = typeof metadata === 'string' ? JSON.parse(metadata || '{}') : metadata || {};
     const id = uuidv4();
 
     await query(
       `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, phone, images, metadata, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-      [id, req.user.id, category, type, title, description, price, location, phone, JSON.stringify(images), metadata]
+      [id, req.user.id, category, type, title, description, listingPrice, location, phone, JSON.stringify(images), metadataValue]
     );
 
     const result = await query('SELECT * FROM announcements WHERE id = ?', [id]);
@@ -176,20 +201,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Supprimé' });
   } catch (error) {
     res.status(500).json({ error: 'Erreur suppression' });
-  }
-});
-
-// GET MY ANNOUNCEMENTS
-router.get('/user/my-announcements', authenticateToken, async (req, res) => {
-  try {
-    const result = await query(
-      'SELECT * FROM announcements WHERE user_id = ? ORDER BY created_at DESC',
-      [req.user.id]
-    );
-    res.json({ announcements: result });
-  } catch (error) {
-    console.error('Erreur my-announcements:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
