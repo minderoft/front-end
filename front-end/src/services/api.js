@@ -1,10 +1,13 @@
 // filepath: front-end/src/services/api.js
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+const API_URL = import.meta.env.VITE_API_URL || '';
+const BASE_URL = API_URL
+  ? API_URL.replace(/\/$/, '') + (API_URL.endsWith('/api') ? '' : '/api')
+  : '/api';
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },

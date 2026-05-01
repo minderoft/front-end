@@ -3,17 +3,39 @@ const mysql = require('mysql2/promise');
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
-const requiredEnv = ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
-const missing = requiredEnv.filter((key) => !process.env[key]);
-if (missing.length > 0) {
-  throw new Error(`Les variables d'environnement suivantes sont manquantes dans backend/.env : ${missing.join(', ')}`);
-}
+const parseDatabaseUrl = (databaseUrl) => {
+  try {
+    const url = new URL(databaseUrl);
+    return {
+      host: url.hostname,
+      port: Number(url.port || 3306),
+      user: url.username,
+      password: url.password,
+      database: url.pathname.replace(/^\//, ''),
+    };
+  } catch (error) {
+    return {};
+  }
+};
 
-const DB_HOST = process.env.DB_HOST;
-const DB_USER = process.env.DB_USER;
-const DB_PASSWORD = process.env.DB_PASSWORD;
-const DB_NAME = process.env.DB_NAME;
-const DB_PORT = Number(process.env.DB_PORT || 3306);
+const dbUrlConfig = parseDatabaseUrl(process.env.DATABASE_URL || process.env.MYSQL_URL);
+
+const getEnv = (...keys) => keys.map((key) => process.env[key]).find(Boolean);
+
+const DB_HOST = dbUrlConfig.host || getEnv('DB_HOST', 'MYSQL_HOST', 'MYSQLHOST');
+const DB_USER = dbUrlConfig.user || getEnv('DB_USER', 'MYSQL_USER', 'MYSQLUSER');
+const DB_PASSWORD = dbUrlConfig.password || getEnv('DB_PASSWORD', 'MYSQL_PASSWORD', 'MYSQLPASSWORD');
+const DB_NAME = dbUrlConfig.database || getEnv('DB_NAME', 'MYSQL_DATABASE', 'MYSQLDATABASE', 'DATABASE');
+const DB_PORT = Number(dbUrlConfig.port || getEnv('DB_PORT', 'MYSQL_PORT', 'MYSQLPORT') || 3306);
+
+const missing = [];
+if (!DB_HOST) missing.push('DB_HOST / MYSQL_HOST');
+if (!DB_USER) missing.push('DB_USER / MYSQL_USER');
+if (!DB_PASSWORD) missing.push('DB_PASSWORD / MYSQL_PASSWORD');
+if (!DB_NAME) missing.push('DB_NAME / MYSQL_DATABASE');
+if (missing.length > 0) {
+  throw new Error(`Les variables d'environnement MySQL suivantes sont manquantes : ${missing.join(', ')}`);
+}
 
 const pool = mysql.createPool({
   host: DB_HOST,
