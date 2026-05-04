@@ -33,23 +33,16 @@ app.use(helmet({
   },
 }));
 
-// CORS - Configuration stricte
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.FRONTEND_URL || 'http://localhost:5173')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean);
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || origin === 'null' || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('Origin non autorisée par le serveur'));
-  },
+// CORS - Mode développement local
+const corsOptions = {
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Rate Limiting - Limitation des requêtes
 const limiter = rateLimit({

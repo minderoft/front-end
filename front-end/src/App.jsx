@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Help from './pages/Help';
+import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -25,6 +26,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/help" element={<Help />} />
+          <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
           
           {/* Routes protégées */}

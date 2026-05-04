@@ -226,7 +226,11 @@ const Announcements = () => {
                   </div>
                   <h3 className="card-title">{announcement.title}</h3>
                   <p className="card-text">{announcement.description?.substring(0, 80)}...</p>
-                  <div className="card-price">{announcement.price?.toLocaleString()} FCFA</div>
+                  <div className="card-price">
+                    {announcement.category === 'technicien' || announcement.price === 0 
+                      ? 'Prix à négocier' 
+                      : `${announcement.price?.toLocaleString()} FCFA`}
+                  </div>
                   <div className="card-meta">
                     <span>📍 {announcement.location}</span>
                     {announcement.phone && <span>📞 {announcement.phone}</span>}

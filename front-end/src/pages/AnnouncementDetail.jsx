@@ -122,7 +122,9 @@ const AnnouncementDetail = () => {
         <h1 style={{ marginBottom: 'var(--spacing-md)' }}>{announcement.title}</h1>
         
         <div className="announcement-price">
-          {announcement.price?.toLocaleString()} FCFA
+          {announcement.category === 'technicien' || announcement.price === 0 
+            ? 'Prix à négocier' 
+            : `${announcement.price?.toLocaleString()} FCFA`}
         </div>
 
         <div className="announcement-meta">

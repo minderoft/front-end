@@ -19,19 +19,19 @@ const paymentMethods = [
 const formatPricingRow = (row) => ({
   ...row,
   price: Number(row.price),
-  features: row.features || [],
+  features: row.features ? JSON.parse(row.features) : [],
 });
 
 const getAllPricing = async () => {
   const rows = await query(
-    'SELECT id, type, category, name, description, price, features FROM pricing WHERE active = true ORDER BY type, category IS NULL ASC, category'
+    'SELECT id, type, category, name, description, price, features FROM pricing WHERE active = 1 ORDER BY type, category IS NULL ASC, category'
   );
   return rows.map(formatPricingRow);
 };
 
 const getPricingByCategory = async (category) => {
   const rows = await query(
-    'SELECT id, type, category, name, description, price, features FROM pricing WHERE type = ? AND category = ? AND active = true LIMIT 1',
+    'SELECT id, type, category, name, description, price, features FROM pricing WHERE type = ? AND category = ? AND active = 1 LIMIT 1',
     ['publication', category]
   );
   return rows[0] ? formatPricingRow(rows[0]) : null;
@@ -39,7 +39,7 @@ const getPricingByCategory = async (category) => {
 
 const getPricingByType = async (type) => {
   const rows = await query(
-    'SELECT id, type, category, name, description, price, features FROM pricing WHERE type = ? AND active = true ORDER BY category IS NULL ASC, category',
+    'SELECT id, type, category, name, description, price, features FROM pricing WHERE type = ? AND active = 1 ORDER BY category IS NULL ASC, category',
     [type]
   );
   return rows.map(formatPricingRow);

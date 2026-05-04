@@ -53,7 +53,7 @@ router.get('/', async (req, res) => {
       SELECT a.*, u.name as user_name, u.phone as user_phone
       FROM announcements a
       LEFT JOIN users u ON a.user_id = u.id
-      WHERE a.status = 'active' AND a.payment_status = true
+      WHERE a.status = 'active' AND a.payment_status = 1
     `;
 
     const params = [];
@@ -131,7 +131,7 @@ router.get('/user/my-announcements', authenticateToken, async (req, res) => {
 // Obtenir les prix des annonces (utilisé par le frontend)
 router.get('/prices', async (req, res) => {
   try {
-    const result = await query('SELECT category, price FROM pricing WHERE type = ? AND active = true', ['publication']);
+    const result = await query('SELECT category, price FROM pricing WHERE type = ? AND active = 1', ['publication']);
     res.json({ prices: result });
   } catch (error) {
     console.error('Erreur récupération tarifs annonces:', error);
@@ -166,9 +166,13 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     const { category, type, title, description, price, location, phone, metadata } = req.body;
     const listingPrice = Number(price);
 
-    if (Number.isNaN(listingPrice) || listingPrice <= 0) {
+    // Pour les techniciens, le prix peut être 0 (à négocier)
+    if (category !== 'technicien' && (Number.isNaN(listingPrice) || listingPrice <= 0)) {
       return res.status(400).json({ error: 'Le prix doit être un nombre positif' });
     }
+
+    // Pour les techniciens, on définit un prix par défaut de 0
+    const finalPrice = category === 'technicien' ? 0 : listingPrice;
 
     const categoryPrice = await getCategoryPrice(category);
     if (categoryPrice === null) {
@@ -182,7 +186,7 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     await query(
       `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, phone, images, metadata, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-      [id, req.user.id, category, type, title, description, listingPrice, location, phone, JSON.stringify(images), metadataValue]
+      [id, req.user.id, category, type, title, description, finalPrice, location, phone, JSON.stringify(images), JSON.stringify(metadataValue)]
     );
 
     const result = await query('SELECT * FROM announcements WHERE id = ?', [id]);

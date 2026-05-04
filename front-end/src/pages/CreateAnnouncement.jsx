@@ -81,7 +81,7 @@ const CreateAnnouncement = () => {
         const response = await pricingService.getAll();
         const pricingMap = {};
         response.data.categories.forEach(cat => {
-          pricingMap[cat.id] = cat.price;
+          pricingMap[cat.category] = cat.price;
         });
         setPricing(pricingMap);
       } catch (err) {
@@ -122,8 +122,16 @@ const CreateAnnouncement = () => {
     setLoading(true);
 
     try {
+      // Préparer les données de l'annonce
+      const announcementData = { ...formData };
+      
+      // Pour les techniciens, définir le prix à 0 (à négocier)
+      if (formData.category === 'technicien') {
+        announcementData.price = 0;
+      }
+
       // Créer l'annonce
-      const response = await announcementService.create(formData);
+      const response = await announcementService.create(announcementData);
       const announcement = response.data;
       
       // Stocker l'ID de l'annonce pour le paiement
@@ -290,23 +298,31 @@ const CreateAnnouncement = () => {
               />
             </div>
 
-            {/* Prix */}
-            <div className="form-group">
-              <label className="form-label">Prix (FCFA) *</label>
-              <input
-                type="number"
-                name="price"
-                className="form-input"
-                placeholder="Prix en FCFA"
-                value={formData.price}
-                onChange={handleChange}
-                required
-                min={selectedCategory?.price || 0}
-              />
-              <span className="form-help">
-                Prix minimum: {selectedCategory?.price?.toLocaleString()} FCFA pour cette catégorie
-              </span>
-            </div>
+            {formData.category === 'technicien' && (
+              <div className="form-group">
+                <div className="form-note" style={{ background: '#eff6ff', borderLeft: '4px solid #3b82f6', borderRadius: '8px', padding: '12px 16px', color: '#1e3a8a' }}>
+                  <strong>Note :</strong> pour la catégorie Technicien, le prix n'est pas saisi dans le formulaire. Le tarif sera négocié sur site avec le client.
+                </div>
+              </div>
+            )}
+            {formData.category !== 'technicien' && (
+              <div className="form-group">
+                <label className="form-label">Prix (FCFA) *</label>
+                <input
+                  type="number"
+                  name="price"
+                  className="form-input"
+                  placeholder="Prix en FCFA"
+                  value={formData.price}
+                  onChange={handleChange}
+                  required
+                  min={selectedCategory?.price || 0}
+                />
+                <span className="form-help">
+                  Prix minimum: {selectedCategory?.price?.toLocaleString()} FCFA pour cette catégorie
+                </span>
+              </div>
+            )}
 
             {/* Localisation */}
             <div className="form-group">

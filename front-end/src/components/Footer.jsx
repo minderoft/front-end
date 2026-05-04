@@ -28,6 +28,7 @@ const Footer = () => {
         <div className="footer-section">
           <h4>Support</h4>
           <Link to="/help">Centre d'aide</Link>
+          <Link to="/faq">FAQ</Link>
           <Link to="/contact">Contacter l'administration</Link>
         </div>
       </div>

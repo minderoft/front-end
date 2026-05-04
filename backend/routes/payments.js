@@ -46,9 +46,8 @@ const processPaymentUpdate = async (reference) => {
   const paymentRecord = paymentResult[0];
 
   if (paymentData.status === 'success') {
-    await query(`UPDATE payments SET status = 'completed', paid_at = NOW() WHERE reference = ?`, [reference]);
-    await query(`UPDATE announcements SET payment_status = true, status = 'active', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [paymentRecord.announcement_id]);
-    return { status: 'success', payment: paymentData };
+      await query(`UPDATE payments SET status = 'completed', paid_at = CURRENT_TIMESTAMP WHERE reference = ?`, [reference]);
+      await query(`UPDATE announcements SET payment_status = 1, status = 'active', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [paymentRecord.announcement_id]);
   }
 
   await query(`UPDATE payments SET status = 'failed' WHERE reference = ?`, [reference]);

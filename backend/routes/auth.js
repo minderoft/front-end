@@ -58,12 +58,10 @@ router.post('/login', validate('login'), async (req, res) => {
     const { email, password } = req.body;
 
     // Rechercher l'utilisateur
-    const result = await query('SELECT * FROM users WHERE email = ?', [email]);
-    if (result.length === 0) {
+    const user = await getAsync('SELECT * FROM users WHERE email = ?', [email]);
+    if (!user) {
       return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }
-
-    const user = result[0];
 
     // Vérifier le mot de passe
     const isValidPassword = await bcrypt.compare(password, user.password);
@@ -94,16 +92,16 @@ router.post('/login', validate('login'), async (req, res) => {
 // Obtenir le profil utilisateur
 router.get('/me', authenticateToken, async (req, res) => {
   try {
-    const result = await query(
+    const user = await getAsync(
       'SELECT id, email, name, phone, role, created_at FROM users WHERE id = ?',
       [req.user.id]
     );
 
-    if (result.length === 0) {
+    if (!user) {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    res.json({ user: result[0] });
+    res.json({ user });
   } catch (error) {
     console.error('Erreur profil:', error);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -120,9 +118,9 @@ router.put('/profile', authenticateToken, async (req, res) => {
       [name, phone, req.user.id]
     );
 
-    const result = await query('SELECT id, email, name, phone, role FROM users WHERE id = ?', [req.user.id]);
+    const user = await getAsync('SELECT id, email, name, phone, role FROM users WHERE id = ?', [req.user.id]);
 
-    res.json({ message: 'Profil mis à jour', user: result[0] });
+    res.json({ message: 'Profil mis à jour', user });
   } catch (error) {
     console.error('Erreur mise à jour profil:', error);
     res.status(500).json({ error: 'Erreur serveur' });

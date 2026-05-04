@@ -40,7 +40,7 @@ const schemas = {
     type: { type: 'enum', required: false, values: ['vente', 'location'] },
     title: { type: 'string', required: true, minLength: 3, maxLength: 255 },
     description: { type: 'string', required: false, maxLength: 5000 },
-    price: { type: 'number', required: true, min: 0 },
+    price: { type: 'number', required: false, min: 0 },
     location: { type: 'string', required: true, minLength: 2 },
   },
   payment: {
