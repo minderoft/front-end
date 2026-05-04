@@ -2,7 +2,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
-const { query } = require('../config/db');
+const { query, getAsync, runAsync } = require('../config/db');
 const { generateToken, authenticateToken } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
 
@@ -14,25 +14,25 @@ router.post('/register', validate('register'), async (req, res) => {
     const { email, password, name, phone } = req.body;
 
     // Vérifier si l'utilisateur existe déjà
-    const existingUser = await query('SELECT id FROM users WHERE email = ?', [email]);
-    if (existingUser.length > 0) {
+    const existingUser = await getAsync('SELECT id FROM users WHERE email = ?', [email]);
+    if (existingUser) {
       return res.status(400).json({ error: 'Cet email est déjà utilisé' });
     }
 
     // Hasher le mot de passe
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Créer l'utilisateur
-    const { v4: uuidv4 } = require('uuid');
     const id = uuidv4();
-    
-    await query(
+
+    await runAsync(
       'INSERT INTO users (id, email, password, name, phone) VALUES (?, ?, ?, ?, ?)',
       [id, email, hashedPassword, name, phone || null]
     );
 
-    const result = await query('SELECT id, email, name, phone, role, created_at FROM users WHERE id = ?', [id]);
-    const user = result[0];
+    const user = await getAsync(
+      'SELECT id, email, name, phone, role, created_at FROM users WHERE id = ?',
+      [id]
+    );
     const token = generateToken(user);
 
     res.status(201).json({
