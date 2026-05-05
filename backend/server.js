@@ -14,7 +14,7 @@ const contactRoutes = require('./routes/contact');
 const pricingRoutes = require('./routes/pricing');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 
 // ============================================
 // SÉCURITÉ
@@ -84,6 +84,11 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Servir les fichiers statiques (images uploadées)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Route racine pour les health checks Render
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'LocaPlus backend is running' });
+});
 
 // ============================================
 // ROUTES API
