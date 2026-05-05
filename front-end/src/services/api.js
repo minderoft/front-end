@@ -1,10 +1,8 @@
 // filepath: front-end/src/services/api.js
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
-const BASE_URL = API_URL
-  ? API_URL.replace(/\/$/, '') + (API_URL.endsWith('/api') ? '' : '/api')
-  : '/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://backend-ovbc.onrender.com';
+const BASE_URL = API_URL.replace(/\/$/, '') + (API_URL.endsWith('/api') ? '' : '/api');
 
 const api = axios.create({
   baseURL: BASE_URL,
