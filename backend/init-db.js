@@ -1,22 +1,20 @@
-const { initDatabase, db } = require('./config/db');
+const { initDatabase, closeDatabase } = require('./config/db');
 
 const run = async () => {
   try {
-    console.log('🔧 Initialisation de la base SQLite...');
+    console.log('🔧 Initialisation de la base MySQL...');
     await initDatabase();
-    console.log('✅ Base de données SQLite initialisée avec succès.');
-    console.log('📁 Chemin:', require('path').resolve(__dirname, 'database.sqlite'));
+    console.log('✅ Base de données MySQL initialisée avec succès.');
   } catch (error) {
     console.error('❌ Erreur pendant l initialisation de la base de données :', error);
     process.exit(1);
   } finally {
-    db.close((err) => {
-      if (err) {
-        console.error('Erreur fermeture de la base de données:', err.message);
-      } else {
-        console.log('🔒 Connexion SQLite fermée.');
-      }
-    });
+    try {
+      await closeDatabase();
+      console.log('🔒 Connexion MySQL fermée.');
+    } catch (closeError) {
+      console.error('❌ Erreur lors de la fermeture de la base de données :', closeError.message);
+    }
   }
 };
 

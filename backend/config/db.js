@@ -1,65 +1,159 @@
-const path = require('path');
-const fs = require('fs');
-const sqlite3 = require('sqlite3').verbose();
+const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-const databaseFile = path.resolve(__dirname, '..', 'database.sqlite');
-if (!fs.existsSync(databaseFile)) {
-  fs.writeFileSync(databaseFile, '');
-}
-
-const db = new sqlite3.Database(databaseFile, (err) => {
-  if (err) {
-    console.error("Impossible d'ouvrir SQLite :", err.message);
-    process.exit(1);
+const createPoolConfig = () => {
+  const databaseUrl = process.env.DATABASE_URL?.trim();
+  if (!databaseUrl) {
+    throw new Error(
+      'DATABASE_URL manquant. Configurez la variable d environnement Railway DATABASE_URL dans Render.'
+    );
   }
-  console.log('✅ SQLite local prêt :', databaseFile);
-});
 
-db.serialize(() => {
-  db.run('PRAGMA foreign_keys = ON;');
-});
-
-const runAsync = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-      if (err) return reject(err);
-      resolve({ lastID: this.lastID, changes: this.changes });
-    });
-  });
+  return databaseUrl;
 };
 
-const getAsync = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => {
-      if (err) return reject(err);
-      resolve(row);
-    });
-  });
+const pool = mysql.createPool(createPoolConfig());
+
+const testConnection = async () => {
+  const connection = await pool.getConnection();
+  try {
+    await connection.ping();
+  } finally {
+    connection.release();
+  }
 };
 
-const allAsync = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) return reject(err);
-      resolve(rows);
-    });
-  });
+const runAsync = async (sql, params = []) => {
+  try {
+    const [result] = await pool.execute(sql, params);
+    return {
+      insertId: result.insertId,
+      affectedRows: result.affectedRows,
+      changedRows: result.changedRows,
+    };
+  } catch (err) {
+    console.error('MySQL runAsync error:', err.message);
+    throw err;
+  }
+};
+
+const getAsync = async (sql, params = []) => {
+  try {
+    const [rows] = await pool.execute(sql, params);
+    return rows[0] || null;
+  } catch (err) {
+    console.error('MySQL getAsync error:', err.message);
+    throw err;
+  }
+};
+
+const allAsync = async (sql, params = []) => {
+  try {
+    const [rows] = await pool.execute(sql, params);
+    return rows;
+  } catch (err) {
+    console.error('MySQL allAsync error:', err.message);
+    throw err;
+  }
 };
 
 const query = async (sql, params = []) => {
-  const statement = sql.trim().toUpperCase();
-  if (statement.startsWith('SELECT') || statement.startsWith('PRAGMA')) {
-    return allAsync(sql, params);
+  const statement = sql.trim().split(' ')[0].toUpperCase();
+  try {
+    const [rows, fields] = await pool.execute(sql, params);
+    if (statement === 'SELECT' || statement === 'SHOW' || statement === 'DESCRIBE') {
+      return rows;
+    }
+    return rows;
+  } catch (err) {
+    console.error('MySQL query error:', err.message);
+    throw err;
   }
-  return runAsync(sql, params);
+};
+
+const createTables = async () => {
+  await runAsync(`
+    CREATE TABLE IF NOT EXISTS users (
+      id VARCHAR(36) PRIMARY KEY,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password VARCHAR(255) NOT NULL,
+      name VARCHAR(255) NOT NULL,
+      phone VARCHAR(60),
+      role VARCHAR(50) DEFAULT 'user',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await runAsync(`
+    CREATE TABLE IF NOT EXISTS announcements (
+      id VARCHAR(36) PRIMARY KEY,
+      user_id VARCHAR(36) NOT NULL,
+      category VARCHAR(100),
+      type VARCHAR(100),
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      price DECIMAL(10,2) NOT NULL DEFAULT 0,
+      location VARCHAR(255),
+      phone VARCHAR(60),
+      images TEXT,
+      metadata TEXT,
+      status VARCHAR(50) DEFAULT 'pending',
+      payment_status TINYINT DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await runAsync(`
+    CREATE TABLE IF NOT EXISTS payments (
+      id VARCHAR(36) PRIMARY KEY,
+      user_id VARCHAR(36) NOT NULL,
+      announcement_id VARCHAR(36) NOT NULL,
+      amount DECIMAL(10,2) NOT NULL,
+      method VARCHAR(100) NOT NULL,
+      status VARCHAR(50) NOT NULL DEFAULT 'pending',
+      transaction_id VARCHAR(255),
+      reference VARCHAR(255),
+      paid_at DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL,
+      FOREIGN KEY(announcement_id) REFERENCES announcements(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await runAsync(`
+    CREATE TABLE IF NOT EXISTS contact_messages (
+      id VARCHAR(36) PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      subject VARCHAR(255),
+      message TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await runAsync(`
+    CREATE TABLE IF NOT EXISTS pricing (
+      id VARCHAR(36) PRIMARY KEY,
+      type VARCHAR(100) NOT NULL,
+      category VARCHAR(100),
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      price DECIMAL(10,2) NOT NULL DEFAULT 0,
+      features TEXT,
+      active TINYINT NOT NULL DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
 };
 
 const seedPricing = async () => {
   const existing = await allAsync('SELECT COUNT(*) as count FROM pricing');
-  if (existing[0]?.count > 0) {
-    return;
-  }
+  if (existing[0]?.count > 0) return;
 
   const pricingItems = [
     {
@@ -134,92 +228,32 @@ const seedPricing = async () => {
 };
 
 const initDatabase = async () => {
-  await runAsync(`
-    CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      name TEXT NOT NULL,
-      phone TEXT,
-      role TEXT DEFAULT 'user',
-      created_at TEXT DEFAULT (datetime('now')),
-      updated_at TEXT DEFAULT (datetime('now'))
-    )
-  `);
+  try {
+    await testConnection();
+    console.log('MySQL est prêt.');
+  } catch (err) {
+    console.error('Impossible de se connecter à MySQL :', err.message);
+    throw err;
+  }
 
-  await runAsync(`
-    CREATE TABLE IF NOT EXISTS announcements (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
-      category TEXT,
-      type TEXT,
-      title TEXT NOT NULL,
-      description TEXT,
-      price REAL NOT NULL DEFAULT 0,
-      location TEXT,
-      phone TEXT,
-      images TEXT,
-      metadata TEXT,
-      status TEXT DEFAULT 'pending',
-      payment_status INTEGER DEFAULT 0,
-      created_at TEXT DEFAULT (datetime('now')),
-      updated_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-    )
-  `);
-
-  await runAsync(`
-    CREATE TABLE IF NOT EXISTS payments (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
-      announcement_id TEXT NOT NULL,
-      amount REAL NOT NULL,
-      method TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'pending',
-      transaction_id TEXT,
-      reference TEXT,
-      paid_at TEXT,
-      created_at TEXT DEFAULT (datetime('now')),
-      updated_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL,
-      FOREIGN KEY(announcement_id) REFERENCES announcements(id) ON DELETE CASCADE
-    )
-  `);
-
-  await runAsync(`
-    CREATE TABLE IF NOT EXISTS contact_messages (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      subject TEXT,
-      message TEXT NOT NULL,
-      created_at TEXT DEFAULT (datetime('now'))
-    )
-  `);
-
-  await runAsync(`
-    CREATE TABLE IF NOT EXISTS pricing (
-      id TEXT PRIMARY KEY,
-      type TEXT NOT NULL,
-      category TEXT,
-      name TEXT NOT NULL,
-      description TEXT,
-      price REAL NOT NULL DEFAULT 0,
-      features TEXT,
-      active INTEGER NOT NULL DEFAULT 1,
-      created_at TEXT DEFAULT (datetime('now')),
-      updated_at TEXT DEFAULT (datetime('now'))
-    )
-  `);
-
+  await createTables();
   await seedPricing();
 };
 
+const closeDatabase = async () => {
+  try {
+    await pool.end();
+  } catch (err) {
+    console.error('Erreur lors de la fermeture de la connexion MySQL :', err.message);
+  }
+};
+
 module.exports = {
-  db,
+  db: pool,
   runAsync,
   getAsync,
   allAsync,
   query,
   initDatabase,
+  closeDatabase,
 };
