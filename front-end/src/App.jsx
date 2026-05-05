@@ -7,6 +7,7 @@ import Announcements from './pages/Announcements';
 import AnnouncementDetail from './pages/AnnouncementDetail';
 import CreateAnnouncement from './pages/CreateAnnouncement';
 import Dashboard from './pages/Dashboard';
+import AdminPricing from './pages/AdminPricing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Help from './pages/Help';
@@ -38,6 +39,13 @@ function App() {
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          } />
+          
+          {/* Routes admin */}
+          <Route path="/admin/pricing" element={
+            <ProtectedRoute>
+              <AdminPricing />
             </ProtectedRoute>
           } />
         </Routes>

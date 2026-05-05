@@ -314,16 +314,49 @@ a:hover {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--primary);
+  flex-shrink: 0;
 }
 
 .navbar-brand img {
   height: 40px;
 }
 
+.navbar-toggle {
+  display: none;
+  flex-direction: column;
+  background: none;
+  border: none;
+  cursor: pointer;
+  gap: 5px;
+  padding: 0;
+}
+
+.navbar-toggle span {
+  width: 25px;
+  height: 3px;
+  background-color: var(--primary);
+  border-radius: 2px;
+  transition: var(--transition);
+}
+
+.navbar-toggle.active span:nth-child(1) {
+  transform: rotate(45deg) translate(10px, 10px);
+}
+
+.navbar-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.navbar-toggle.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
 .navbar-menu {
   display: flex;
   align-items: center;
   gap: var(--spacing-lg);
+  flex: 1;
+  margin: 0 var(--spacing-xl);
 }
 
 .navbar-link {
@@ -332,6 +365,7 @@ a:hover {
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--radius-md);
   transition: var(--transition);
+  white-space: nowrap;
 }
 
 .navbar-link:hover,
@@ -344,6 +378,7 @@ a:hover {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
+  flex-shrink: 0;
 }
 
 /* ============================================
@@ -804,9 +839,65 @@ a:hover {
   .navbar {
     padding: 0 var(--spacing-md);
   }
-  
+
+  .navbar-brand {
+    font-size: 1.25rem;
+  }
+
+  .navbar-toggle {
+    display: flex;
+  }
+
   .navbar-menu {
-    display: none;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background-color: var(--secondary);
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+  }
+
+  .navbar-menu.active {
+    max-height: 300px;
+  }
+
+  .navbar-link {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .navbar-actions {
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background-color: var(--secondary);
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .navbar-actions.active {
+    max-height: 500px;
+    top: auto;
+    border-bottom: none;
+  }
+
+  .navbar-actions .btn {
+    width: 100%;
   }
   
   .announcement-gallery {

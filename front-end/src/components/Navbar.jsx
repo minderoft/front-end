@@ -14,6 +14,10 @@ const Navbar = () => {
     setMenuOpen(false);
   };
 
+  const handleNavClick = () => {
+    setMenuOpen(false);
+  };
+
   return (
     <nav className="navbar">
       <Link to="/" className="navbar-brand">
@@ -49,21 +53,33 @@ const Navbar = () => {
         LocaPlus
       </Link>
 
-      <div className="navbar-menu">
-        <Link to="/" className="navbar-link">Accueil</Link>
-        <Link to="/announcements" className="navbar-link">Annonces</Link>
-        <Link to="/help" className="navbar-link">Aide</Link>
-        <Link to="/faq" className="navbar-link">FAQ</Link>
-        <Link to="/contact" className="navbar-link">Contact</Link>
+      {/* Bouton Hamburger pour Mobile */}
+      <button
+        className={`navbar-toggle ${menuOpen ? 'active' : ''}`}
+        onClick={() => setMenuOpen(!menuOpen)}
+        aria-label="Toggle menu"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      {/* Menu Desktop et Mobile */}
+      <div className={`navbar-menu ${menuOpen ? 'active' : ''}`}>
+        <Link to="/" className="navbar-link" onClick={handleNavClick}>Accueil</Link>
+        <Link to="/announcements" className="navbar-link" onClick={handleNavClick}>Annonces</Link>
+        <Link to="/help" className="navbar-link" onClick={handleNavClick}>Aide</Link>
+        <Link to="/faq" className="navbar-link" onClick={handleNavClick}>FAQ</Link>
+        <Link to="/contact" className="navbar-link" onClick={handleNavClick}>Contact</Link>
       </div>
 
-      <div className="navbar-actions">
+      <div className={`navbar-actions ${menuOpen ? 'active' : ''}`}>
         {user ? (
           <>
-            <Link to="/create" className="btn btn-accent">
+            <Link to="/create" className="btn btn-accent" onClick={handleNavClick}>
               + Publier
             </Link>
-            <Link to="/dashboard" className="btn btn-ghost">
+            <Link to="/dashboard" className="btn btn-ghost" onClick={handleNavClick}>
               Mon Dashboard
             </Link>
             <button onClick={handleLogout} className="btn btn-outline btn-sm">
@@ -72,10 +88,10 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            <Link to="/login" className="btn btn-ghost">
+            <Link to="/login" className="btn btn-ghost" onClick={handleNavClick}>
               Connexion
             </Link>
-            <Link to="/register" className="btn btn-primary">
+            <Link to="/register" className="btn btn-primary" onClick={handleNavClick}>
               Inscription
             </Link>
           </>

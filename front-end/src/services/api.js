@@ -103,6 +103,8 @@ export const pricingService = {
   getCategory: (categoryId) => api.get(`/pricing/category/${categoryId}`),
   getOptions: () => api.get('/pricing/options'),
   calculate: (data) => api.post('/pricing/calculate', data),
+  // Admin only - Update pricing
+  updatePrice: (id, data) => api.put(`/pricing/${id}`, data),
 };
 
 // ============================================
