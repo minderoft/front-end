@@ -72,7 +72,7 @@ router.post('/login', validate('login'), async (req, res) => {
     // Générer le token
     const token = generateToken(user);
 
-    res.json({
+    res.status(200).json({
       message: 'Connexion réussie',
       user: {
         id: user.id,

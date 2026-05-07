@@ -36,6 +36,7 @@ app.use(helmet({
 // CORS - Configuration sécurisée pour production et développement
 const allowedOrigins = [
   process.env.FRONTEND_URL,
+  'https://zel-chi.vercel.app',
   'http://localhost:5173',
 ].filter(Boolean);
 
