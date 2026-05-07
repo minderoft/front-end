@@ -33,29 +33,67 @@ app.use(helmet({
   },
 }));
 
-// CORS - Configuration sécurisée pour production et développement
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  'https://zel-chi.vercel.app',
-  'http://localhost:5173',
-].filter(Boolean);
+// ============================================
+// CORS - Configuration sécurisée
+// ============================================
 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://zel-chi.vercel.app';
+const DEV_URL = 'http://localhost:5173';
+
+const allowedOrigins = [
+  FRONTEND_URL,
+  DEV_URL,
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+];
+
+// Fonction pour vérifier les origins
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+  origin: function (origin, callback) {
+    // Accepter les requêtes sans origin (mobile apps, curl requests, etc.)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    // Vérifier si l'origin est dans la liste allowée
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS blocked: ${origin}`));
+      // En développement, logger les origins rejetées
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`⚠️  CORS: Origin ${origin} not allowed`);
+      }
+      callback(new Error('CORS: Origin not allowed'));
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  maxAge: 86400, // 24 heures
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+  ],
+  exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
+  maxAge: 86400, // 24 heures en secondes
+  optionsSuccessStatus: 200, // Certains anciens navigateurs ont besoin de 200 pour OPTIONS
 };
 
+// Appliquer CORS globalement
 app.use(cors(corsOptions));
+
+// Gérer les requêtes preflight OPTIONS explicitement
 app.options('*', cors(corsOptions));
+
+// Middleware optionnel pour logger les requêtes CORS en développement
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+    console.log(`  Origin: ${req.get('origin')}`);
+    console.log(`  User-Agent: ${req.get('user-agent')}`);
+    next();
+  });
+}
 
 // Rate Limiting - Limitation des requêtes
 const limiter = rateLimit({
@@ -101,13 +139,28 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/pricing', pricingRoutes);
 
-// Route de santé
+// Route de santé avec CORS debug info
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    message: 'LocaPlus API est en ligne',
+  const corsInfo = {
+    status: 'OK',
+    message: 'LocaPlus API is online',
     timestamp: new Date().toISOString(),
-  });
+    cors: {
+      requestOrigin: req.get('origin') || 'no origin',
+      allowedOrigins: allowedOrigins,
+      corsEnabled: true,
+    },
+    environment: {
+      nodeEnv: process.env.NODE_ENV || 'development',
+      frontendUrl: FRONTEND_URL,
+    },
+  };
+
+  // Ajouter les headers CORS à la réponse
+  res.set('Access-Control-Allow-Origin', req.get('origin') || '*');
+  res.set('Access-Control-Allow-Credentials', 'true');
+
+  res.json(corsInfo);
 });
 
 // ============================================
