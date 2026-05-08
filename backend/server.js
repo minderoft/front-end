@@ -42,6 +42,8 @@ const DEV_URL = 'http://localhost:5173';
 
 const allowedOrigins = [
   FRONTEND_URL,
+  'https://front-end-hazel-chi.vercel.app',
+  'https://zel-chi.vercel.app',
   DEV_URL,
   'http://localhost:3000',
   'http://127.0.0.1:5173',
@@ -84,6 +86,18 @@ app.use(cors(corsOptions));
 
 // Gérer les requêtes preflight OPTIONS explicitement
 app.options('*', cors(corsOptions));
+
+// Fallback CORS headers pour les réponses et préflight
+app.use((req, res, next) => {
+  const origin = req.get('origin');
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+  }
+  next();
+});
 
 // Middleware optionnel pour logger les requêtes CORS en développement
 if (process.env.NODE_ENV !== 'production') {
@@ -170,6 +184,18 @@ app.get('/api/health', (req, res) => {
 // 404
 app.use((req, res) => {
   res.status(404).json({ error: 'Route non trouvée' });
+});
+
+// Gestionnaire d'erreurs CORS spécifique
+app.use((err, req, res, next) => {
+  if (err && err.message && err.message.toLowerCase().includes('cors')) {
+    console.error('Erreur CORS détectée:', err.message, 'Origin:', req.get('origin'));
+    return res.status(403).json({
+      error: 'CORS: Origin not allowed',
+      origin: req.get('origin'),
+    });
+  }
+  next(err);
 });
 
 // Gestionnaire d'erreurs centralisé
