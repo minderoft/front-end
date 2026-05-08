@@ -20,11 +20,20 @@ const createPoolConfig = () => {
 const pool = mysql.createPool(createPoolConfig());
 
 const testConnection = async () => {
-  const connection = await pool.getConnection();
+  const startTime = Date.now();
   try {
-    await connection.ping();
-  } finally {
-    connection.release();
+    const connection = await pool.getConnection();
+    try {
+      await connection.ping();
+      const elapsed = Date.now() - startTime;
+      console.log(`✅ MySQL connexion établie en ${elapsed}ms`);
+    } finally {
+      connection.release();
+    }
+  } catch (err) {
+    const elapsed = Date.now() - startTime;
+    console.error(`❌ MySQL ping échoué après ${elapsed}ms:`, err.message);
+    throw err;
   }
 };
 
@@ -64,14 +73,20 @@ const allAsync = async (sql, params = []) => {
 
 const query = async (sql, params = []) => {
   const statement = sql.trim().split(' ')[0].toUpperCase();
+  const startTime = Date.now();
   try {
     const [rows, fields] = await pool.execute(sql, params);
+    const elapsed = Date.now() - startTime;
+    if (elapsed > 1000) {
+      console.warn(`⚠️ Requête lente (${elapsed}ms): ${statement}`);
+    }
     if (statement === 'SELECT' || statement === 'SHOW' || statement === 'DESCRIBE') {
       return rows;
     }
     return rows;
   } catch (err) {
-    console.error('MySQL query error:', err.message);
+    const elapsed = Date.now() - startTime;
+    console.error(`MySQL query error (${elapsed}ms):`, err.message);
     throw err;
   }
 };
@@ -233,16 +248,36 @@ const seedPricing = async () => {
 };
 
 const initDatabase = async () => {
+  console.log('📦 Initialisation de la base de données...');
+  const initStart = Date.now();
+  
   try {
     await testConnection();
-    console.log('MySQL est prêt.');
   } catch (err) {
     console.error('Impossible de se connecter à MySQL :', err.message);
     throw err;
   }
 
-  await createTables();
-  await seedPricing();
+  const tableStart = Date.now();
+  try {
+    await createTables();
+    console.log(`✅ Tables créées en ${Date.now() - tableStart}ms`);
+  } catch (err) {
+    console.error('Erreur création tables:', err.message);
+    throw err;
+  }
+
+  const seedStart = Date.now();
+  try {
+    await seedPricing();
+    console.log(`✅ Pricing initialisé en ${Date.now() - seedStart}ms`);
+  } catch (err) {
+    console.error('Erreur seedPricing:', err.message);
+    throw err;
+  }
+
+  const totalTime = Date.now() - initStart;
+  console.log(`✅ Base de données initialisée en ${totalTime}ms`);
 };
 
 const closeDatabase = async () => {

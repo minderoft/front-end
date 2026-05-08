@@ -7,10 +7,20 @@ const router = express.Router();
 
 // Obtenir tous les tarifs
 router.get('/', async (req, res) => {
+  const startTime = Date.now();
   try {
     const allPricing = await pricing.getAllPricing();
+    
+    if (!allPricing || allPricing.length === 0) {
+      console.warn('⚠️ Aucun tarif trouvé en base de données');
+      return res.status(500).json({ error: 'Tarifs non initialisés en base de données' });
+    }
+
     const categories = allPricing.filter((item) => item.type === 'publication');
     const boost = allPricing.filter((item) => item.type === 'boost');
+
+    const elapsed = Date.now() - startTime;
+    console.log(`✅ Tarifs récupérés en ${elapsed}ms (${allPricing.length} items)`);
 
     res.json({
       categories,
@@ -21,8 +31,9 @@ router.get('/', async (req, res) => {
       lastUpdated: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Erreur récupération tarifs:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la récupération des tarifs' });
+    const elapsed = Date.now() - startTime;
+    console.error(`❌ Erreur récupération tarifs (${elapsed}ms):`, error.message);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des tarifs', details: error.message });
   }
 });
 

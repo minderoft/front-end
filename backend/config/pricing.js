@@ -33,19 +33,41 @@ const formatPricingRow = (row) => ({
 });
 
 const getAllPricing = async () => {
-  const rows = await query(
-    'SELECT id, type, category, name, description, price, features FROM pricing WHERE active = 1 ORDER BY type, category IS NULL ASC, category'
-  );
-  return rows.map(formatPricingRow);
+  const startTime = Date.now();
+  try {
+    const rows = await query(
+      'SELECT id, type, category, name, description, price, features FROM pricing WHERE active = 1 ORDER BY type, category IS NULL ASC, category'
+    );
+    const elapsed = Date.now() - startTime;
+    if (elapsed > 500) {
+      console.warn(`⚠️ getAllPricing lent (${elapsed}ms), ${rows.length} items retournés`);
+    }
+    return rows.map(formatPricingRow);
+  } catch (err) {
+    const elapsed = Date.now() - startTime;
+    console.error(`❌ getAllPricing échoué (${elapsed}ms):`, err.message);
+    throw err;
+  }
 };
 
 const getPricingByCategory = async (category) => {
   if (!category) return null;
-  const rows = await query(
-    'SELECT id, type, category, name, description, price, features FROM pricing WHERE type = ? AND category = ? AND active = 1 LIMIT 1',
-    ['publication', category.toString()]
-  );
-  return rows[0] ? formatPricingRow(rows[0]) : null;
+  const startTime = Date.now();
+  try {
+    const rows = await query(
+      'SELECT id, type, category, name, description, price, features FROM pricing WHERE type = ? AND category = ? AND active = 1 LIMIT 1',
+      ['publication', category.toString()]
+    );
+    const elapsed = Date.now() - startTime;
+    if (elapsed > 500) {
+      console.warn(`⚠️ getPricingByCategory lent (${elapsed}ms) pour: ${category}`);
+    }
+    return rows[0] ? formatPricingRow(rows[0]) : null;
+  } catch (err) {
+    const elapsed = Date.now() - startTime;
+    console.error(`❌ getPricingByCategory échoué (${elapsed}ms) pour: ${category}`, err.message);
+    throw err;
+  }
 };
 
 const getPricingByType = async (type) => {

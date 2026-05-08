@@ -5,9 +5,6 @@ const BASE_URL = 'https://backend-ovbc.onrender.com/api';
 
 const api = axios.create({
   baseURL: BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
   withCredentials: true, // Important pour CORS avec credentials
   timeout: 30000, // 30 secondes timeout
 });
