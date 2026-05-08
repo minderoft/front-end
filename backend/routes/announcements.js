@@ -41,6 +41,40 @@ const upload = multer({
   fileFilter,
 });
 
+const sendAnnouncementError = (res, error, context = {}) => {
+  console.error('Erreur annonce:', error, context);
+
+  if (error.name === 'MulterError') {
+    return res.status(400).json({ error: `Upload d'image échoué: ${error.message}` });
+  }
+
+  if (error.message?.includes('Multipart: Boundary not found')) {
+    return res.status(400).json({ error: 'Le formulaire multipart est invalide. Vérifiez que la requête contient bien des fichiers.' });
+  }
+
+  if (error.code === 'ER_NO_SUCH_TABLE') {
+    return res.status(500).json({ error: 'Base de données non initialisée ou table manquante' });
+  }
+
+  if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+    return res.status(500).json({ error: 'Erreur de connexion à la base de données' });
+  }
+
+  if (error.code === 'ER_BAD_FIELD_ERROR') {
+    return res.status(500).json({ error: 'Champ SQL invalide dans la requête' });
+  }
+
+  const responseError = {
+    error: process.env.NODE_ENV === 'production' ? 'Erreur création annonce' : error.message,
+  };
+
+  if (error.details) {
+    responseError.details = error.details;
+  }
+
+  return res.status(500).json(responseError);
+};
+
 // GET ALL
 router.get('/', async (req, res) => {
   try {
@@ -211,13 +245,12 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
 
     res.status(201).json(result[0]);
   } catch (error) {
-    console.error('Erreur création annonce:', error, {
+    return sendAnnouncementError(res, error, {
       userId: req.user?.id,
       category: req.body?.category,
       type: req.body?.type,
       title: req.body?.title,
     });
-    res.status(500).json({ error: 'Erreur création' });
   }
 });
 
