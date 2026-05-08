@@ -316,10 +316,10 @@ const CreateAnnouncement = () => {
                   value={formData.price}
                   onChange={handleChange}
                   required
-                  min={selectedCategory?.price || 0}
+                  min={pricing[formData.category] || 0}
                 />
                 <span className="form-help">
-                  Prix minimum: {selectedCategory?.price?.toLocaleString()} FCFA pour cette catégorie
+                  Prix minimum: {pricing[formData.category]?.toLocaleString() || '0'} FCFA pour cette catégorie
                 </span>
               </div>
             )}

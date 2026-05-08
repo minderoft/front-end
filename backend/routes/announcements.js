@@ -163,6 +163,7 @@ router.get('/:id', async (req, res) => {
 // CREATE
 router.post('/', authenticateToken, upload.array('images', 10), validate('announcement'), async (req, res) => {
   try {
+    console.log('Création annonce - Début:', { userId: req.user.id, category: req.body.category });
     const { category, type, title, description, price, location, phone, metadata } = req.body;
     const listingPrice = Number(price || 0);
 
@@ -174,7 +175,9 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     // Pour les techniciens, on définit un prix par défaut de 0
     const finalPrice = category === 'technicien' ? 0 : listingPrice;
 
+    console.log('Création annonce - Prix calculé:', { finalPrice, category });
     const categoryPrice = await getCategoryPrice(category);
+    console.log('Création annonce - Prix catégorie:', categoryPrice);
     if (categoryPrice === null) {
       return res.status(400).json({ error: 'Tarif de publication introuvable pour cette catégorie' });
     }
@@ -194,6 +197,7 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     }
 
     const id = uuidv4();
+    console.log('Création annonce - Avant INSERT:', { id, userId: req.user.id });
 
     await query(
       `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, phone, images, metadata, status)
@@ -201,7 +205,9 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
       [id, req.user.id, category, type, title, description, finalPrice, location, phone, JSON.stringify(images), JSON.stringify(metadataValue)]
     );
 
+    console.log('Création annonce - Après INSERT');
     const result = await query('SELECT * FROM announcements WHERE id = ?', [id]);
+    console.log('Création annonce - Résultat SELECT:', result.length);
 
     res.status(201).json(result[0]);
   } catch (error) {

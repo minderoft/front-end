@@ -958,7 +958,8 @@ a:hover {
   padding: var(--spacing-xl);
   text-align: center;
   transition: var(--transition);
-  border: 2px solid transparent;
+  border: 1px solid var(--border);
+  background-color: var(--secondary);
 }
 
 .pricing-card:hover {

@@ -58,7 +58,9 @@ const getPricingByType = async (type) => {
 
 const getCategoryPrice = async (category) => {
   if (!category) return null;
+  console.log('getCategoryPrice - Catégorie:', category);
   const pricingRow = await getPricingByCategory(category.toString());
+  console.log('getCategoryPrice - Résultat:', pricingRow);
   return pricingRow ? pricingRow.price : null;
 };
 

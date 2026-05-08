@@ -9,7 +9,12 @@ const createPoolConfig = () => {
     );
   }
 
-  return databaseUrl;
+  return {
+    uri: databaseUrl,
+    connectionLimit: 10,
+    acquireTimeout: 60000,
+    timeout: 60000,
+  };
 };
 
 const pool = mysql.createPool(createPoolConfig());

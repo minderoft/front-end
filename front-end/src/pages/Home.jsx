@@ -1,7 +1,7 @@
 // filepath: front-end/src/pages/Home.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { announcementService, pricingService } from '../services/api';
+import { announcementService } from '../services/api';
 
 const categories = [
   { id: 'immobilier', name: 'Immobilier', icon: '🏠', description: 'Terrains, villas, appartements' },
@@ -10,27 +10,55 @@ const categories = [
   { id: 'technicien', name: 'Techniciens', icon: '🔧', description: 'Plombiers, électriciens, maçons' },
 ];
 
+const professionalPricing = [
+  {
+    id: 'immobilier',
+    name: 'Immobilier',
+    icon: '🏠',
+    price: 5000,
+    details: 'Annonce 30 jours · Visibilité standard',
+    buttonLabel: 'Publier dans Immobilier',
+  },
+  {
+    id: 'materiaux',
+    name: 'Matériaux',
+    icon: '🧱',
+    price: 3000,
+    details: 'Annonce 30 jours · Visibilité standard',
+    buttonLabel: 'Publier dans Matériaux',
+  },
+  {
+    id: 'technicien',
+    name: 'Technicien',
+    icon: '🔧',
+    price: 2000,
+    details: 'Annonce 30 jours',
+    buttonLabel: 'Publier dans Technicien',
+  },
+  {
+    id: 'vehicule',
+    name: 'Véhicule',
+    icon: '🚗',
+    price: 4000,
+    details: 'Annonce 30 jours',
+    buttonLabel: 'Publier dans Véhicule',
+  },
+];
+
 const Home = () => {
   const [announcements, setAnnouncements] = useState([]);
-  const [pricing, setPricing] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [pricingLoading, setPricingLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [announcementsRes, pricingRes] = await Promise.all([
-          announcementService.getAll({ limit: 6 }),
-          pricingService.getAll()
-        ]);
+        const announcementsRes = await announcementService.getAll({ limit: 6 });
         setAnnouncements(announcementsRes.data.announcements);
-        setPricing(pricingRes.data);
       } catch (error) {
         console.error('Erreur:', error);
       } finally {
         setLoading(false);
-        setPricingLoading(false);
       }
     };
     fetchData();
@@ -80,53 +108,46 @@ const Home = () => {
       </section>
 
       {/* Tarifs de publication */}
-      <section className="announcements-section" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+      <section className="announcements-section">
         <div className="announcements-header">
-          <h2>Tarifs de Publication</h2>
+          <div>
+            <h2>Tarifs professionnels</h2>
+            <p className="text-muted" style={{ marginTop: '8px' }}>
+              Découvrez nos tarifs de publication simples et transparents pour chaque catégorie.
+            </p>
+          </div>
           <Link to="/create" className="btn btn-primary">
             Publier maintenant
           </Link>
         </div>
-        
-        {pricingLoading ? (
-          <div className="loading">
-            <div className="spinner"></div>
-          </div>
-        ) : pricing ? (
-          <div className="pricing-grid">
-            {pricing.categories.map((cat) => (
-              <div key={cat.id} className="card pricing-card">
-                <div className="pricing-header">
-                  <span className="pricing-icon">
-                    {categories.find(c => c.id === cat.id)?.icon || '📋'}
-                  </span>
-                  <h3>{cat.name}</h3>
-                </div>
-                <div className="pricing-price">
-                  <span className="price-amount">{cat.price.toLocaleString()}</span>
-                  <span className="price-currency">FCFA</span>
-                  <span className="price-period">/publication</span>
-                </div>
-                <p className="pricing-description">{cat.description}</p>
-                <ul className="pricing-features">
-                  {cat.features.map((feature, index) => (
-                    <li key={index}>✓ {feature}</li>
-                  ))}
-                </ul>
-                <Link to={`/create?category=${cat.id}`} className="btn btn-outline" style={{ width: '100%' }}>
-                  Publier dans {cat.name}
-                </Link>
+
+        <div className="pricing-grid">
+          {professionalPricing.map((plan) => (
+            <div key={plan.id} className="card pricing-card">
+              <div className="pricing-header">
+                <span className="pricing-icon">{plan.icon}</span>
+                <h3>{plan.name}</h3>
               </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-muted">Tarifs non disponibles</p>
-        )}
-        
-        <div className="text-center mt-4">
-          <p className="text-muted">
-            💳 Paiement sécurisé par Wave, Orange Money, MTN, Moov ou carte bancaire
-          </p>
+              <div className="pricing-price">
+                <span className="price-amount">{plan.price.toLocaleString()}</span>
+                <span className="price-currency">FCFA</span>
+                <span className="price-period">/publication</span>
+              </div>
+              <p className="pricing-description">{plan.details}</p>
+              <ul className="pricing-features">
+                {plan.details.split(' · ').map((feature, index) => (
+                  <li key={index}>{feature}</li>
+                ))}
+              </ul>
+              <Link
+                to={`/create?category=${plan.id}`}
+                className="btn btn-outline"
+                style={{ width: '100%' }}
+              >
+                {plan.buttonLabel}
+              </Link>
+            </div>
+          ))}
         </div>
       </section>
 

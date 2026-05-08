@@ -1,34 +1,83 @@
 // filepath: front-end/src/services/api.js
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://backend-ovbc.onrender.com';
-const BASE_URL = API_URL.replace(/\/$/, '') + (API_URL.endsWith('/api') ? '' : '/api');
+const BASE_URL = 'https://backend-ovbc.onrender.com/api';
 
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Important pour CORS avec credentials
+  timeout: 30000, // 30 secondes timeout
 });
 
-// Intercepteur pour ajouter le token
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Intercepteur pour gérer les erreurs
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+// Intercepteur pour les requêtes
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Logger en développement
+    if (import.meta.env.DEV) {
+      console.log(`📤 [${config.method.toUpperCase()}] ${config.url}`, {
+        headers: config.headers,
+      });
+    }
+    
+    return config;
+  },
+  (error) => {
+    console.error('Erreur requête:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Intercepteur pour gérer les erreurs de réponse
+api.interceptors.response.use(
+  (response) => {
+    // Logger en développement
+    if (import.meta.env.DEV) {
+      console.log(`📥 [${response.status}] ${response.config.url}`, response.data);
+    }
+    return response;
+  },
+  (error) => {
+    // Gérer les erreurs CORS et autres
+    if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
+      console.error('❌ ERREUR RÉSEAU / CORS:', {
+        message: error.message,
+        config: error.config,
+        code: error.code,
+      });
+    }
+
+    if (error.response) {
+      // La requête a reçu une réponse avec un statut d'erreur
+      if (error.response.status === 401) {
+        // Token expiré ou invalide
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
+
+      if (import.meta.env.DEV) {
+        console.error(`❌ Erreur API [${error.response.status}]`, {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers,
+        });
+      }
+    } else if (error.request) {
+      // La requête a été faite mais pas de réponse reçue
+      console.error('❌ Pas de réponse du serveur:', {
+        message: error.message,
+        request: error.request,
+      });
+    }
+
     return Promise.reject(error);
   }
 );
@@ -61,9 +110,7 @@ export const announcementService = {
         formData.append(key, data[key]);
       }
     });
-    return api.post('/announcements', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return api.post('/announcements', formData);
   },
   update: (id, data) => {
     const formData = new FormData();
@@ -76,9 +123,7 @@ export const announcementService = {
         formData.append(key, data[key]);
       }
     });
-    return api.put(`/announcements/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return api.put(`/announcements/${id}`, formData);
   },
   delete: (id) => api.delete(`/announcements/${id}`),
   getMyAnnouncements: () => api.get('/announcements/user/my-announcements'),
