@@ -164,7 +164,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', authenticateToken, upload.array('images', 10), validate('announcement'), async (req, res) => {
   try {
     const { category, type, title, description, price, location, phone, metadata } = req.body;
-    const listingPrice = Number(price);
+    const listingPrice = Number(price || 0);
 
     // Pour les techniciens, le prix peut être 0 (à négocier)
     if (category !== 'technicien' && (Number.isNaN(listingPrice) || listingPrice <= 0)) {
@@ -180,7 +180,19 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     }
 
     const images = req.files?.map((f) => '/uploads/' + f.filename) || [];
-    const metadataValue = typeof metadata === 'string' ? JSON.parse(metadata || '{}') : metadata || {};
+    let metadataValue = {};
+
+    if (typeof metadata === 'string' && metadata.trim() !== '') {
+      try {
+        metadataValue = JSON.parse(metadata);
+      } catch (parseError) {
+        console.error('Erreur parsing metadata:', parseError.message, metadata);
+        return res.status(400).json({ error: 'Metadata invalide' });
+      }
+    } else if (typeof metadata === 'object' && metadata !== null) {
+      metadataValue = metadata;
+    }
+
     const id = uuidv4();
 
     await query(
@@ -193,7 +205,12 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
 
     res.status(201).json(result[0]);
   } catch (error) {
-    console.error('Erreur création:', error);
+    console.error('Erreur création annonce:', error, {
+      userId: req.user?.id,
+      category: req.body?.category,
+      type: req.body?.type,
+      title: req.body?.title,
+    });
     res.status(500).json({ error: 'Erreur création' });
   }
 });

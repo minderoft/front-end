@@ -16,10 +16,20 @@ const paymentMethods = [
   { id: 'card', name: 'Carte bancaire', type: 'card', logo: '💳' },
 ];
 
+const parseFeatures = (features) => {
+  if (!features) return [];
+  try {
+    return JSON.parse(features);
+  } catch (err) {
+    console.error('Erreur parsing pricing features:', err.message, features);
+    return [];
+  }
+};
+
 const formatPricingRow = (row) => ({
   ...row,
   price: Number(row.price),
-  features: row.features ? JSON.parse(row.features) : [],
+  features: parseFeatures(row.features),
 });
 
 const getAllPricing = async () => {
@@ -30,9 +40,10 @@ const getAllPricing = async () => {
 };
 
 const getPricingByCategory = async (category) => {
+  if (!category) return null;
   const rows = await query(
     'SELECT id, type, category, name, description, price, features FROM pricing WHERE type = ? AND category = ? AND active = 1 LIMIT 1',
-    ['publication', category]
+    ['publication', category.toString()]
   );
   return rows[0] ? formatPricingRow(rows[0]) : null;
 };
@@ -46,7 +57,8 @@ const getPricingByType = async (type) => {
 };
 
 const getCategoryPrice = async (category) => {
-  const pricingRow = await getPricingByCategory(category);
+  if (!category) return null;
+  const pricingRow = await getPricingByCategory(category.toString());
   return pricingRow ? pricingRow.price : null;
 };
 
