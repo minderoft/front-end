@@ -209,7 +209,7 @@ router.get('/nearby', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const result = await query(
-      `SELECT a.*, u.name, u.phone
+      `SELECT a.*, u.name as user_name, u.phone as user_phone, u.email as user_email
        FROM announcements a
        LEFT JOIN users u ON a.user_id = u.id
        WHERE a.id = ?`,
@@ -220,7 +220,7 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Annonce non trouvée' });
     }
 
-    res.json(result[0]);
+    res.json({ announcement: result[0] });
   } catch (error) {
     res.status(500).json({ error: 'Erreur serveur' });
   }
