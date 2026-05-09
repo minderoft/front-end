@@ -169,6 +169,33 @@ const createTables = async () => {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+
+  await runAsync(`
+    CREATE TABLE IF NOT EXISTS conversations (
+      id VARCHAR(36) PRIMARY KEY,
+      client_id VARCHAR(36) NOT NULL,
+      provider_id VARCHAR(36) NOT NULL,
+      service_id VARCHAR(36) NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY(client_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY(provider_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY(service_id) REFERENCES announcements(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await runAsync(`
+    CREATE TABLE IF NOT EXISTS messages (
+      id VARCHAR(36) PRIMARY KEY,
+      conversation_id VARCHAR(36) NOT NULL,
+      sender_id VARCHAR(36) NOT NULL,
+      text TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY(conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
+      FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
 };
 
 const seedPricing = async () => {

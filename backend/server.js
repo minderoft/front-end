@@ -12,6 +12,7 @@ const announcementRoutes = require('./routes/announcements');
 const paymentRoutes = require('./routes/payments');
 const contactRoutes = require('./routes/contact');
 const pricingRoutes = require('./routes/pricing');
+const chatRoutes = require('./routes/chat');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -152,6 +153,7 @@ app.use('/api/announcements', announcementRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/pricing', pricingRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Route de santé avec CORS debug info
 app.get('/api/health', (req, res) => {
