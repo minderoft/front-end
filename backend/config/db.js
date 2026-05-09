@@ -115,6 +115,8 @@ const createTables = async () => {
       description TEXT,
       price DECIMAL(10,2) NOT NULL DEFAULT 0,
       location VARCHAR(255),
+      latitude DECIMAL(10,8) NULL,
+      longitude DECIMAL(11,8) NULL,
       phone VARCHAR(60),
       images TEXT,
       metadata TEXT,
@@ -124,6 +126,13 @@ const createTables = async () => {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await runAsync(`
+    ALTER TABLE announcements ADD COLUMN IF NOT EXISTS latitude DECIMAL(10,8) NULL;
+  `);
+  await runAsync(`
+    ALTER TABLE announcements ADD COLUMN IF NOT EXISTS longitude DECIMAL(11,8) NULL;
   `);
 
   await runAsync(`

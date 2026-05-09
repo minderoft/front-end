@@ -173,6 +173,38 @@ router.get('/prices', async (req, res) => {
   }
 });
 
+// GET NEARBY
+router.get('/nearby', async (req, res) => {
+  try {
+    const lat = parseFloat(req.query.lat);
+    const lng = parseFloat(req.query.lng);
+
+    if (Number.isNaN(lat) || Number.isNaN(lng)) {
+      return res.status(400).json({ error: 'Latitude et longitude valides requises' });
+    }
+
+    const sql = `
+      SELECT a.*, u.name as user_name, u.phone as user_phone,
+        (6371 * ACOS(
+          COS(RADIANS(?)) * COS(RADIANS(a.latitude)) * COS(RADIANS(a.longitude) - RADIANS(?)) +
+          SIN(RADIANS(?)) * SIN(RADIANS(a.latitude))
+        )) AS distance_km
+      FROM announcements a
+      LEFT JOIN users u ON a.user_id = u.id
+      WHERE a.status = 'active' AND a.payment_status = 1 AND a.latitude IS NOT NULL AND a.longitude IS NOT NULL
+      HAVING distance_km <= ?
+      ORDER BY distance_km ASC
+      LIMIT 50
+    `;
+
+    const nearby = await query(sql, [lat, lng, lat, 10]);
+    res.json({ announcements: nearby });
+  } catch (error) {
+    console.error('Erreur recherche nearby:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // GET ONE
 router.get('/:id', async (req, res) => {
   try {
@@ -198,7 +230,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', authenticateToken, upload.array('images', 10), validate('announcement'), async (req, res) => {
   try {
     console.log('Création annonce - Début:', { userId: req.user.id, category: req.body.category });
-    const { category, type, title, description, price, location, phone, metadata } = req.body;
+    const { category, type, title, description, price, location, phone, metadata, latitude, longitude } = req.body;
     const listingPrice = Number(price || 0);
 
     // Pour les techniciens, le prix peut être 0 (à négocier)
@@ -230,13 +262,34 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
       metadataValue = metadata;
     }
 
+    const latitudeValue = latitude ? parseFloat(latitude) : null;
+    const longitudeValue = longitude ? parseFloat(longitude) : null;
+
+    if ((latitude && !longitude) || (!latitude && longitude)) {
+      return res.status(400).json({ error: 'Latitude et longitude doivent être fournies ensemble' });
+    }
+
     const id = uuidv4();
     console.log('Création annonce - Avant INSERT:', { id, userId: req.user.id });
 
     await query(
-      `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, phone, images, metadata, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-      [id, req.user.id, category, type, title, description, finalPrice, location, phone, JSON.stringify(images), JSON.stringify(metadataValue)]
+      `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, latitude, longitude, phone, images, metadata, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+      [
+        id,
+        req.user.id,
+        category,
+        type,
+        title,
+        description,
+        finalPrice,
+        location,
+        latitudeValue,
+        longitudeValue,
+        phone,
+        JSON.stringify(images),
+        JSON.stringify(metadataValue),
+      ]
     );
 
     console.log('Création annonce - Après INSERT');
