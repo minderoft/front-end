@@ -95,6 +95,7 @@ export const authService = {
 // ============================================
 export const announcementService = {
   getAll: (params) => api.get('/announcements', { params }),
+  getNearby: (lat, lng) => api.get('/announcements/nearby', { params: { lat, lng } }),
   getById: (id) => api.get(`/announcements/${id}`),
   create: (data) => {
     const formData = new FormData();
@@ -154,6 +155,16 @@ export const pricingService = {
 // ============================================
 export const contactService = {
   send: (data) => api.post('/contact', data),
+};
+
+// ============================================
+// CHAT
+// ============================================
+export const chatService = {
+  getConversations: () => api.get('/chat/conversations'),
+  getMessages: (conversationId) => api.get(`/chat/conversations/${conversationId}/messages`),
+  createConversation: (data) => api.post('/chat/conversations', data),
+  sendMessage: (data) => api.post('/chat/messages', data),
 };
 
 export default api;

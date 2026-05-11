@@ -68,6 +68,7 @@ const Navbar = () => {
       <div className={`navbar-menu ${menuOpen ? 'active' : ''}`}>
         <Link to="/" className="navbar-link" onClick={handleNavClick}>Accueil</Link>
         <Link to="/announcements" className="navbar-link" onClick={handleNavClick}>Annonces</Link>
+        <Link to="/chat" className="navbar-link" onClick={handleNavClick}>Messages</Link>
         <Link to="/help" className="navbar-link" onClick={handleNavClick}>Aide</Link>
         <Link to="/faq" className="navbar-link" onClick={handleNavClick}>FAQ</Link>
         <Link to="/contact" className="navbar-link" onClick={handleNavClick}>Contact</Link>

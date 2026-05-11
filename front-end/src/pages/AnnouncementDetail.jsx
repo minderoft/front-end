@@ -1,10 +1,13 @@
 // filepath: front-end/src/pages/AnnouncementDetail.jsx
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { announcementService } from '../services/api';
 
 const AnnouncementDetail = () => {
   const { id } = useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [announcement, setAnnouncement] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -183,10 +186,23 @@ const AnnouncementDetail = () => {
             </p>
           )}
 
+          <button
+            type="button"
+            className="btn btn-primary w-full mb-3"
+            onClick={() => {
+              if (!user) {
+                navigate('/login');
+                return;
+              }
+              navigate(`/chat?serviceId=${announcement.id}&providerId=${announcement.user_id}`);
+            }}
+          >
+            💬 Contacter le professionnel
+          </button>
+
           <a 
             href={`tel:${announcement.user_phone}`} 
-            className="btn btn-accent"
-            style={{ width: '100%' }}
+            className="btn btn-accent w-full"
           >
             📞 Appeler maintenant
           </a>

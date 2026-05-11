@@ -13,6 +13,7 @@ import Register from './pages/Register';
 import Help from './pages/Help';
 import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
+import Chat from './pages/Chat';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -29,6 +30,11 @@ function App() {
           <Route path="/help" element={<Help />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/chat" element={
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
+          } />
           
           {/* Routes protégées */}
           <Route path="/create" element={

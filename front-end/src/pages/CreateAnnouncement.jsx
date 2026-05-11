@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { announcementService, paymentService, pricingService } from '../services/api';
+import LocationPicker from '../components/LocationPicker';
 
 const categories = {
   immobilier: {
@@ -68,6 +69,8 @@ const CreateAnnouncement = () => {
     description: '',
     price: '',
     location: '',
+    latitude: '',
+    longitude: '',
     phone: '',
     images: [],
     metadata: {},
@@ -128,6 +131,12 @@ const CreateAnnouncement = () => {
       // Pour les techniciens, définir le prix à 0 (à négocier)
       if (formData.category === 'technicien') {
         announcementData.price = 0;
+      }
+
+      // Si nous avons une latitude/longitude, on l'envoie au backend
+      if (formData.latitude && formData.longitude) {
+        announcementData.latitude = formData.latitude;
+        announcementData.longitude = formData.longitude;
       }
 
       // Créer l'annonce
@@ -336,6 +345,42 @@ const CreateAnnouncement = () => {
                 onChange={handleChange}
                 required
               />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Position précise</label>
+              <LocationPicker
+                position={formData.latitude && formData.longitude ? [Number(formData.latitude), Number(formData.longitude)] : null}
+                onChange={(position) => setFormData(prev => ({
+                  ...prev,
+                  latitude: position.lat.toFixed(8),
+                  longitude: position.lng.toFixed(8),
+                }))}
+              />
+              <div className="grid gap-3 sm:grid-cols-2 mt-3">
+                <div>
+                  <label className="form-label">Latitude</label>
+                  <input
+                    type="text"
+                    name="latitude"
+                    className="form-input"
+                    value={formData.latitude}
+                    readOnly
+                    placeholder="Cliquer sur la carte"
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Longitude</label>
+                  <input
+                    type="text"
+                    name="longitude"
+                    className="form-input"
+                    value={formData.longitude}
+                    readOnly
+                    placeholder="Cliquer sur la carte"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Numéro de téléphone */}

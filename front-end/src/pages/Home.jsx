@@ -48,6 +48,8 @@ const professionalPricing = [
 const Home = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [nearbyLoading, setNearbyLoading] = useState(false);
+  const [nearbyAnnouncements, setNearbyAnnouncements] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -63,6 +65,34 @@ const Home = () => {
     };
     fetchData();
   }, []);
+
+  const handleNearbySearch = () => {
+    if (!navigator.geolocation) {
+      alert('Géolocalisation non supportée par votre navigateur');
+      return;
+    }
+
+    setNearbyLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const response = await announcementService.getNearby(latitude, longitude);
+          setNearbyAnnouncements(response.data.announcements);
+        } catch (error) {
+          console.error('Erreur recherche nearby:', error);
+          alert('Erreur lors de la recherche des annonces proches');
+        } finally {
+          setNearbyLoading(false);
+        }
+      },
+      (error) => {
+        console.error('Erreur géolocalisation:', error);
+        alert('Impossible d\'accéder à votre position. Veuillez vérifier vos paramètres.');
+        setNearbyLoading(false);
+      }
+    );
+  };
 
   const handleCategoryClick = (categoryId) => {
     navigate(`/announcements?category=${categoryId}`);
@@ -105,6 +135,127 @@ const Home = () => {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Bouton Autour de moi */}
+      <section className="announcements-section">
+        <div className="announcements-header">
+          <h2>Chercher autour de vous</h2>
+          <button 
+            onClick={handleNearbySearch}
+            disabled={nearbyLoading}
+            className="btn btn-accent"
+          >
+            {nearbyLoading ? 'Localisation en cours...' : '📍 Autour de moi (10km)'}
+          </button>
+        </div>
+        
+        {nearbyAnnouncements && (
+          <>
+            {nearbyAnnouncements.length > 0 ? (
+              <>
+                <p className="text-muted mb-4">
+                  {nearbyAnnouncements.length} annonce{nearbyAnnouncements.length > 1 ? 's' : ''} trouvée{nearbyAnnouncements.length > 1 ? 's' : ''} autour de vous
+                </p>
+                <div className="announcements-grid">
+                  {nearbyAnnouncements.map((announcement) => {
+                    const imageUrl = announcement.images && announcement.images.length > 0
+                      ? `https://backend-ovbc.onrender.com${announcement.images[0]}`
+                      : null;
+
+                    return (
+                      <div 
+                        key={announcement.id}
+                        className="card"
+                        style={{ display: 'flex', flexDirection: 'column' }}
+                      >
+                        {imageUrl ? (
+                          <img 
+                            src={imageUrl} 
+                            alt={announcement.title}
+                            className="card-image"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              const placeholder = e.target.nextElementSibling;
+                              if (placeholder) placeholder.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div 
+                          className="card-image" 
+                          style={{ 
+                            backgroundColor: '#E2E8F0', 
+                            display: imageUrl ? 'none' : 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            fontSize: '3rem'
+                          }}
+                        >
+                          🏠
+                        </div>
+                        <div className="card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ 
+                            fontSize: '0.75rem', 
+                            color: 'var(--accent)',
+                            textTransform: 'uppercase',
+                            fontWeight: '600'
+                          }}>
+                            {announcement.category}
+                          </span>
+                          <h3 className="card-title">{announcement.title}</h3>
+                          <p className="card-text">{announcement.description?.substring(0, 100)}...</p>
+                          <div className="card-price">{announcement.price?.toLocaleString()} FCFA</div>
+                          <div className="card-meta">
+                            <span>📍 {announcement.location}</span>
+                            {announcement.distance_km && (
+                              <span title="Distance">📏 {announcement.distance_km.toFixed(1)}km</span>
+                            )}
+                          </div>
+                          <div style={{ 
+                            display: 'flex', 
+                            gap: '8px', 
+                            marginTop: 'auto',
+                            paddingTop: '12px',
+                            borderTop: '1px solid #E2E8F0'
+                          }}>
+                            <button 
+                              onClick={() => navigate(`/announcements/${announcement.id}`)}
+                              className="btn btn-outline"
+                              style={{ flex: 1, padding: '8px 12px', fontSize: '0.875rem' }}
+                            >
+                              Voir
+                            </button>
+                            <button 
+                              onClick={() => navigate(`/chat/${announcement.user_id}`)}
+                              className="btn"
+                              style={{ 
+                                flex: 1, 
+                                padding: '8px 12px', 
+                                fontSize: '0.875rem',
+                                backgroundColor: '#ff6b00',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontWeight: '600'
+                              }}
+                            >
+                              Contacter
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <div className="text-center" style={{ padding: '48px' }}>
+                <p className="text-muted">Aucune annonce à proximité. Elargissez votre recherche !</p>
+              </div>
+            )}
+          </>
+        )}
       </section>
 
       {/* Tarifs de publication */}
@@ -166,47 +317,92 @@ const Home = () => {
           </div>
         ) : announcements.length > 0 ? (
           <div className="announcements-grid">
-            {announcements.map((announcement) => (
-              <Link 
-                to={`/announcements/${announcement.id}`} 
-                key={announcement.id}
-                className="card"
-              >
-                {announcement.images && announcement.images.length > 0 ? (
-                  <img 
-                    src={announcement.images[0]} 
-                    alt={announcement.title}
-                    className="card-image"
-                  />
-                ) : (
-                  <div className="card-image" style={{ 
-                    backgroundColor: '#E2E8F0', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    fontSize: '3rem'
-                  }}>
+            {announcements.map((announcement) => {
+              const imageUrl = announcement.images && announcement.images.length > 0
+                ? `https://backend-ovbc.onrender.com${announcement.images[0]}`
+                : null;
+
+              return (
+                <div 
+                  key={announcement.id}
+                  className="card"
+                  style={{ display: 'flex', flexDirection: 'column' }}
+                >
+                  {imageUrl ? (
+                    <img 
+                      src={imageUrl} 
+                      alt={announcement.title}
+                      className="card-image"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        const placeholder = e.target.nextElementSibling;
+                        if (placeholder) placeholder.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div 
+                    className="card-image" 
+                    style={{ 
+                      backgroundColor: '#E2E8F0', 
+                      display: imageUrl ? 'none' : 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      fontSize: '3rem'
+                    }}
+                  >
                     🏠
                   </div>
-                )}
-                <div className="card-body">
-                  <span style={{ 
-                    fontSize: '0.75rem', 
-                    color: 'var(--accent)',
-                    textTransform: 'uppercase',
-                    fontWeight: '600'
-                  }}>
-                    {announcement.category}
-                  </span>
-                  <h3 className="card-title">{announcement.title}</h3>
-                  <p className="card-text">{announcement.description?.substring(0, 100)}...</p>
-                  <div className="card-price">{announcement.price?.toLocaleString()} FCFA</div>
-                  <div className="card-meta">
-                    <span>📍 {announcement.location}</span>
+                  <div className="card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ 
+                      fontSize: '0.75rem', 
+                      color: 'var(--accent)',
+                      textTransform: 'uppercase',
+                      fontWeight: '600'
+                    }}>
+                      {announcement.category}
+                    </span>
+                    <h3 className="card-title">{announcement.title}</h3>
+                    <p className="card-text">{announcement.description?.substring(0, 100)}...</p>
+                    <div className="card-price">{announcement.price?.toLocaleString()} FCFA</div>
+                    <div className="card-meta">
+                      <span>📍 {announcement.location}</span>
+                    </div>
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: '8px', 
+                      marginTop: 'auto',
+                      paddingTop: '12px',
+                      borderTop: '1px solid #E2E8F0'
+                    }}>
+                      <button 
+                        onClick={() => navigate(`/announcements/${announcement.id}`)}
+                        className="btn btn-outline"
+                        style={{ flex: 1, padding: '8px 12px', fontSize: '0.875rem' }}
+                      >
+                        Voir
+                      </button>
+                      <button 
+                        onClick={() => navigate(`/chat/${announcement.user_id}`)}
+                        className="btn"
+                        style={{ 
+                          flex: 1, 
+                          padding: '8px 12px', 
+                          fontSize: '0.875rem',
+                          backgroundColor: '#ff6b00',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontWeight: '600'
+                        }}
+                      >
+                        Contacter
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </Link>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-center" style={{ padding: '48px' }}>
