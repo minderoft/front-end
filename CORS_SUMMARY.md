@@ -59,7 +59,7 @@ if (process.env.NODE_ENV !== 'production') {
 ---
 
 ### 2. Backend - `.env`
-**Changement**: Mise à jour de FRONTEND_URL
+**Changement**: Mise à jour de FRONTEND_URL et migration vers Render
 
 ```diff
 - FRONTEND_URL=https://front-end-hazel-chi.vercel.app
@@ -67,6 +67,8 @@ if (process.env.NODE_ENV !== 'production') {
 + FRONTEND_URL=https://zel-chi.vercel.app
 + PAYSTACK_CALLBACK_URL=https://backend-ovbc.onrender.com/api/payment/callback
 ```
+
+**✅ Migration Railway → Render**: `https://backend-production-6739.up.railway.app` → `https://backend-ovbc.onrender.com`
 
 ---
 

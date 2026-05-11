@@ -184,9 +184,27 @@ app.get('/api/health', (req, res) => {
 // GESTION DES ERREURS
 // ============================================
 
-// 404
+// Middleware de débogage pour les erreurs 404
+app.use((req, res, next) => {
+  // Ce middleware passe simplement, le gestionnaire 404 en dessous gérera
+  next();
+});
+
+// 404 - Avec logs détaillés
 app.use((req, res) => {
-  res.status(404).json({ error: 'Route non trouvée' });
+  const errorDetails = {
+    error: 'Route non trouvée',
+    method: req.method,
+    path: req.path,
+    fullUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
+    query: req.query,
+    timestamp: new Date().toISOString(),
+  };
+  
+  // Log l'erreur 404 pour débogage
+  console.error('❌ [404] Route non trouvée:', errorDetails);
+  
+  res.status(404).json(errorDetails);
 });
 
 // Gestionnaire d'erreurs CORS spécifique

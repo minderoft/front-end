@@ -157,15 +157,25 @@ router.post('/create', authenticateToken, async (req, res) => {
 // Callback Paystack (webhook)
 router.post('/callback', async (req, res) => {
   try {
+    console.log('✅ [PAYSTACK CALLBACK] Requête reçue');
+    console.log('   Path:', req.path);
+    console.log('   URL:', req.originalUrl);
+    console.log('   Body:', JSON.stringify(req.body, null, 2));
+    console.log('   Headers:', JSON.stringify(req.headers, null, 2));
+    
     const reference = getPaymentReference(req.body);
     if (!reference) {
+      console.error('❌ [PAYSTACK CALLBACK] Référence manquante dans le body');
       return res.status(400).json({ error: 'Référence manquante' });
     }
 
+    console.log(`📊 [PAYSTACK CALLBACK] Traitement de la référence: ${reference}`);
     const result = await processPaymentUpdate(reference);
+    console.log(`✅ [PAYSTACK CALLBACK] Succès - Statut:`, result.status);
     res.json(result);
   } catch (error) {
-    console.error('Erreur callback:', error);
+    console.error('❌ [PAYSTACK CALLBACK] Erreur:', error.message);
+    console.error('   Stack:', error.stack);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
@@ -217,20 +227,32 @@ router.get('/verify/:reference', authenticateToken, async (req, res) => {
 
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   try {
+    console.log('✅ [PAYSTACK WEBHOOK] Requête reçue');
+    console.log('   Path:', req.path);
+    console.log('   URL:', req.originalUrl);
+    console.log('   Headers:', JSON.stringify(req.headers, null, 2));
+    
     if (!verifyWebhookSignature(req)) {
+      console.error('❌ [PAYSTACK WEBHOOK] Signature invalide');
       return res.status(401).json({ error: 'Signature webhook invalide' });
     }
 
     const payload = JSON.parse(req.body.toString());
+    console.log('   Payload:', JSON.stringify(payload, null, 2));
+    
     const reference = getPaymentReference(payload);
     if (!reference) {
+      console.error('❌ [PAYSTACK WEBHOOK] Référence manquante');
       return res.status(400).json({ error: 'Référence manquante' });
     }
 
+    console.log(`📊 [PAYSTACK WEBHOOK] Traitement de la référence: ${reference}`);
     const result = await processPaymentUpdate(reference);
+    console.log(`✅ [PAYSTACK WEBHOOK] Succès - Statut:`, result.status);
     res.json(result);
   } catch (error) {
-    console.error('Erreur webhook:', error);
+    console.error('❌ [PAYSTACK WEBHOOK] Erreur:', error.message);
+    console.error('   Stack:', error.stack);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
