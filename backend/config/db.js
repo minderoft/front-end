@@ -128,12 +128,38 @@ const createTables = async () => {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 
-  await runAsync(`
-    ALTER TABLE announcements ADD COLUMN IF NOT EXISTS latitude DECIMAL(10,8) NULL;
-  `);
-  await runAsync(`
-    ALTER TABLE announcements ADD COLUMN IF NOT EXISTS longitude DECIMAL(11,8) NULL;
-  `);
+  // Vérifier et ajouter les colonnes latitude et longitude si elles n'existent pas
+  try {
+    const latitudeExists = await getAsync(`
+      SELECT COUNT(*) as count FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'announcements' 
+      AND COLUMN_NAME = 'latitude'
+    `);
+    
+    if (!latitudeExists || latitudeExists.count === 0) {
+      await runAsync(`
+        ALTER TABLE announcements ADD COLUMN latitude DECIMAL(10,8) NULL
+      `);
+      console.log('✅ Colonne latitude ajoutée');
+    }
+
+    const longitudeExists = await getAsync(`
+      SELECT COUNT(*) as count FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'announcements' 
+      AND COLUMN_NAME = 'longitude'
+    `);
+    
+    if (!longitudeExists || longitudeExists.count === 0) {
+      await runAsync(`
+        ALTER TABLE announcements ADD COLUMN longitude DECIMAL(11,8) NULL
+      `);
+      console.log('✅ Colonne longitude ajoutée');
+    }
+  } catch (err) {
+    console.warn('⚠️ Vérification des colonnes latitude/longitude échouée:', err.message);
+  }
 
   await runAsync(`
     CREATE TABLE IF NOT EXISTS payments (

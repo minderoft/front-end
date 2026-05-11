@@ -45,6 +45,7 @@ const allowedOrigins = [
   FRONTEND_URL,
   'https://front-end-hazel-chi.vercel.app',
   'https://zel-chi.vercel.app',
+  'https://front-b3weelppe-minderofts-projects.vercel.app',
   DEV_URL,
   'http://localhost:3000',
   'http://127.0.0.1:5173',
