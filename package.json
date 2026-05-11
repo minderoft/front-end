@@ -1,6 +1,8 @@
 {
   "dependencies": {
+    "leaflet": "^1.9.4",
     "mysql2": "^3.22.3",
+    "react-leaflet": "^4.2.1",
     "sqlite3": "^6.0.1"
   }
 }

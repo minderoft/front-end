@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { announcementService } from '../services/api';
+import AnnouncementMap from '../components/AnnouncementMap';
 
 const AnnouncementDetail = () => {
   const { id } = useParams();
@@ -116,6 +117,14 @@ const AnnouncementDetail = () => {
           🏠
         </div>
       )}
+
+      {/* Carte de géolocalisation */}
+      <AnnouncementMap 
+        latitude={announcement.latitude} 
+        longitude={announcement.longitude}
+        title={announcement.title}
+        location={announcement.location}
+      />
 
       {/* Informations */}
       <div className="announcement-info">
