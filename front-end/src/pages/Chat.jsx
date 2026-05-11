@@ -1,228 +1,428 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { chatService } from '../services/api';
+import axios from 'axios';
 
-const templates = [
-  'Est-ce que vous vous déplacez à Cocody ?',
-  'Quel est votre tarif pour ce service ?',
-  'Êtes-vous disponible demain ?',
-];
+const BACKEND_URL = 'https://backend-ovbc.onrender.com';
+const POLL_INTERVAL = 5000; // 5 secondes
 
 const Chat = () => {
   const { user } = useAuth();
-  const [searchParams] = useSearchParams();
-  const serviceId = searchParams.get('serviceId');
-  const providerId = searchParams.get('providerId');
+  const { userId: receiverId } = useParams();
+  const navigate = useNavigate();
 
   const [conversations, setConversations] = useState([]);
-  const [activeConversation, setActiveConversation] = useState(null);
+  const [activeConversation, setActiveConversation] = useState(receiverId || null);
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
+  const messagesEndRef = useRef(null);
 
+  // Auto-scroll vers le dernier message
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Charger les conversations
   const loadConversations = useCallback(async () => {
     try {
-      setLoading(true);
-      const response = await chatService.getConversations();
+      if (!user) return;
+      
+      const config = {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      };
+
+      const response = await axios.get(`${BACKEND_URL}/api/conversations`, config);
       const list = response.data.conversations || [];
       setConversations(list);
-      setActiveConversation((current) => {
-        if (current) {
-          return current;
-        }
-        return list.length ? list[0] : null;
-      });
+      
+      // Si on a un receiverId, chercher cette conversation
+      if (receiverId && list.length === 0) {
+        setLoading(false);
+      }
     } catch (err) {
       console.error('Erreur chargement conversations:', err);
-      setError('Impossible de charger vos conversations.');
+      setError('Impossible de charger les conversations');
+    }
+  }, [user, receiverId]);
+
+  // Charger les messages
+  const loadMessages = useCallback(async (otherUserId) => {
+    try {
+      if (!user || !otherUserId) return;
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      };
+
+      const response = await axios.get(`${BACKEND_URL}/api/messages/${otherUserId}`, config);
+      setMessages(response.data.messages || []);
+      setError(null);
+    } catch (err) {
+      console.error('Erreur chargement messages:', err);
+      setMessages([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
-  const loadMessages = useCallback(async (conversationId) => {
-    try {
-      const response = await chatService.getMessages(conversationId);
-      setMessages(response.data.messages || []);
-    } catch (err) {
-      console.error('Erreur chargement messages:', err);
-      setError('Impossible de charger la discussion.');
-    }
-  }, []);
-
-  const openConversation = async (conversation) => {
-    setActiveConversation(conversation);
-    await loadMessages(conversation.id);
-  };
-
-  const createConversationFromSearch = useCallback(async () => {
-    if (!serviceId || !providerId || !user) {
-      return;
-    }
-
-    try {
-      const response = await chatService.createConversation({ serviceId, providerId });
-      const conversation = response.data.conversation;
-      if (conversation) {
-        if (!conversations.find((item) => item.id === conversation.id)) {
-          setConversations((prev) => [conversation, ...prev]);
-        }
-        setActiveConversation(conversation);
-        await loadMessages(conversation.id);
+  // Initialiser
+  useEffect(() => {
+    if (user) {
+      loadConversations();
+      if (activeConversation) {
+        loadMessages(activeConversation);
+      } else {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Erreur création conversation:', err);
-      setError('Impossible de démarrer la conversation.');
     }
-  }, [serviceId, providerId, user, conversations, loadMessages]);
+  }, [user, loadConversations, activeConversation, loadMessages]);
 
+  // Polling pour les nouveaux messages
   useEffect(() => {
-    loadConversations();
-  }, [loadConversations]);
+    if (!activeConversation) return;
 
-  useEffect(() => {
-    if (serviceId && providerId && user) {
-      createConversationFromSearch();
-    }
-  }, [serviceId, providerId, user, createConversationFromSearch]);
+    const interval = setInterval(() => {
+      loadMessages(activeConversation);
+    }, POLL_INTERVAL);
 
+    return () => clearInterval(interval);
+  }, [activeConversation, loadMessages]);
+
+  // Envoyer un message
   const handleSendMessage = async () => {
-    if (!messageText.trim() || !activeConversation) {
+    if (!messageText.trim() || !activeConversation || sending) {
       return;
     }
 
     try {
       setSending(true);
-      await chatService.sendMessage({ conversationId: activeConversation.id, text: messageText.trim() });
+      const config = {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      };
+
+      await axios.post(
+        `${BACKEND_URL}/api/messages`,
+        {
+          receiver_id: activeConversation,
+          text: messageText.trim(),
+        },
+        config
+      );
+
       setMessageText('');
-      await loadMessages(activeConversation.id);
-      await loadConversations();
+      await loadMessages(activeConversation);
     } catch (err) {
       console.error('Erreur envoi message:', err);
-      setError('Impossible d envoyer le message.');
+      setError('Impossible d\'envoyer le message');
     } finally {
       setSending(false);
     }
   };
 
-  const handleTemplateClick = (template) => {
-    setMessageText(template);
+  // Gérer Enter pour envoyer
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  // Changer de conversation
+  const handleSelectConversation = (conversationUserId) => {
+    setActiveConversation(conversationUserId);
+    setLoading(true);
+    loadMessages(conversationUserId);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-semibold">Messagerie</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">Discutez avec les professionnels et suivez vos échanges dans un espace moderne et simple.</p>
+    <div style={{
+      display: 'flex',
+      height: '100vh',
+      backgroundColor: '#f5f5f5',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    }}>
+      {/* Colonne gauche - Conversations */}
+      <div style={{
+        width: '320px',
+        backgroundColor: '#fff',
+        borderRight: '1px solid #e0e0e0',
+        display: 'flex',
+        flexDirection: 'column',
+        '@media (max-width: 768px)': {
+          width: '100%',
+          display: activeConversation ? 'none' : 'flex'
+        }
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: '16px',
+          borderBottom: '1px solid #e0e0e0',
+          backgroundColor: '#fff'
+        }}>
+          <h2 style={{
+            margin: '0',
+            fontSize: '18px',
+            fontWeight: '600',
+            color: '#000'
+          }}>Messagerie</h2>
+          <p style={{
+            margin: '4px 0 0 0',
+            fontSize: '12px',
+            color: '#999'
+          }}>Vos conversations</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[340px_minmax(0,1fr)] gap-6">
-          <div className="rounded-3xl bg-white dark:bg-gray-900 shadow-lg overflow-hidden border border-gray-200 dark:border-gray-800">
-            <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
-              <h2 className="font-semibold">Conversations</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sélectionnez une conversation pour échanger.</p>
+        {/* Liste des conversations */}
+        <div style={{
+          flex: 1,
+          overflowY: 'auto',
+          backgroundColor: '#fff'
+        }}>
+          {loading && conversations.length === 0 ? (
+            <div style={{ padding: '16px', color: '#999', fontSize: '13px' }}>
+              Chargement...
             </div>
-            <div className="divide-y divide-gray-200 dark:divide-gray-800">
-              {loading ? (
-                <div className="p-6 text-sm text-gray-500">Chargement...</div>
-              ) : conversations.length === 0 ? (
-                <div className="p-6 text-sm text-gray-500">Aucune conversation disponible.</div>
-              ) : (
-                conversations.map((conversation) => (
-                  <button
-                    key={conversation.id}
-                    type="button"
-                    onClick={() => openConversation(conversation)}
-                    className={`w-full text-left px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${activeConversation?.id === conversation.id ? 'bg-blue-50 dark:bg-blue-950' : ''}`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <p className="font-semibold text-gray-900 dark:text-gray-100">{conversation.contact_name || 'Professionnel'}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{conversation.service_title || 'Annonce'}</p>
-                      </div>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{conversation.last_message_at ? new Date(conversation.last_message_at).toLocaleString('fr-FR') : ''}</span>
-                    </div>
-                    <p className="mt-3 text-sm text-gray-600 dark:text-gray-500 line-clamp-2">{conversation.last_message || 'Démarrer la conversation'}</p>
-                  </button>
-                ))
-              )}
+          ) : conversations.length === 0 ? (
+            <div style={{ padding: '16px', color: '#999', fontSize: '13px' }}>
+              Aucune conversation
             </div>
-          </div>
-
-          <div className="rounded-3xl bg-white dark:bg-gray-900 shadow-lg overflow-hidden border border-gray-200 dark:border-gray-800 flex flex-col">
-            <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-800">
-              <h2 className="font-semibold">Discussion active</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Échangez avec un prestataire ou créez une nouvelle conversation depuis une annonce.</p>
-            </div>
-
-            {activeConversation ? (
-              <div className="flex-1 flex flex-col">
-                <div className="flex-1 overflow-y-auto p-6 space-y-4" style={{ minHeight: '320px' }}>
-                  {messages.length === 0 ? (
-                    <div className="rounded-3xl bg-gray-50 dark:bg-gray-950 p-6 text-sm text-gray-500">Démarrez la conversation en envoyant votre premier message.</div>
-                  ) : (
-                    messages.map((message) => {
-                      const isMine = message.sender_id === user.id;
-                      return (
-                        <div key={message.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[85%] rounded-3xl p-4 ${isMine ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'}`}>
-                            <p className="text-sm leading-6">{message.text}</p>
-                            <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400 text-right">{message.sender_name} · {new Date(message.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
+          ) : (
+            conversations.map((conv) => (
+              <button
+                key={conv.id}
+                onClick={() => handleSelectConversation(conv.provider_id === user.id ? conv.client_id : conv.provider_id)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: 'none',
+                  backgroundColor: activeConversation === (conv.provider_id === user.id ? conv.client_id : conv.provider_id) ? '#f0f0f0' : '#fff',
+                  borderBottom: '1px solid #f0f0f0',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#f9f9f9'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = activeConversation === (conv.provider_id === user.id ? conv.client_id : conv.provider_id) ? '#f0f0f0' : '#fff'}
+              >
+                <div style={{ fontSize: '14px', fontWeight: '500', color: '#000' }}>
+                  {conv.provider_name || conv.client_name || 'Utilisateur'}
                 </div>
-
-                <div className="border-t border-gray-200 dark:border-gray-800 px-6 py-5">
-                  <div className="grid gap-3 mb-4">
-                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">Modèles rapides</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {templates.map((template) => (
-                        <button
-                          key={template}
-                          type="button"
-                          onClick={() => handleTemplateClick(template)}
-                          className="rounded-2xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-                        >
-                          {template}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-3">
-                    <textarea
-                      value={messageText}
-                      onChange={(event) => setMessageText(event.target.value)}
-                      rows={4}
-                      placeholder="Écrivez votre message..."
-                      className="w-full rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-3 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    {error && <p className="text-sm text-red-500">{error}</p>}
-                    <button
-                      type="button"
-                      onClick={handleSendMessage}
-                      disabled={sending}
-                      className="self-end rounded-3xl bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 font-semibold transition disabled:opacity-50"
-                    >
-                      {sending ? 'Envoi...' : 'Envoyer le message'}
-                    </button>
-                  </div>
+                <div style={{ fontSize: '12px', color: '#999', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {conv.service_title || 'Conversation'}
                 </div>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Colonne droite - Discussion active */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: '#fff',
+        '@media (max-width: 768px)': {
+          display: activeConversation ? 'flex' : 'none'
+        }
+      }}>
+        {activeConversation ? (
+          <>
+            {/* Header discussion */}
+            <div style={{
+              padding: '16px',
+              borderBottom: '1px solid #e0e0e0',
+              backgroundColor: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div>
+                <h3 style={{ margin: '0', fontSize: '16px', fontWeight: '600', color: '#000' }}>
+                  Conversation
+                </h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#999' }}>
+                  {activeConversation}
+                </p>
               </div>
-            ) : (
-              <div className="p-10 text-center text-gray-600 dark:text-gray-400">
-                <p className="mb-4">Sélectionnez une conversation à gauche ou démarrez une nouvelle discussion depuis une annonce.</p>
+              <button
+                onClick={() => setActiveConversation(null)}
+                style={{
+                  display: 'none',
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  color: '#999',
+                  '@media (max-width: 768px)': {
+                    display: 'block'
+                  }
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Messages */}
+            <div style={{
+              flex: 1,
+              overflowY: 'auto',
+              padding: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              backgroundColor: '#f5f5f5'
+            }}>
+              {messages.length === 0 ? (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '100%',
+                  color: '#999',
+                  fontSize: '13px',
+                  textAlign: 'center'
+                }}>
+                  Aucun message. Commencez la conversation !
+                </div>
+              ) : (
+                messages.map((message) => {
+                  const isMine = message.sender_id === user.id;
+                  return (
+                    <div
+                      key={message.id}
+                      style={{
+                        display: 'flex',
+                        justifyContent: isMine ? 'flex-end' : 'flex-start',
+                        marginBottom: '4px'
+                      }}
+                    >
+                      <div
+                        style={{
+                          maxWidth: '70%',
+                          padding: '10px 14px',
+                          borderRadius: isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                          backgroundColor: isMine ? '#ff6b00' : '#e5e5ea',
+                          color: isMine ? '#fff' : '#000',
+                          fontSize: '14px',
+                          lineHeight: '1.4',
+                          wordWrap: 'break-word'
+                        }}
+                      >
+                        <p style={{ margin: '0', marginBottom: '4px' }}>
+                          {message.text}
+                        </p>
+                        <span style={{
+                          fontSize: '11px',
+                          opacity: 0.7,
+                          display: 'block',
+                          textAlign: isMine ? 'right' : 'left'
+                        }}>
+                          {new Date(message.created_at).toLocaleTimeString('fr-FR', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Champ d'envoi */}
+            <div style={{
+              padding: '12px 16px',
+              borderTop: '1px solid #e0e0e0',
+              backgroundColor: '#fff',
+              display: 'flex',
+              gap: '8px',
+              alignItems: 'flex-end'
+            }}>
+              <textarea
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Écrivez votre message..."
+                style={{
+                  flex: 1,
+                  padding: '10px 12px',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '20px',
+                  fontSize: '14px',
+                  fontFamily: 'inherit',
+                  resize: 'none',
+                  maxHeight: '100px',
+                  outline: 'none',
+                  backgroundColor: '#f5f5f5'
+                }}
+                rows={1}
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={sending || !messageText.trim()}
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  backgroundColor: messageText.trim() && !sending ? '#ff6b00' : '#ccc',
+                  border: 'none',
+                  color: '#fff',
+                  fontSize: '18px',
+                  cursor: messageText.trim() && !sending ? 'pointer' : 'not-allowed',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background-color 0.2s'
+                }}
+              >
+                ➤
+              </button>
+            </div>
+
+            {error && (
+              <div style={{
+                padding: '12px 16px',
+                backgroundColor: '#fee',
+                color: '#c33',
+                fontSize: '13px',
+                borderTop: '1px solid #fcc'
+              }}>
+                {error}
               </div>
             )}
+          </>
+        ) : (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+            color: '#999',
+            fontSize: '15px',
+            textAlign: 'center'
+          }}>
+            <div>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>💬</div>
+              <p>Sélectionnez une conversation pour commencer</p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

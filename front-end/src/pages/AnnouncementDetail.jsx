@@ -62,21 +62,41 @@ const AnnouncementDetail = () => {
       {/* Galerie d'images */}
       {images.length > 0 ? (
         <div className="announcement-gallery">
-          <img 
-            src={images[selectedImage]} 
+          <img
+            src={`https://backend-ovbc.onrender.com${images[selectedImage]}`}
             alt={announcement.title}
             className="announcement-main-image"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              const placeholder = e.target.nextElementSibling;
+              if (placeholder) placeholder.style.display = 'flex';
+            }}
           />
+          <div
+            className="announcement-main-image"
+            style={{
+              backgroundColor: '#E2E8F0',
+              display: 'none',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '3rem'
+            }}
+          >
+            🏠
+          </div>
           {images.length > 1 && (
             <div className="announcement-thumbnails">
               {images.map((img, index) => (
-                <img 
+                <img
                   key={index}
-                  src={img} 
+                  src={`https://backend-ovbc.onrender.com${img}`}
                   alt={`${announcement.title} - ${index + 1}`}
                   className="announcement-thumbnail"
                   onClick={() => setSelectedImage(index)}
                   style={{ opacity: selectedImage === index ? 1 : 0.7 }}
+                  onError={(e) => {
+                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iI0UyRThGMCIvPgo8dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPu+4jzwvdGV4dD4KPHN2Zz4=';
+                  }}
                 />
               ))}
             </div>
@@ -186,26 +206,32 @@ const AnnouncementDetail = () => {
             </p>
           )}
 
-          <button
-            type="button"
-            className="btn btn-primary w-full mb-3"
-            onClick={() => {
-              if (!user) {
-                navigate('/login');
-                return;
-              }
-              navigate(`/chat?serviceId=${announcement.id}&providerId=${announcement.user_id}`);
-            }}
-          >
-            💬 Contacter le professionnel
-          </button>
-
-          <a 
-            href={`tel:${announcement.user_phone}`} 
-            className="btn btn-accent w-full"
-          >
-            📞 Appeler maintenant
-          </a>
+          {announcement.user_phone ? (
+            <>
+              <a
+                href={`https://wa.me/${announcement.user_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn w-full mb-3"
+                style={{
+                  backgroundColor: '#25D366',
+                  color: 'white',
+                  border: 'none',
+                  fontWeight: '600'
+                }}
+              >
+                💬 Contacter sur WhatsApp
+              </a>
+              <a 
+                href={`tel:${announcement.user_phone}`} 
+                className="btn btn-accent w-full"
+              >
+                📞 Appeler maintenant
+              </a>
+            </>
+          ) : (
+            <p style={{ color: '#999', fontSize: '0.875rem' }}>Aucun numéro de téléphone disponible</p>
+          )}
         </div>
       </div>
     </div>

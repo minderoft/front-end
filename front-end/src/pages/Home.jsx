@@ -225,23 +225,50 @@ const Home = () => {
                             >
                               Voir
                             </button>
-                            <button 
-                              onClick={() => navigate(`/chat/${announcement.user_id}`)}
-                              className="btn"
-                              style={{ 
-                                flex: 1, 
-                                padding: '8px 12px', 
-                                fontSize: '0.875rem',
-                                backgroundColor: '#ff6b00',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontWeight: '600'
-                              }}
-                            >
-                              Contacter
-                            </button>
+                            {announcement.user_phone ? (
+                              <a 
+                                href={`https://wa.me/${announcement.user_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn"
+                                style={{ 
+                                  flex: 1, 
+                                  padding: '8px 12px', 
+                                  fontSize: '0.875rem',
+                                  backgroundColor: '#25D366',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontWeight: '600',
+                                  textDecoration: 'none',
+                                  textAlign: 'center',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                              >
+                                💬 WhatsApp
+                              </a>
+                            ) : (
+                              <button 
+                                disabled
+                                className="btn"
+                                style={{ 
+                                  flex: 1, 
+                                  padding: '8px 12px', 
+                                  fontSize: '0.875rem',
+                                  backgroundColor: '#ccc',
+                                  color: '#999',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'not-allowed',
+                                  fontWeight: '600'
+                                }}
+                              >
+                                N/A
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -381,23 +408,50 @@ const Home = () => {
                       >
                         Voir
                       </button>
-                      <button 
-                        onClick={() => navigate(`/chat/${announcement.user_id}`)}
-                        className="btn"
-                        style={{ 
-                          flex: 1, 
-                          padding: '8px 12px', 
-                          fontSize: '0.875rem',
-                          backgroundColor: '#ff6b00',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontWeight: '600'
-                        }}
-                      >
-                        Contacter
-                      </button>
+                      {announcement.user_phone ? (
+                        <a 
+                          href={`https://wa.me/${announcement.user_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn"
+                          style={{ 
+                            flex: 1, 
+                            padding: '8px 12px', 
+                            fontSize: '0.875rem',
+                            backgroundColor: '#25D366',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: '600',
+                            textDecoration: 'none',
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          💬 WhatsApp
+                        </a>
+                      ) : (
+                        <button 
+                          disabled
+                          className="btn"
+                          style={{ 
+                            flex: 1, 
+                            padding: '8px 12px', 
+                            fontSize: '0.875rem',
+                            backgroundColor: '#ccc',
+                            color: '#999',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'not-allowed',
+                            fontWeight: '600'
+                          }}
+                        >
+                          N/A
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
