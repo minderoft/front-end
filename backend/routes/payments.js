@@ -154,6 +154,65 @@ router.post('/create', authenticateToken, async (req, res) => {
   }
 });
 
+// Callback Paystack - Redirection utilisateur (GET)
+router.get('/callback', async (req, res) => {
+  try {
+    console.log('✅ [PAYSTACK REDIRECT] Requête GET reçue');
+    console.log('   Query params:', JSON.stringify(req.query, null, 2));
+    console.log('   URL complète:', req.originalUrl);
+    
+    const reference = req.query.trxref || req.query.reference;
+    if (!reference) {
+      console.error('❌ [PAYSTACK REDIRECT] Référence manquante dans query params');
+      return res.redirect(`${process.env.FRONTEND_URL || 'https://zel-chi.vercel.app'}/?error=payment_reference_missing`);
+    }
+
+    console.log(`📊 [PAYSTACK REDIRECT] Vérification du paiement: ${reference}`);
+    
+    // Vérifier le paiement auprès de Paystack
+    const paymentData = await verifyPayment(reference);
+    console.log('   Statut Paystack:', paymentData.status);
+    
+    if (paymentData.status === 'success') {
+      // Récupérer le paiement en base
+      const paymentResult = await query('SELECT * FROM payments WHERE reference = ?', [reference]);
+      
+      if (paymentResult.length === 0) {
+        console.error('❌ [PAYSTACK REDIRECT] Paiement non trouvé en base');
+        return res.redirect(`${process.env.FRONTEND_URL || 'https://zel-chi.vercel.app'}/?error=payment_not_found`);
+      }
+
+      const payment = paymentResult[0];
+      
+      // Mettre à jour le paiement et l'annonce
+      await query(`UPDATE payments SET status = 'completed', paid_at = CURRENT_TIMESTAMP WHERE reference = ?`, [reference]);
+      await query(`UPDATE announcements SET payment_status = 1, status = 'active', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [payment.announcement_id]);
+      
+      console.log(`✅ [PAYSTACK REDIRECT] Paiement confirmé et annonce activée - ID: ${payment.announcement_id}`);
+      
+      // Rediriger vers la page de succès
+      const successUrl = `${process.env.FRONTEND_URL || 'https://zel-chi.vercel.app'}/success?reference=${reference}&status=success`;
+      console.log('   Redirection vers:', successUrl);
+      return res.redirect(successUrl);
+      
+    } else {
+      // Paiement échoué
+      console.log(`❌ [PAYSTACK REDIRECT] Paiement échoué - Statut: ${paymentData.status}`);
+      await query(`UPDATE payments SET status = 'failed' WHERE reference = ?`, [reference]);
+      
+      const errorUrl = `${process.env.FRONTEND_URL || 'https://zel-chi.vercel.app'}/?error=payment_failed&reference=${reference}`;
+      return res.redirect(errorUrl);
+    }
+    
+  } catch (error) {
+    console.error('❌ [PAYSTACK REDIRECT] Erreur:', error.message);
+    console.error('   Stack:', error.stack);
+    
+    const errorUrl = `${process.env.FRONTEND_URL || 'https://zel-chi.vercel.app'}/?error=payment_error&message=${encodeURIComponent(error.message)}`;
+    return res.redirect(errorUrl);
+  }
+});
+
 // Callback Paystack (webhook)
 router.post('/callback', async (req, res) => {
   try {

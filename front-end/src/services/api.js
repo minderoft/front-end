@@ -132,10 +132,10 @@ export const announcementService = {
 // PAYMENTS
 // ============================================
 export const paymentService = {
-  create: (data) => api.post('/payments/create', data),
-  verify: (transactionId) => api.post('/payments/verify', { transactionId }),
-  getHistory: () => api.get('/payments/history'),
-  getMethods: () => api.get('/payments/methods'),
+  create: (data) => api.post('/payment/create', data),
+  verify: (transactionId) => api.post('/payment/verify', { transactionId }),
+  getHistory: () => api.get('/payment/history'),
+  getMethods: () => api.get('/payment/methods'),
 };
 
 // ============================================

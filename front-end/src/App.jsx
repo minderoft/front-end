@@ -14,6 +14,7 @@ import Help from './pages/Help';
 import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
 import Chat from './pages/Chat';
+import Success from './pages/Success';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
               <Chat />
             </ProtectedRoute>
           } />
+          <Route path="/success" element={<Success />} />
           
           {/* Routes protégées */}
           <Route path="/create" element={
