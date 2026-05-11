@@ -157,4 +157,106 @@ router.post('/messages', authenticateToken, async (req, res) => {
   }
 });
 
+// ============================================
+// Routes simplifées pour messagerie directe
+// ============================================
+
+// GET: Récupère les messages avec un utilisateur spécifique
+router.get('/messages/:userId', authenticateToken, async (req, res) => {
+  try {
+    const currentUserId = req.user.id;
+    const otherUserId = req.params.userId;
+
+    if (currentUserId === otherUserId) {
+      return res.status(400).json({ error: 'Impossible de discuter avec vous-même' });
+    }
+
+    // Récupérer toutes les conversations entre ces deux utilisateurs
+    const conversations = await query(
+      `SELECT id FROM conversations 
+       WHERE (client_id = ? AND provider_id = ?) 
+          OR (client_id = ? AND provider_id = ?)`,
+      [currentUserId, otherUserId, otherUserId, currentUserId]
+    );
+
+    if (conversations.length === 0) {
+      return res.json({ messages: [] });
+    }
+
+    const conversationIds = conversations.map(c => c.id);
+    
+    // Récupérer les messages de toutes ces conversations
+    const messages = await query(
+      `SELECT m.id, m.conversation_id, m.sender_id, m.text, m.created_at, u.name AS sender_name
+       FROM messages m
+       JOIN users u ON u.id = m.sender_id
+       WHERE m.conversation_id IN (${conversationIds.map(() => '?').join(',')})
+       ORDER BY m.created_at ASC`,
+      conversationIds
+    );
+
+    res.json({ messages });
+  } catch (error) {
+    console.error('Erreur récupération messages:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// POST: Envoie un message direct à un utilisateur
+router.post('/messages', authenticateToken, async (req, res) => {
+  try {
+    const { receiver_id, text } = req.body;
+    const senderId = req.user.id;
+
+    if (!receiver_id || !text || !text.trim()) {
+      return res.status(400).json({ error: 'Le destinataire et le message sont requis' });
+    }
+
+    if (senderId === receiver_id) {
+      return res.status(400).json({ error: 'Impossible de vous envoyer un message' });
+    }
+
+    // Chercher une conversation existante
+    let conversation = await query(
+      `SELECT id FROM conversations 
+       WHERE (client_id = ? AND provider_id = ?) 
+          OR (client_id = ? AND provider_id = ?)
+       LIMIT 1`,
+      [senderId, receiver_id, receiver_id, senderId]
+    );
+
+    let conversationId;
+
+    if (conversation.length === 0) {
+      // Créer une nouvelle conversation sans service_id
+      conversationId = uuidv4();
+      
+      // Déterminer qui est client et qui est provider (arbitraire)
+      await query(
+        'INSERT INTO conversations (id, client_id, provider_id, service_id) VALUES (?, ?, ?, ?)',
+        [conversationId, senderId, receiver_id, uuidv4()] // service_id fictif
+      );
+    } else {
+      conversationId = conversation[0].id;
+    }
+
+    // Insérer le message
+    const messageId = uuidv4();
+    await query(
+      'INSERT INTO messages (id, conversation_id, sender_id, text) VALUES (?, ?, ?, ?)',
+      [messageId, conversationId, senderId, text.trim()]
+    );
+
+    const result = await query(
+      'SELECT m.id, m.conversation_id, m.sender_id, m.text, m.created_at, u.name AS sender_name FROM messages m JOIN users u ON u.id = m.sender_id WHERE m.id = ?',
+      [messageId]
+    );
+
+    res.status(201).json({ message: result[0] });
+  } catch (error) {
+    console.error('Erreur envoi message:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;
