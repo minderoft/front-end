@@ -13,7 +13,7 @@ router.post('/register', validate('register'), async (req, res) => {
   try {
     const { email, password, name, phone, accepted_policy } = req.body;
 
-    // Vérifier que l'utilisateur accepte la politique de confidentialité
+    // ✅ Vérifier que l'utilisateur accepte la politique de confidentialité
     if (!accepted_policy) {
       return res.status(400).json({ 
         error: 'Vous devez accepter la Politique de Confidentialité pour vous inscrire' 
@@ -31,13 +31,14 @@ router.post('/register', validate('register'), async (req, res) => {
 
     const id = uuidv4();
 
+    // ✅ Enregistrer avec accepted_policy = TRUE
     await runAsync(
-      'INSERT INTO users (id, email, password, name, phone, accepted_policy) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO users (id, email, password, name, phone, accepted_policy, created_at) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)',
       [id, email, hashedPassword, name, phone || null, true]
     );
 
     const user = await getAsync(
-      'SELECT id, email, name, phone, role, created_at FROM users WHERE id = ?',
+      'SELECT id, email, name, phone, role, accepted_policy, created_at FROM users WHERE id = ?',
       [id]
     );
     const token = generateToken(user);
@@ -50,11 +51,12 @@ router.post('/register', validate('register'), async (req, res) => {
         name: user.name,
         phone: user.phone,
         role: user.role,
+        accepted_policy: user.accepted_policy,
       },
       token,
     });
   } catch (error) {
-    console.error('Erreur inscription:', error);
+    console.error('❌ Erreur inscription:', error.message);
     res.status(500).json({ error: 'Erreur serveur lors de l\'inscription' });
   }
 });

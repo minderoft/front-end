@@ -11,6 +11,9 @@ const createPoolConfig = () => {
 
   return {
     connectionString: databaseUrl,
+    ssl: {
+      rejectUnauthorized: false, // ✅ OBLIGATOIRE pour Neon sur Render
+    },
     max: 10,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
