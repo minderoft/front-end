@@ -38,13 +38,14 @@ app.use(helmet({
 // CORS - Configuration sécurisée
 // ============================================
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://zel-chi.vercel.app';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app';
 const DEV_URL = 'http://localhost:5173';
 
 const allowedOrigins = [
   FRONTEND_URL,
   'https://front-end-hazel-chi.vercel.app',
   'https://zel-chi.vercel.app',
+  'https://loca-plus-hub.vercel.app',
   'https://front-b3weelppe-minderofts-projects.vercel.app',
   DEV_URL,
   'http://localhost:3000',

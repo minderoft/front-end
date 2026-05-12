@@ -179,7 +179,7 @@ router.get('/callback', async (req, res) => {
       
       if (paymentResult.length === 0) {
         console.error('❌ [PAYSTACK REDIRECT] Paiement non trouvé en base');
-        return res.redirect(`${process.env.FRONTEND_URL || 'https://zel-chi.vercel.app'}/?error=payment_not_found`);
+        return res.redirect(`${process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app'}/?error=payment_not_found`);
       }
 
       const payment = paymentResult[0];
@@ -191,7 +191,7 @@ router.get('/callback', async (req, res) => {
       console.log(`✅ [PAYSTACK REDIRECT] Paiement confirmé et annonce activée - ID: ${payment.announcement_id}`);
       
       // Rediriger vers la page de succès
-      const successUrl = `${process.env.FRONTEND_URL || 'https://zel-chi.vercel.app'}/success?reference=${reference}&status=success`;
+      const successUrl = `${process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app'}/success?reference=${reference}&status=success`;
       console.log('   Redirection vers:', successUrl);
       return res.redirect(successUrl);
       
@@ -200,7 +200,7 @@ router.get('/callback', async (req, res) => {
       console.log(`❌ [PAYSTACK REDIRECT] Paiement échoué - Statut: ${paymentData.status}`);
       await query(`UPDATE payments SET status = 'failed' WHERE reference = ?`, [reference]);
       
-      const errorUrl = `${process.env.FRONTEND_URL || 'https://zel-chi.vercel.app'}/?error=payment_failed&reference=${reference}`;
+      const errorUrl = `${process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app'}/?error=payment_failed&reference=${reference}`;
       return res.redirect(errorUrl);
     }
     
@@ -208,7 +208,7 @@ router.get('/callback', async (req, res) => {
     console.error('❌ [PAYSTACK REDIRECT] Erreur:', error.message);
     console.error('   Stack:', error.stack);
     
-    const errorUrl = `${process.env.FRONTEND_URL || 'https://zel-chi.vercel.app'}/?error=payment_error&message=${encodeURIComponent(error.message)}`;
+    const errorUrl = `${process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app'}/?error=payment_error&message=${encodeURIComponent(error.message)}`;
     return res.redirect(errorUrl);
   }
 });
