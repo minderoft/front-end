@@ -66,7 +66,7 @@ router.post('/login', validate('login'), async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Rechercher l'utilisateur
+// Rechercher l'utilisateur dans la table users de Neon
     const user = await getAsync('SELECT * FROM users WHERE email = ?', [email]);
     if (!user) {
       return res.status(401).json({ error: 'Email ou mot de passe incorrect' });

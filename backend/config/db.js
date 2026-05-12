@@ -18,6 +18,8 @@ const createPoolConfig = () => {
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
   };
+  // NOTE: Render DATABASE_URL doit aussi inclure ?sslmode=require pour Neon
+  // Exemple: postgresql://user:pass@host:5432/dbname?sslmode=require
 };
 
 const pool = new Pool(createPoolConfig());

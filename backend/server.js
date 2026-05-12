@@ -44,7 +44,7 @@ const DEV_URL = 'http://localhost:5173';
 const allowedOrigins = [
   FRONTEND_URL,
   'https://loca-plus-hub.vercel.app',
-  'https://front-end-git-main-minderofts-projects.vercel.app',
+  'https://front-end-git-main-minderofts-projects.vercel.app', // ✅ Vercel backup project autorisé
   DEV_URL,
   'http://localhost:3000',
   'http://127.0.0.1:5173',
