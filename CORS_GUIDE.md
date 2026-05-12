@@ -12,7 +12,8 @@ Configurer correctement CORS pour que le frontend Vercel puisse communiquer avec
 
 ```javascript
 // CORS est configuré avec :
-- Origin: https://zel-chi.vercel.app (Vercel)
+- Origin: https://loca-plus-hub.vercel.app (Vercel primary)
+- Origin: https://front-end-git-main-minderofts-projects.vercel.app (Vercel backup)
 - Méthodes: GET, POST, PUT, DELETE, PATCH, OPTIONS
 - Headers autorisés: Content-Type, Authorization, X-Requested-With, Accept
 - Credentials: true (pour les cookies, si nécessaire)
@@ -37,13 +38,14 @@ Configurer correctement CORS pour que le frontend Vercel puisse communiquer avec
 
 1. **Créer une variable d'environnement** dans Render:
    ```
-   FRONTEND_URL=https://zel-chi.vercel.app
+   FRONTEND_URL=https://loca-plus-hub.vercel.app
    NODE_ENV=production
    ```
+   - Note: le backend accepte également le domaine de secours `https://front-end-git-main-minderofts-projects.vercel.app` dans `allowedOrigins`.
 
 2. **Vérifier que CORS fonctionne**:
    ```bash
-   curl -H "Origin: https://zel-chi.vercel.app" \
+   curl -H "Origin: https://loca-plus-hub.vercel.app" \
         -H "Access-Control-Request-Method: POST" \
         -H "Access-Control-Request-Headers: Content-Type" \
         -X OPTIONS \
@@ -113,7 +115,7 @@ Réponse attendue:
 {
   "status": "OK",
   "cors": {
-    "requestOrigin": "https://zel-chi.vercel.app",
+    "requestOrigin": "https://loca-plus-hub.vercel.app",
     "corsEnabled": true
   }
 }
@@ -123,7 +125,7 @@ Réponse attendue:
 
 ```bash
 curl -X OPTIONS \
-  -H "Origin: https://zel-chi.vercel.app" \
+  -H "Origin: https://loca-plus-hub.vercel.app" \
   -H "Access-Control-Request-Method: POST" \
   -H "Access-Control-Request-Headers: Content-Type" \
   https://backend-ovbc.onrender.com/api/auth/register -v
@@ -132,7 +134,7 @@ curl -X OPTIONS \
 Réponse attendue:
 ```
 < HTTP/1.1 200 OK
-< access-control-allow-origin: https://zel-chi.vercel.app
+< access-control-allow-origin: https://loca-plus-hub.vercel.app
 < access-control-allow-methods: GET, POST, PUT, DELETE, PATCH, OPTIONS
 < access-control-allow-headers: Content-Type, Authorization
 < access-control-allow-credentials: true

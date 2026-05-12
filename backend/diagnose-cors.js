@@ -68,10 +68,10 @@ try {
     checks.failed.push('❌ allowedOrigins n\'est pas défini');
   }
 
-  if (serverContent.includes('zel-chi.vercel.app')) {
-    checks.passed.push('✅ Le domaine Vercel est dans allowedOrigins');
+  if (serverContent.includes('loca-plus-hub.vercel.app') || serverContent.includes('front-end-git-main-minderofts-projects.vercel.app')) {
+    checks.passed.push('✅ Le domaine Vercel actuel est trouvé dans allowedOrigins');
   } else {
-    checks.warnings.push('⚠️  Le domaine Vercel n\'est pas trouvé (vérifier FRONTEND_URL)');
+    checks.warnings.push('⚠️  Aucun domaine Vercel actuel trouvé dans allowedOrigins (vérifier FRONTEND_URL)');
   }
 
 } catch (error) {

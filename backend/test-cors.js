@@ -12,7 +12,7 @@ const https = require('https');
 
 // Configuration
 const BACKEND_URL = process.env.BACKEND_URL || 'https://backend-ovbc.onrender.com';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://zel-chi.vercel.app';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app';
 
 console.log(`
 ╔═══════════════════════════════════════════════════════════╗

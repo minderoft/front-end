@@ -3,7 +3,8 @@
 ## 🎯 Résumé des modifications
 
 Vous avez maintenant une configuration CORS complète et sécurisée pour communiquer entre:
-- **Frontend**: https://zel-chi.vercel.app (Vercel)
+- **Frontend**: https://loca-plus-hub.vercel.app (Vercel primary)
+- **Frontend de secours**: https://front-end-git-main-minderofts-projects.vercel.app (Vercel backup)
 - **Backend**: https://backend-ovbc.onrender.com/api (Render)
 
 ---
@@ -21,8 +22,9 @@ Vous avez maintenant une configuration CORS complète et sécurisée pour commun
 ### 2. **Backend - .env**
 ✅ Variable d'environnement mise à jour:
 ```
-FRONTEND_URL=https://zel-chi.vercel.app
+FRONTEND_URL=https://loca-plus-hub.vercel.app
 ```
+- Le backend autorise également le domaine de secours `https://front-end-git-main-minderofts-projects.vercel.app` dans `allowedOrigins`.
 
 ### 3. **Frontend - api.js**
 ✅ Configuration Axios améliorée:
@@ -91,7 +93,7 @@ Vercel redéploiera automatiquement.
 
 ### Étape 4: Tester depuis le navigateur
 
-1. Aller sur https://zel-chi.vercel.app
+1. Aller sur https://loca-plus-hub.vercel.app
 2. Ouvrir les DevTools (F12)
 3. Aller dans l'onglet **Console**
 4. Essayer de s'inscrire ou de se connecter
@@ -168,12 +170,12 @@ authService.register({
 
 - [ ] Vérifier que Render a les variables d'environnement correctes
 - [ ] Vérifier que le backend a redémarré après la mise à jour
-- [ ] Vérifier que FRONTEND_URL est correct: `https://zel-chi.vercel.app`
+- [ ] Vérifier que FRONTEND_URL est correct: `https://loca-plus-hub.vercel.app`
 - [ ] Vérifier que le backend est accessible: `curl https://backend-ovbc.onrender.com/api/health`
 - [ ] Vérifier que la Console du navigateur affiche les erreurs
 - [ ] Tester la requête avec `curl` en incluant l'origin:
   ```bash
-  curl -H "Origin: https://zel-chi.vercel.app" \
+  curl -H "Origin: https://loca-plus-hub.vercel.app" \
        https://backend-ovbc.onrender.com/api/health -v
   ```
 
@@ -200,7 +202,7 @@ node backend/test-cors.js
 
 ```javascript
 // CORS autorisé pour:
-- https://zel-chi.vercel.app (Production)
+- https://loca-plus-hub.vercel.app (Production)
 - http://localhost:5173 (Développement)
 - http://localhost:3000 (Développement alternatif)
 

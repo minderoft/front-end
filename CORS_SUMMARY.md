@@ -18,7 +18,7 @@ Voici la configuration CORS finale et prête pour production (Render + Vercel).
 const cors = require('cors');
 
 // 2. Configuration des origins autorisées
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://zel-chi.vercel.app';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app';
 const allowedOrigins = [
   FRONTEND_URL,                    // Production (Vercel)
   'http://localhost:5173',        // Dev local (Vite)
@@ -62,13 +62,13 @@ if (process.env.NODE_ENV !== 'production') {
 **Changement**: Mise à jour de FRONTEND_URL et migration vers Render
 
 ```diff
-- FRONTEND_URL=https://front-end-hazel-chi.vercel.app
-- PAYSTACK_CALLBACK_URL=https://backend-production-6739.up.railway.app/api/payment/callback
-+ FRONTEND_URL=https://zel-chi.vercel.app
+- FRONTEND_URL=https://your-previous-frontend-url.com
+- PAYSTACK_CALLBACK_URL=https://your-previous-backend-url.com/api/payment/callback
++ FRONTEND_URL=https://loca-plus-hub.vercel.app
 + PAYSTACK_CALLBACK_URL=https://backend-ovbc.onrender.com/api/payment/callback
 ```
 
-**✅ Migration Railway → Render**: `https://backend-production-6739.up.railway.app` → `https://backend-ovbc.onrender.com`
+**✅ Migration vers Render**: `https://backend-ovbc.onrender.com` est maintenant utilisé pour les callbacks Paystack.
 
 ---
 
@@ -145,9 +145,9 @@ api.interceptors.response.use(
 **Changement**: Mise à jour des valeurs par défaut
 
 ```diff
-- FRONTEND_URL=https://front-end-hazel-chi.vercel.app
+- FRONTEND_URL=https://your-previous-frontend-url.com
 - PAYSTACK_CALLBACK_URL=https://your-frontend-domain.com/payment-success
-+ FRONTEND_URL=https://zel-chi.vercel.app
++ FRONTEND_URL=https://loca-plus-hub.vercel.app
 + PAYSTACK_CALLBACK_URL=https://backend-ovbc.onrender.com/api/payment/callback
 ```
 
@@ -208,7 +208,7 @@ Instructions de déploiement et vérification
 
 ```bash
 # Production (Render)
-FRONTEND_URL=https://zel-chi.vercel.app
+FRONTEND_URL=https://loca-plus-hub.vercel.app
 NODE_ENV=production
 
 # Développement (local)

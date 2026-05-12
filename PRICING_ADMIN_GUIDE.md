@@ -68,7 +68,7 @@ SELECT id, category, name, price FROM pricing WHERE category = 'immobilier';
 
 ### Préalable : Créer un Compte Admin
 
-1. S'inscrire sur https://front-end-hazel-chi.vercel.app/register
+1. S'inscrire sur https://loca-plus-hub.vercel.app/register
 2. Contacter l'administrateur pour faire passer le compte en `role: 'admin'`
    ```sql
    -- Depuis le terminal backend :
@@ -301,7 +301,7 @@ UPDATE pricing SET price = 15000 WHERE category = 'immobilier';
 ```
 
 ### Option 2 : Via Panneau Admin (Plus user-friendly)
-1. Aller sur `https://front-end-hazel-chi.vercel.app/admin/pricing` (admin uniquement)
+1. Aller sur `https://loca-plus-hub.vercel.app/admin/pricing` (admin uniquement)
 2. Cliquer sur "Modifier" pour le tarif à changer
 3. Entrer le nouveau prix
 4. Cliquer sur "✓ Sauvegarder"
@@ -317,7 +317,7 @@ curl https://backend-ovbc.onrender.com/api/pricing | jq '.categories'
 ```
 
 ### Sur Vercel
-Aller sur https://front-end-hazel-chi.vercel.app et vérifier la section "Tarifs de Publication"
+Aller sur https://loca-plus-hub.vercel.app et vérifier la section "Tarifs de Publication"
 
 ---
 
