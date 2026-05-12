@@ -22,6 +22,16 @@ const createPoolConfig = () => {
 
 const pool = new Pool(createPoolConfig());
 
+// ✅ CONVERTIR les placeholders MySQL (?) en PostgreSQL ($1, $2, etc.)
+const convertPlaceholders = (sql, params) => {
+  if (!params || params.length === 0) return { sql, params };
+  
+  let paramIndex = 1;
+  let convertedSql = sql.replace(/\?/g, () => `$${paramIndex++}`);
+  
+  return { sql: convertedSql, params };
+};
+
 const testConnection = async () => {
   const startTime = Date.now();
   try {
@@ -37,7 +47,8 @@ const testConnection = async () => {
 
 const runAsync = async (sql, params = []) => {
   try {
-    const result = await pool.query(sql, params);
+    const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
+    const result = await pool.query(convertedSql, convertedParams);
     return {
       insertId: result.rows[0]?.id || null,
       affectedRows: result.rowCount || 0,
@@ -51,7 +62,8 @@ const runAsync = async (sql, params = []) => {
 
 const getAsync = async (sql, params = []) => {
   try {
-    const result = await pool.query(sql, params);
+    const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
+    const result = await pool.query(convertedSql, convertedParams);
     return result.rows[0] || null;
   } catch (err) {
     console.error('PostgreSQL getAsync error:', err.message);
@@ -61,7 +73,8 @@ const getAsync = async (sql, params = []) => {
 
 const allAsync = async (sql, params = []) => {
   try {
-    const result = await pool.query(sql, params);
+    const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
+    const result = await pool.query(convertedSql, convertedParams);
     return result.rows;
   } catch (err) {
     console.error('PostgreSQL allAsync error:', err.message);
@@ -73,7 +86,8 @@ const query = async (sql, params = []) => {
   const statement = sql.trim().split(' ')[0].toUpperCase();
   const startTime = Date.now();
   try {
-    const result = await pool.query(sql, params);
+    const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
+    const result = await pool.query(convertedSql, convertedParams);
     const elapsed = Date.now() - startTime;
     if (elapsed > 1000) {
       console.warn(`⚠️ Requête lente (${elapsed}ms): ${statement}`);
