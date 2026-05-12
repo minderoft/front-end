@@ -11,7 +11,14 @@ const router = express.Router();
 // Inscription
 router.post('/register', validate('register'), async (req, res) => {
   try {
-    const { email, password, name, phone } = req.body;
+    const { email, password, name, phone, accepted_policy } = req.body;
+
+    // Vérifier que l'utilisateur accepte la politique de confidentialité
+    if (!accepted_policy) {
+      return res.status(400).json({ 
+        error: 'Vous devez accepter la Politique de Confidentialité pour vous inscrire' 
+      });
+    }
 
     // Vérifier si l'utilisateur existe déjà
     const existingUser = await getAsync('SELECT id FROM users WHERE email = ?', [email]);
@@ -25,8 +32,8 @@ router.post('/register', validate('register'), async (req, res) => {
     const id = uuidv4();
 
     await runAsync(
-      'INSERT INTO users (id, email, password, name, phone) VALUES (?, ?, ?, ?, ?)',
-      [id, email, hashedPassword, name, phone || null]
+      'INSERT INTO users (id, email, password, name, phone, accepted_policy) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, email, hashedPassword, name, phone || null, true]
     );
 
     const user = await getAsync(

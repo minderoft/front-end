@@ -157,8 +157,23 @@ const createTables = async () => {
       `);
       console.log('✅ Colonne longitude ajoutée');
     }
+
+    // Vérifier et ajouter la colonne accepted_policy à la table users
+    const acceptedPolicyExists = await getAsync(`
+      SELECT COUNT(*) as count FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'users' 
+      AND COLUMN_NAME = 'accepted_policy'
+    `);
+    
+    if (!acceptedPolicyExists || acceptedPolicyExists.count === 0) {
+      await runAsync(`
+        ALTER TABLE users ADD COLUMN accepted_policy BOOLEAN DEFAULT FALSE
+      `);
+      console.log('✅ Colonne accepted_policy ajoutée à la table users');
+    }
   } catch (err) {
-    console.warn('⚠️ Vérification des colonnes latitude/longitude échouée:', err.message);
+    console.warn('⚠️ Vérification des colonnes échouée:', err.message);
   }
 
   await runAsync(`

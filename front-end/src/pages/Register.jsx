@@ -43,6 +43,7 @@ const Register = () => {
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
+        accepted_policy: acceptedPrivacy,
       });
       navigate('/dashboard');
     } catch (err) {
