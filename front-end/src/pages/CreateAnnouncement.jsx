@@ -60,6 +60,7 @@ const CreateAnnouncement = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [pricing, setPricing] = useState({});
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   
   const [formData, setFormData] = useState({
     category: searchParams.get('category') || '',
@@ -478,7 +479,21 @@ const CreateAnnouncement = () => {
               )}
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+            <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '24px' }}>
+              <input
+                type="checkbox"
+                id="acceptPrivacy"
+                checked={acceptedPrivacy}
+                onChange={(e) => setAcceptedPrivacy(e.target.checked)}
+                style={{ width: '24px', height: '24px', minWidth: '24px', minHeight: '24px', cursor: 'pointer' }}
+                required
+              />
+              <label htmlFor="acceptPrivacy" style={{ fontSize: '0.95rem', lineHeight: '1.5', cursor: 'pointer' }}>
+                J'accepte la <a href="/privacy-policy.html" target="_blank" rel="noreferrer">Politique de Confidentialité</a>
+              </label>
+            </div>
+
+            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading || !acceptedPrivacy}>
               {loading ? 'Création...' : 'Créer l\'annonce'}
             </button>
           </div>
