@@ -2,7 +2,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
-const { pool, query, getAsync, runAsync } = require('../config/db');
+const { pool } = require('../config/db');
 const { generateToken, authenticateToken } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
 

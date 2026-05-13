@@ -1,165 +1,68 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+// ============================================
+// CONFIGURATION POOL POSTGRESQL/NEON
+// ============================================
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false,
+    rejectUnauthorized: false, // ✅ OBLIGATOIRE pour Neon
   },
 });
 
-// ✅ CONVERTIR les placeholders MySQL (?) en PostgreSQL ($1, $2, etc.)
-const convertPlaceholders = (sql, params) => {
-  if (!params || params.length === 0) return { sql, params };
-  
-  let paramIndex = 1;
-  let convertedSql = sql.replace(/\?/g, () => `$${paramIndex++}`);
-  
-  return { sql: convertedSql, params };
-};
+// Émettre un avertissement si DATABASE_URL n'est pas défini
+if (!process.env.DATABASE_URL) {
+  console.warn('⚠️ WARNING: DATABASE_URL is not set in environment variables');
+}
+
+// ============================================
+// TEST DE CONNEXION
+// ============================================
 
 const testConnection = async () => {
   const startTime = Date.now();
   try {
-    console.log('🔌 [DB] Test de connexion PostgreSQL/Neon...');
-    const result = await pool.query('SELECT NOW()');
+    console.log('🔌 [DB] Testing PostgreSQL/Neon connection...');
+    const result = await pool.query('SELECT NOW() as current_time');
     const elapsed = Date.now() - startTime;
-    console.log(`✅ [DB] PostgreSQL connexion établie en ${elapsed}ms`);
+    
+    console.log(`✅ [DB] PostgreSQL connected in ${elapsed}ms`);
+    console.log(`📊 [DB] Database time: ${result.rows[0].current_time}`);
     console.log(`📊 [DB] Configuration:`, {
       ssl: 'enabled (rejectUnauthorized: false)',
-      sslmode: 'require (dans DATABASE_URL)',
-      poolSize: '10',
-      idleTimeout: '30s',
-    });
-  } catch (err) {
-    const elapsed = Date.now() - startTime;
-    console.error(`❌ [DB] PostgreSQL ping échoué après ${elapsed}ms:`, {
-      message: err.message,
-      code: err.code,
-      severity: err.severity,
-    });
-    throw err;
-  }
-};
-
-const runAsync = async (sql, params = []) => {
-  const startTime = Date.now();
-  try {
-    const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
-    console.log('📝 [runAsync] Exécution de requête:', {
-      originalSql: sql.substring(0, 80),
-      convertedSql: convertedSql.substring(0, 80),
-      paramsCount: params.length,
+      sslmode: 'require (in DATABASE_URL)',
       timestamp: new Date().toISOString(),
     });
-    const result = await pool.query(convertedSql, convertedParams);
-    const elapsed = Date.now() - startTime;
-    console.log(`✅ [runAsync] Requête complétée en ${elapsed}ms`, { 
-      affectedRows: result.rowCount,
-      timestamp: new Date().toISOString()
-    });
-    return {
-      insertId: result.rows[0]?.id || null,
-      affectedRows: result.rowCount || 0,
-      changedRows: result.rowCount || 0,
-    };
+    
+    return true;
   } catch (err) {
     const elapsed = Date.now() - startTime;
-    console.error(`\n❌ [runAsync] ERREUR PostgreSQL après ${elapsed}ms:`, {
+    console.error(`❌ [DB] PostgreSQL connection failed after ${elapsed}ms:`, {
       message: err.message,
       code: err.code,
       severity: err.severity,
       detail: err.detail,
       hint: err.hint,
-      position: err.position,
-      where: err.where,
-      schema: err.schema,
-      table: err.table,
-      column: err.column,
-      constraint: err.constraint,
-      routine: err.routine,
-      originalSql: sql.substring(0, 100),
-      paramsCount: params.length,
       timestamp: new Date().toISOString(),
     });
     throw err;
   }
 };
 
-const getAsync = async (sql, params = []) => {
-  const startTime = Date.now();
-  try {
-    const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
-    console.log('📊 [getAsync] Tentative de requête:', {
-      originalSql: sql.substring(0, 80),
-      convertedSql: convertedSql.substring(0, 80),
-      paramsCount: params.length,
-      table: sql.match(/FROM\s+(\w+)/i)?.[1] || 'unknown',
-      timestamp: new Date().toISOString(),
-    });
-    const result = await pool.query(convertedSql, convertedParams);
-    const elapsed = Date.now() - startTime;
-    console.log(`✅ [getAsync] Requête réussie en ${elapsed}ms`, { 
-      rowCount: result.rowCount,
-      hasRows: result.rows.length > 0
-    });
-    return result.rows[0] || null;
-  } catch (err) {
-    const elapsed = Date.now() - startTime;
-    console.error(`\n❌ [getAsync] ERREUR PostgreSQL après ${elapsed}ms:`, {
-      message: err.message,
-      code: err.code,
-      severity: err.severity,
-      detail: err.detail,
-      hint: err.hint,
-      position: err.position,
-      where: err.where,
-      schema: err.schema,
-      table: err.table,
-      column: err.column,
-      constraint: err.constraint,
-      routine: err.routine,
-      originalSql: sql.substring(0, 100),
-      paramsCount: params.length,
-      timestamp: new Date().toISOString(),
-    });
-    throw err;
-  }
-};
+// ============================================
+// INITIALISATION BASE DE DONNÉES
+// ============================================
 
-const allAsync = async (sql, params = []) => {
+const initDatabase = async () => {
   try {
-    const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
-    const result = await pool.query(convertedSql, convertedParams);
-    return result.rows;
-  } catch (err) {
-    console.error('PostgreSQL allAsync error:', err.message);
-    throw err;
-  }
-};
+    await testConnection();
 
-const query = async (sql, params = []) => {
-  const statement = sql.trim().split(' ')[0].toUpperCase();
-  const startTime = Date.now();
-  try {
-    const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
-    const result = await pool.query(convertedSql, convertedParams);
-    const elapsed = Date.now() - startTime;
-    if (elapsed > 1000) {
-      console.warn(`⚠️ Requête lente (${elapsed}ms): ${statement}`);
-    }
-    return result.rows;
-  } catch (err) {
-    const elapsed = Date.now() - startTime;
-    console.error(`PostgreSQL query error (${elapsed}ms):`, err.message);
-    throw err;
-  }
-};
-
-const createTables = async () => {
-  try {
-    // 1. Créer la table users
-    await runAsync(`
+    console.log('\n📝 [DB] Creating tables if they do not exist...');
+    
+    // Create users table
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id VARCHAR(36) PRIMARY KEY,
         email VARCHAR(255) UNIQUE NOT NULL,
@@ -172,9 +75,10 @@ const createTables = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    console.log('✅ [DB] users table ready');
 
-    // 2. Créer la table announcements
-    await runAsync(`
+    // Create announcements table
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS announcements (
         id VARCHAR(36) PRIMARY KEY,
         user_id VARCHAR(36) NOT NULL,
@@ -196,9 +100,10 @@ const createTables = async () => {
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
+    console.log('✅ [DB] announcements table ready');
 
-    // 3. Créer la table payments
-    await runAsync(`
+    // Create payments table
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS payments (
         id VARCHAR(36) PRIMARY KEY,
         user_id VARCHAR(36) NOT NULL,
@@ -215,9 +120,10 @@ const createTables = async () => {
         FOREIGN KEY(announcement_id) REFERENCES announcements(id) ON DELETE CASCADE
       )
     `);
+    console.log('✅ [DB] payments table ready');
 
-    // 4. Créer la table contact_messages
-    await runAsync(`
+    // Create contact_messages table
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS contact_messages (
         id VARCHAR(36) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -227,9 +133,10 @@ const createTables = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    console.log('✅ [DB] contact_messages table ready');
 
-    // 5. Créer la table pricing
-    await runAsync(`
+    // Create pricing table
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS pricing (
         id VARCHAR(36) PRIMARY KEY,
         type VARCHAR(100) NOT NULL,
@@ -243,9 +150,10 @@ const createTables = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    console.log('✅ [DB] pricing table ready');
 
-    // 6. Créer la table conversations
-    await runAsync(`
+    // Create conversations table
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS conversations (
         id VARCHAR(36) PRIMARY KEY,
         client_id VARCHAR(36) NOT NULL,
@@ -258,9 +166,10 @@ const createTables = async () => {
         FOREIGN KEY(service_id) REFERENCES announcements(id) ON DELETE CASCADE
       )
     `);
+    console.log('✅ [DB] conversations table ready');
 
-    // 7. Créer la table messages
-    await runAsync(`
+    // Create messages table
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS messages (
         id VARCHAR(36) PRIMARY KEY,
         conversation_id VARCHAR(36) NOT NULL,
@@ -272,112 +181,36 @@ const createTables = async () => {
         FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
+    console.log('✅ [DB] messages table ready');
 
-    console.log('✅ Tables PostgreSQL créées avec succès');
+    console.log('✅ [DB] Database initialization complete\n');
+    return true;
   } catch (err) {
-    console.error('❌ Erreur lors de la création des tables:', err.message);
-  }
-};
-
-const seedPricing = async () => {
-  try {
-    const existing = await allAsync('SELECT COUNT(*) as count FROM pricing');
-    if (existing[0]?.count > 0) return;
-
-    const pricingItems = [
-      {
-        id: 'pub-immobilier',
-        type: 'publication',
-        category: 'immobilier',
-        name: 'Publication Immobilier',
-        description: 'Publication d\'annonces immobilières',
-        price: 5000,
-        features: JSON.stringify(['Annonce 30 jours', 'Visibilité standard']),
-        active: 1,
-      },
-      {
-        id: 'pub-vehicule',
-        type: 'publication',
-        category: 'vehicule',
-        name: 'Publication Véhicule',
-        description: 'Publication d\'annonces de véhicules',
-        price: 4000,
-        features: JSON.stringify(['Annonce 30 jours', 'Visibilité standard']),
-        active: 1,
-      },
-      {
-        id: 'pub-materiaux',
-        type: 'publication',
-        category: 'materiaux',
-        name: 'Publication Matériaux',
-        description: 'Publication d\'annonces pour matériaux',
-        price: 3000,
-        features: JSON.stringify(['Annonce 30 jours', 'Visibilité standard']),
-        active: 1,
-      },
-      {
-        id: 'pub-technicien',
-        type: 'publication',
-        category: 'technicien',
-        name: 'Publication Technicien',
-        description: 'Publication d\'annonces de techniciens',
-        price: 2000,
-        features: JSON.stringify(['Annonce 30 jours', 'Visibilité standard']),
-        active: 1,
-      },
-      {
-        id: 'boost-standard',
-        type: 'boost',
-        category: null,
-        name: 'Boost annonce',
-        description: 'Boost d\'une annonce',
-        price: 1500,
-        features: JSON.stringify(['Meilleure visibilité', '7 jours']),
-        active: 1,
-      },
-    ];
-
-    for (const item of pricingItems) {
-      await runAsync(
-        `INSERT INTO pricing (id, type, category, name, description, price, features, active, created_at, updated_at) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())`,
-        [
-          item.id,
-          item.type,
-          item.category,
-          item.name,
-          item.description,
-          item.price,
-          item.features,
-          item.active,
-        ]
-      );
-    }
-
-    console.log('✅ Données de tarification insérées');
-  } catch (err) {
-    console.warn('⚠️ Impossible de seed les tarifs:', err.message);
-  }
-};
-
-const initDatabase = async () => {
-  try {
-    await testConnection();
-    await createTables();
-    await seedPricing();
-    console.log('✅ Base de données PostgreSQL initialisée');
-  } catch (err) {
-    console.error('❌ Erreur lors de l\'initialisation:', err);
+    console.error('❌ [DB] Database initialization error:', err.message);
     throw err;
   }
 };
 
+// ============================================
+// GRACEFUL SHUTDOWN
+// ============================================
+
+const closeDatabase = async () => {
+  try {
+    await pool.end();
+    console.log('✅ [DB] Connection pool closed');
+  } catch (err) {
+    console.error('❌ [DB] Error closing connection pool:', err.message);
+  }
+};
+
+// ============================================
+// EXPORTS
+// ============================================
+
 module.exports = {
   pool,
-  query,
-  runAsync,
-  getAsync,
-  allAsync,
   testConnection,
   initDatabase,
+  closeDatabase,
 };
