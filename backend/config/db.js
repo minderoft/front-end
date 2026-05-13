@@ -37,12 +37,23 @@ const convertPlaceholders = (sql, params) => {
 const testConnection = async () => {
   const startTime = Date.now();
   try {
+    console.log('🔌 [DB] Test de connexion PostgreSQL/Neon...');
     const result = await pool.query('SELECT NOW()');
     const elapsed = Date.now() - startTime;
-    console.log(`✅ PostgreSQL connexion établie en ${elapsed}ms`);
+    console.log(`✅ [DB] PostgreSQL connexion établie en ${elapsed}ms`);
+    console.log(`📊 [DB] Configuration:`, {
+      ssl: 'enabled (rejectUnauthorized: false)',
+      sslmode: 'require (dans DATABASE_URL)',
+      poolSize: '10',
+      idleTimeout: '30s',
+    });
   } catch (err) {
     const elapsed = Date.now() - startTime;
-    console.error(`❌ PostgreSQL ping échoué après ${elapsed}ms:`, err.message);
+    console.error(`❌ [DB] PostgreSQL ping échoué après ${elapsed}ms:`, {
+      message: err.message,
+      code: err.code,
+      severity: err.severity,
+    });
     throw err;
   }
 };
@@ -63,12 +74,25 @@ const runAsync = async (sql, params = []) => {
 };
 
 const getAsync = async (sql, params = []) => {
+  const startTime = Date.now();
   try {
     const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
+    console.log('📊 getAsync - Tentative de connexion à la DB...', {
+      table: sql.match(/FROM\s+(\w+)/i)?.[1] || 'unknown',
+      paramsCount: params.length,
+      timestamp: new Date().toISOString(),
+    });
     const result = await pool.query(convertedSql, convertedParams);
+    const elapsed = Date.now() - startTime;
+    console.log(`✅ getAsync réussi en ${elapsed}ms`, { rowCount: result.rowCount });
     return result.rows[0] || null;
   } catch (err) {
-    console.error('PostgreSQL getAsync error:', err.message);
+    const elapsed = Date.now() - startTime;
+    console.error(`❌ PostgreSQL getAsync error après ${elapsed}ms:`, {
+      message: err.message,
+      code: err.code,
+      table: sql.match(/FROM\s+(\w+)/i)?.[1] || 'unknown',
+    });
     throw err;
   }
 };

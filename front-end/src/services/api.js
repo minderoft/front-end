@@ -6,7 +6,7 @@ const BASE_URL = 'https://backend-ovbc.onrender.com/api';
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true, // Important pour CORS avec credentials
-  timeout: 30000, // 30 secondes timeout
+  timeout: 60000, // ✅ 60 secondes - laisser le temps à Render de se réveiller (cold start)
 });
 
 // Intercepteur pour les requêtes
@@ -51,6 +51,16 @@ api.interceptors.response.use(
       });
     }
 
+    // Timeout error
+    if (error.code === 'ECONNABORTED') {
+      console.error('⏱️ TIMEOUT (60s dépassé):', {
+        message: 'La requête a dépassé le délai de 60 secondes',
+        url: error.config?.url,
+        method: error.config?.method?.toUpperCase(),
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     if (error.response) {
       // La requête a reçu une réponse avec un statut d'erreur
       if (error.response.status === 401) {
@@ -65,6 +75,7 @@ api.interceptors.response.use(
           status: error.response.status,
           data: error.response.data,
           headers: error.response.headers,
+          url: error.config?.url,
         });
       }
     } else if (error.request) {
@@ -72,6 +83,8 @@ api.interceptors.response.use(
       console.error('❌ Pas de réponse du serveur:', {
         message: error.message,
         request: error.request,
+        code: error.code,
+        timeout: '60000ms',
       });
     }
 

@@ -63,23 +63,42 @@ router.post('/register', validate('register'), async (req, res) => {
 
 // Connexion
 router.post('/login', validate('login'), async (req, res) => {
+  const startTime = Date.now();
   try {
     const { email, password } = req.body;
+    console.log(`\n🔐 [LOGIN] Tentative de connexion pour: ${email}`);
+    console.log(`📊 [LOGIN] Timestamp: ${new Date().toISOString()}`);
+    console.log(`⏱️ [LOGIN] Timeout configuré: 60000ms`);
 
-// Rechercher l'utilisateur dans la table users de Neon
+    // Rechercher l'utilisateur dans la table users de Neon
+    console.log(`🔍 [LOGIN] Recherche utilisateur dans table 'users'...`);
+    const dbStartTime = Date.now();
     const user = await getAsync('SELECT * FROM users WHERE email = ?', [email]);
+    const dbElapsed = Date.now() - dbStartTime;
+    console.log(`✅ [LOGIN] Requête DB complétée en ${dbElapsed}ms`);
+
     if (!user) {
+      console.log(`⚠️ [LOGIN] Utilisateur non trouvé: ${email}`);
       return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }
 
+    console.log(`✓ [LOGIN] Utilisateur trouvé, vérification mot de passe...`);
     // Vérifier le mot de passe
+    const bcryptStartTime = Date.now();
     const isValidPassword = await bcrypt.compare(password, user.password);
+    const bcryptElapsed = Date.now() - bcryptStartTime;
+    console.log(`✅ [LOGIN] Vérification bcrypt complétée en ${bcryptElapsed}ms`);
+
     if (!isValidPassword) {
+      console.log(`⚠️ [LOGIN] Mot de passe incorrect pour: ${email}`);
       return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }
 
     // Générer le token
+    console.log(`🔑 [LOGIN] Génération du JWT token...`);
     const token = generateToken(user);
+    const totalElapsed = Date.now() - startTime;
+    console.log(`✅ [LOGIN] Connexion réussie en ${totalElapsed}ms pour: ${email}\n`);
 
     res.status(200).json({
       message: 'Connexion réussie',
@@ -93,8 +112,18 @@ router.post('/login', validate('login'), async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error('Erreur connexion:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la connexion' });
+    const totalElapsed = Date.now() - startTime;
+    console.error(`\n❌ [LOGIN] ERREUR après ${totalElapsed}ms:`, {
+      message: error.message,
+      code: error.code,
+      stack: error.stack?.split('\n').slice(0, 3).join('\n'),
+      timestamp: new Date().toISOString(),
+    });
+    console.log('\n');
+    res.status(500).json({ 
+      error: 'Erreur serveur lors de la connexion',
+      details: error.message
+    });
   }
 });
 
