@@ -59,9 +59,31 @@ const initDatabase = async () => {
   try {
     await testConnection();
 
-    console.log('\n📝 [DB] Creating tables if they do not exist...');
+    console.log('\n📝 [DB] Dropping existing tables with CASCADE to resolve type conflicts...');
     
-    // Create users table
+    // Drop tables in dependency order (reverse of creation order)
+    const dropOrder = [
+      'DROP TABLE IF EXISTS messages CASCADE',
+      'DROP TABLE IF EXISTS conversations CASCADE',
+      'DROP TABLE IF EXISTS payments CASCADE',
+      'DROP TABLE IF EXISTS announcements CASCADE',
+      'DROP TABLE IF EXISTS pricing CASCADE',
+      'DROP TABLE IF EXISTS contact_messages CASCADE',
+      'DROP TABLE IF EXISTS users CASCADE',
+    ];
+
+    for (const dropStatement of dropOrder) {
+      try {
+        await pool.query(dropStatement);
+        console.log(`✅ ${dropStatement}`);
+      } catch (err) {
+        console.warn(`⚠️ ${dropStatement} - ${err.message}`);
+      }
+    }
+
+    console.log('\n📝 [DB] Creating tables with consistent VARCHAR(36) type for all IDs...');
+    
+    // Create users table with VARCHAR(36) for UUIDs
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id VARCHAR(36) PRIMARY KEY,
@@ -75,7 +97,7 @@ const initDatabase = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('✅ [DB] users table ready');
+    console.log('✅ [DB] users table ready (id: VARCHAR(36) for UUID)');
 
     // Create announcements table
     await pool.query(`
@@ -152,7 +174,7 @@ const initDatabase = async () => {
     `);
     console.log('✅ [DB] pricing table ready');
 
-    // Create conversations table
+    // Create conversations table with VARCHAR(36) IDs (FIXED TYPE MISMATCH!)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS conversations (
         id VARCHAR(36) PRIMARY KEY,
@@ -166,7 +188,7 @@ const initDatabase = async () => {
         FOREIGN KEY(service_id) REFERENCES announcements(id) ON DELETE CASCADE
       )
     `);
-    console.log('✅ [DB] conversations table ready');
+    console.log('✅ [DB] conversations table ready (id: VARCHAR(36), client_id: VARCHAR(36), provider_id: VARCHAR(36), service_id: VARCHAR(36))');
 
     // Create messages table
     await pool.query(`
