@@ -44,8 +44,8 @@ const DEV_URL = 'http://localhost:5173';
 const allowedOrigins = [
   FRONTEND_URL,
   'https://loca-plus-hub.vercel.app',
-  'https://front-end-git-main-minderofts-projects.vercel.app', // ✅ Vercel backup project autorisé
-  'https://front-end-hazel-chi.vercel.app', // ✅ origin détectée dans la console
+  'https://front-end-hazel-chi.vercel.app',
+  'https://front-end-git-main-minderofts-projects.vercel.app', // Vercel backup project autorisé
   DEV_URL,
   'http://localhost:3000',
   'http://127.0.0.1:5173',
@@ -54,21 +54,20 @@ const allowedOrigins = [
 // Fonction pour vérifier les origins
 const corsOptions = {
   origin: function (origin, callback) {
-    // Accepter les requêtes sans origin (mobile apps, curl requests, etc.)
+    // Accepter les requêtes sans origin (mobile apps, curl requests, certains navigateurs)
     if (!origin) {
-      console.log('🔄 CORS: No origin header (mobile app or curl request)');
+      console.log('🔄 CORS: No origin header - allowing non-browser or mobile/curl request');
       return callback(null, true);
     }
 
-    // Vérifier si l'origin est dans la liste allowée
+    // Vérifier si l'origin est dans la liste blanche
     if (allowedOrigins.includes(origin)) {
       console.log(`✅ CORS: Origin ${origin} allowed`);
-      callback(null, true);
-    } else {
-      // En développement, logger les origins rejetées
-      console.warn(`❌ CORS: Origin ${origin} not allowed. Allowed origins:`, allowedOrigins);
-      callback(new Error('CORS: Origin not allowed'));
+      return callback(null, true);
     }
+
+    console.warn(`❌ CORS: Origin ${origin} not allowed. Allowed origins:`, allowedOrigins);
+    return callback(new Error('CORS: Origin not allowed'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -79,8 +78,8 @@ const corsOptions = {
     'Accept',
   ],
   exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
-  maxAge: 86400, // 24 heures en secondes
-  optionsSuccessStatus: 200, // Certains anciens navigateurs ont besoin de 200 pour OPTIONS
+  maxAge: 86400,
+  optionsSuccessStatus: 200,
 };
 
 // Appliquer CORS globalement
@@ -97,15 +96,18 @@ app.use((req, res, next) => {
 // Gérer les requêtes preflight OPTIONS explicitement
 app.options('*', cors(corsOptions));
 
-// Fallback CORS headers pour les réponses et préflight
+// Fallback CORS headers pour les réponses
 app.use((req, res, next) => {
   const origin = req.get('origin');
   if (origin && allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+  } else if (!origin) {
+    // Autoriser les requêtes sans origine
+    res.header('Access-Control-Allow-Origin', '*');
   }
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
   next();
 });
 
