@@ -122,16 +122,34 @@ router.post('/login', validate('login'), async (req, res) => {
     });
   } catch (error) {
     const totalElapsed = Date.now() - startTime;
-    console.error(`\n❌ [LOGIN] ERREUR après ${totalElapsed}ms:`, {
+    console.error(`\n❌ [LOGIN] ERREUR COMPLÈTE après ${totalElapsed}ms:`, {
       message: error.message,
       code: error.code,
-      stack: error.stack?.split('\n').slice(0, 3).join('\n'),
+      severity: error.severity,
+      detail: error.detail,
+      hint: error.hint,
+      position: error.position,
+      internalPosition: error.internalPosition,
+      internalQuery: error.internalQuery,
+      where: error.where,
+      schema: error.schema,
+      table: error.table,
+      column: error.column,
+      dataType: error.dataType,
+      constraint: error.constraint,
+      file: error.file,
+      line: error.line,
+      routine: error.routine,
+      stack: error.stack?.split('\n').slice(0, 5).join('\n'),
       timestamp: new Date().toISOString(),
     });
     console.log('\n');
     res.status(500).json({ 
       error: 'Erreur serveur lors de la connexion',
-      details: error.message
+      message: error.message,
+      code: error.code,
+      detail: error.detail || 'Vérifiez les logs serveur',
+      timestamp: new Date().toISOString()
     });
   }
 });

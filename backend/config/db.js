@@ -59,16 +59,45 @@ const testConnection = async () => {
 };
 
 const runAsync = async (sql, params = []) => {
+  const startTime = Date.now();
   try {
     const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
+    console.log('📝 [runAsync] Exécution de requête:', {
+      originalSql: sql.substring(0, 80),
+      convertedSql: convertedSql.substring(0, 80),
+      paramsCount: params.length,
+      timestamp: new Date().toISOString(),
+    });
     const result = await pool.query(convertedSql, convertedParams);
+    const elapsed = Date.now() - startTime;
+    console.log(`✅ [runAsync] Requête complétée en ${elapsed}ms`, { 
+      affectedRows: result.rowCount,
+      timestamp: new Date().toISOString()
+    });
     return {
       insertId: result.rows[0]?.id || null,
       affectedRows: result.rowCount || 0,
       changedRows: result.rowCount || 0,
     };
   } catch (err) {
-    console.error('PostgreSQL runAsync error:', err.message);
+    const elapsed = Date.now() - startTime;
+    console.error(`\n❌ [runAsync] ERREUR PostgreSQL après ${elapsed}ms:`, {
+      message: err.message,
+      code: err.code,
+      severity: err.severity,
+      detail: err.detail,
+      hint: err.hint,
+      position: err.position,
+      where: err.where,
+      schema: err.schema,
+      table: err.table,
+      column: err.column,
+      constraint: err.constraint,
+      routine: err.routine,
+      originalSql: sql.substring(0, 100),
+      paramsCount: params.length,
+      timestamp: new Date().toISOString(),
+    });
     throw err;
   }
 };
@@ -77,21 +106,38 @@ const getAsync = async (sql, params = []) => {
   const startTime = Date.now();
   try {
     const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
-    console.log('📊 getAsync - Tentative de connexion à la DB...', {
-      table: sql.match(/FROM\s+(\w+)/i)?.[1] || 'unknown',
+    console.log('📊 [getAsync] Tentative de requête:', {
+      originalSql: sql.substring(0, 80),
+      convertedSql: convertedSql.substring(0, 80),
       paramsCount: params.length,
+      table: sql.match(/FROM\s+(\w+)/i)?.[1] || 'unknown',
       timestamp: new Date().toISOString(),
     });
     const result = await pool.query(convertedSql, convertedParams);
     const elapsed = Date.now() - startTime;
-    console.log(`✅ getAsync réussi en ${elapsed}ms`, { rowCount: result.rowCount });
+    console.log(`✅ [getAsync] Requête réussie en ${elapsed}ms`, { 
+      rowCount: result.rowCount,
+      hasRows: result.rows.length > 0
+    });
     return result.rows[0] || null;
   } catch (err) {
     const elapsed = Date.now() - startTime;
-    console.error(`❌ PostgreSQL getAsync error après ${elapsed}ms:`, {
+    console.error(`\n❌ [getAsync] ERREUR PostgreSQL après ${elapsed}ms:`, {
       message: err.message,
       code: err.code,
-      table: sql.match(/FROM\s+(\w+)/i)?.[1] || 'unknown',
+      severity: err.severity,
+      detail: err.detail,
+      hint: err.hint,
+      position: err.position,
+      where: err.where,
+      schema: err.schema,
+      table: err.table,
+      column: err.column,
+      constraint: err.constraint,
+      routine: err.routine,
+      originalSql: sql.substring(0, 100),
+      paramsCount: params.length,
+      timestamp: new Date().toISOString(),
     });
     throw err;
   }
