@@ -44,7 +44,9 @@ const DEV_URL = 'http://localhost:5173';
 const allowedOrigins = [
   FRONTEND_URL,
   'https://loca-plus-hub.vercel.app',
-  'https://front-end-git-main-minderofts-projects.vercel.app', // ✅ Vercel backup project autorisé  'https://front-end-hazel-chi.vercel.app', // ✅ origin détectée dans la console  DEV_URL,
+  'https://front-end-git-main-minderofts-projects.vercel.app', // ✅ Vercel backup project autorisé
+  'https://front-end-hazel-chi.vercel.app', // ✅ origin détectée dans la console
+  DEV_URL,
   'http://localhost:3000',
   'http://127.0.0.1:5173',
 ];
@@ -54,17 +56,17 @@ const corsOptions = {
   origin: function (origin, callback) {
     // Accepter les requêtes sans origin (mobile apps, curl requests, etc.)
     if (!origin) {
+      console.log('🔄 CORS: No origin header (mobile app or curl request)');
       return callback(null, true);
     }
 
     // Vérifier si l'origin est dans la liste allowée
     if (allowedOrigins.includes(origin)) {
+      console.log(`✅ CORS: Origin ${origin} allowed`);
       callback(null, true);
     } else {
       // En développement, logger les origins rejetées
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn(`⚠️  CORS: Origin ${origin} not allowed`);
-      }
+      console.warn(`❌ CORS: Origin ${origin} not allowed. Allowed origins:`, allowedOrigins);
       callback(new Error('CORS: Origin not allowed'));
     }
   },
@@ -83,6 +85,14 @@ const corsOptions = {
 
 // Appliquer CORS globalement
 app.use(cors(corsOptions));
+
+// Logger les requêtes preflight OPTIONS
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    console.log(`🔄 OPTIONS request: ${req.method} ${req.path} from origin: ${req.get('origin')}`);
+  }
+  next();
+});
 
 // Gérer les requêtes preflight OPTIONS explicitement
 app.options('*', cors(corsOptions));
