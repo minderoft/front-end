@@ -73,13 +73,21 @@ router.post('/login', validate('login'), async (req, res) => {
     // Rechercher l'utilisateur dans la table users de Neon
     console.log(`🔍 [LOGIN] Recherche utilisateur dans table 'users'...`);
     const dbStartTime = Date.now();
-    const user = await getAsync('SELECT * FROM users WHERE email = ?', [email]);
+    const user = await getAsync(
+      'SELECT id, email, password, name, phone, role, accepted_policy FROM users WHERE email = ?',
+      [email]
+    );
     const dbElapsed = Date.now() - dbStartTime;
     console.log(`✅ [LOGIN] Requête DB complétée en ${dbElapsed}ms`);
 
     if (!user) {
       console.log(`⚠️ [LOGIN] Utilisateur non trouvé: ${email}`);
       return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+    }
+
+    if (!user.accepted_policy) {
+      console.log(`⚠️ [LOGIN] Utilisateur sans accepted_policy: ${email}`);
+      return res.status(403).json({ error: 'Vous devez accepter la politique de confidentialité pour vous connecter.' });
     }
 
     console.log(`✓ [LOGIN] Utilisateur trouvé, vérification mot de passe...`);
@@ -108,6 +116,7 @@ router.post('/login', validate('login'), async (req, res) => {
         name: user.name,
         phone: user.phone,
         role: user.role,
+        accepted_policy: user.accepted_policy,
       },
       token,
     });
