@@ -1,28 +1,12 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-const createPoolConfig = () => {
-  const databaseUrl = process.env.DATABASE_URL?.trim();
-  if (!databaseUrl) {
-    throw new Error(
-      'DATABASE_URL manquant. Configurez la variable d\'environnement DATABASE_URL dans Render.'
-    );
-  }
-
-  return {
-    connectionString: databaseUrl,
-    ssl: {
-      rejectUnauthorized: false, // ✅ OBLIGATOIRE pour Neon sur Render
-    },
-    max: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-  };
-  // NOTE: Render DATABASE_URL doit aussi inclure ?sslmode=require pour Neon
-  // Exemple: postgresql://user:pass@host:5432/dbname?sslmode=require
-};
-
-const pool = new Pool(createPoolConfig());
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
 
 // ✅ CONVERTIR les placeholders MySQL (?) en PostgreSQL ($1, $2, etc.)
 const convertPlaceholders = (sql, params) => {
