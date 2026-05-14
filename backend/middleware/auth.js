@@ -20,6 +20,7 @@ const authenticateToken = async (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
+      console.log('❌ [AUTH] Token non fourni dans les headers');
       return res.status(401).json({ error: 'Token d\'accès requis' });
     }
 
@@ -29,6 +30,7 @@ const authenticateToken = async (req, res, next) => {
     const result = await query('SELECT id, email, name, phone, role FROM users WHERE id = ?', [decoded.id]);
     
     if (result.length === 0) {
+      console.log('❌ [AUTH] Utilisateur non trouvé dans la DB:', decoded.id);
       return res.status(401).json({ error: 'Utilisateur non trouvé' });
     }
 
@@ -36,8 +38,10 @@ const authenticateToken = async (req, res, next) => {
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
+      console.log('❌ [AUTH] Token expiré');
       return res.status(401).json({ error: 'Token expiré' });
     }
+    console.log('❌ [AUTH] Token invalide:', error.message);
     return res.status(403).json({ error: 'Token invalide' });
   }
 };

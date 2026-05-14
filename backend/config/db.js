@@ -230,8 +230,26 @@ const closeDatabase = async () => {
 // EXPORTS
 // ============================================
 
+const query = async (sql, params = []) => {
+  const statement = sql.trim().split(' ')[0].toUpperCase();
+  const startTime = Date.now();
+  try {
+    const result = await pool.query(sql, params);
+    const elapsed = Date.now() - startTime;
+    if (elapsed > 1000) {
+      console.warn(`⚠️ Requête lente (${elapsed}ms): ${statement}`);
+    }
+    return result.rows;
+  } catch (err) {
+    const elapsed = Date.now() - startTime;
+    console.error(`PostgreSQL query error (${elapsed}ms):`, err.message);
+    throw err;
+  }
+};
+
 module.exports = {
   pool,
+  query,
   testConnection,
   initDatabase,
   closeDatabase,
