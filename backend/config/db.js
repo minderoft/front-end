@@ -117,6 +117,8 @@ const initDatabase = async () => {
         metadata TEXT,
         status VARCHAR(50) DEFAULT 'pending',
         payment_status SMALLINT DEFAULT 0,
+        is_boosted BOOLEAN DEFAULT FALSE,
+        boost_expiry TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -132,6 +134,7 @@ const initDatabase = async () => {
         announcement_id VARCHAR(36) NOT NULL,
         amount DECIMAL(10,2) NOT NULL,
         method VARCHAR(100) NOT NULL,
+        purpose VARCHAR(50) NOT NULL DEFAULT 'publication',
         status VARCHAR(50) NOT NULL DEFAULT 'pending',
         transaction_id VARCHAR(255),
         reference VARCHAR(255),
@@ -184,16 +187,63 @@ const initDatabase = async () => {
         ('pub-vehicule', 'publication', 'vehicule', 'Publication Véhicule', 'Publication d''annonces de véhicules', 4000, $2, 1),
         ('pub-materiaux', 'publication', 'materiaux', 'Publication Matériaux', 'Publication d''annonces pour matériaux', 3000, $3, 1),
         ('pub-technicien', 'publication', 'technicien', 'Publication Technicien', 'Publication d''annonces de techniciens', 2000, $4, 1),
-        ('boost-standard', 'boost', NULL, 'Boost annonce', 'Boost d''une annonce', 1500, $5, 1)
+        ('boost-standard', 'boost', NULL, 'Boost annonce', 'Boost d''une annonce', 1000, $5, 1)
       `, [
         JSON.stringify(['Annonce 30 jours', 'Visibilité standard']),
         JSON.stringify(['Annonce 30 jours', 'Visibilité standard']),
         JSON.stringify(['Annonce 30 jours', 'Visibilité standard']),
         JSON.stringify(['Annonce 30 jours', 'Visibilité standard']),
-        JSON.stringify(['Boost 7 jours', 'Visibilité augmentée']),
+        JSON.stringify(['Boost 24 heures', 'Visibilité prioritaire'] ),
       ]);
       console.log('✅ [DB] Default pricing items seeded');
     }
+
+    // Create reviews table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id VARCHAR(36) PRIMARY KEY,
+        reviewer_id VARCHAR(36) NOT NULL,
+        target_user_id VARCHAR(36) NOT NULL,
+        announcement_id VARCHAR(36),
+        rating SMALLINT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(reviewer_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY(target_user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY(announcement_id) REFERENCES announcements(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('✅ [DB] reviews table ready');
+
+    // Create reports table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS reports (
+        id VARCHAR(36) PRIMARY KEY,
+        announcement_id VARCHAR(36) NOT NULL,
+        reporter_id VARCHAR(36) NOT NULL,
+        reason TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(announcement_id) REFERENCES announcements(id) ON DELETE CASCADE,
+        FOREIGN KEY(reporter_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('✅ [DB] reports table ready');
+
+    // Create favorites table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS favorites (
+        id VARCHAR(36) PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        announcement_id VARCHAR(36) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY(announcement_id) REFERENCES announcements(id) ON DELETE CASCADE,
+        UNIQUE(user_id, announcement_id)
+      )
+    `);
+    console.log('✅ [DB] favorites table ready');
 
     // Create conversations table with VARCHAR(36) IDs (FIXED TYPE MISMATCH!)
     await pool.query(`

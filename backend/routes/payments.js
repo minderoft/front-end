@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const { query } = require('../config/db');
 const { authenticateToken } = require('../middleware/auth');
 const { initializePayment, verifyPayment, getConfig, isConfigured } = require('../config/paystack');
-const { getCategoryPrice, paymentMethods } = require('../config/pricing');
+const { getCategoryPrice, getBoostPrice, paymentMethods } = require('../config/pricing');
 
 const router = express.Router();
 
@@ -46,8 +46,18 @@ const processPaymentUpdate = async (reference) => {
   const paymentRecord = paymentResult[0];
 
   if (paymentData.status === 'success') {
-      await query(`UPDATE payments SET status = 'completed', paid_at = CURRENT_TIMESTAMP WHERE reference = ?`, [reference]);
+    await query(`UPDATE payments SET status = 'completed', paid_at = CURRENT_TIMESTAMP WHERE reference = ?`, [reference]);
+
+    if (paymentRecord.purpose === 'boost') {
+      await query(
+        `UPDATE announcements SET is_boosted = TRUE, boost_expiry = CURRENT_TIMESTAMP + INTERVAL '24 hours', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+        [paymentRecord.announcement_id]
+      );
+    } else {
       await query(`UPDATE announcements SET payment_status = 1, status = 'active', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [paymentRecord.announcement_id]);
+    }
+
+    return { status: 'completed', payment: paymentData };
   }
 
   await query(`UPDATE payments SET status = 'failed' WHERE reference = ?`, [reference]);
@@ -71,14 +81,15 @@ router.get('/config', (req, res) => {
 // Créer une demande de paiement avec Paystack
 router.post('/create', authenticateToken, async (req, res) => {
   try {
-    const { announcementId, method = 'card', amount } = req.body;
+    const { announcementId, method = 'card', amount, purpose = 'publication' } = req.body;
+    const validPurposes = ['publication', 'boost'];
 
     if (!isConfigured()) {
       return res.status(503).json({ error: 'Service de paiement non disponible. Veuillez contacter l\'administrateur.' });
     }
 
-    if (!announcementId || !amount) {
-      return res.status(400).json({ error: 'Paramètres manquants' });
+    if (!announcementId || !amount || !validPurposes.includes(purpose)) {
+      return res.status(400).json({ error: 'Paramètres manquants ou invalides' });
     }
 
     const announcementResult = await query('SELECT * FROM announcements WHERE id = ? AND user_id = ?', [announcementId, req.user.id]);
@@ -87,21 +98,36 @@ router.post('/create', authenticateToken, async (req, res) => {
     }
 
     const announcement = announcementResult[0];
-    const expectedPrice = await getCategoryPrice(announcement.category);
-    if (expectedPrice === null) {
-      return res.status(400).json({ error: 'Prix de publication introuvable pour cette catégorie' });
+    let expectedPrice;
+
+    if (purpose === 'boost') {
+      const boostPricing = await getBoostPrice();
+      expectedPrice = boostPricing ? boostPricing.price : 1000;
+      if (announcement.status !== 'active') {
+        return res.status(400).json({ error: 'L\'annonce doit être active pour être boostée.' });
+      }
+    } else {
+      expectedPrice = await getCategoryPrice(announcement.category);
+      if (expectedPrice === null) {
+        return res.status(400).json({ error: 'Prix de publication introuvable pour cette catégorie' });
+      }
     }
 
     if (Number(amount) !== Number(expectedPrice)) {
       return res.status(400).json({
-        error: `Le montant doit être de ${expectedPrice} FCFA pour cette catégorie`,
+        error: `Le montant doit être de ${expectedPrice} FCFA pour cette opération`,
         expectedAmount: expectedPrice,
         category: announcement.category,
+        purpose,
       });
     }
 
-    if (announcement.payment_status) {
+    if (purpose === 'publication' && announcement.payment_status) {
       return res.status(400).json({ error: 'Cette annonce a déjà été payée' });
+    }
+
+    if (purpose === 'boost' && announcement.is_boosted && announcement.boost_expiry && new Date(announcement.boost_expiry) > new Date()) {
+      return res.status(400).json({ error: 'Cette annonce est déjà boostée pour une durée restante.' });
     }
 
     const transactionId = `TXN-${uuidv4().substring(0, 8).toUpperCase()}-${Date.now()}`;
@@ -110,8 +136,8 @@ router.post('/create', authenticateToken, async (req, res) => {
     const callbackUrl = process.env.PAYSTACK_CALLBACK_URL || process.env.FRONTEND_URL || null;
 
     await query(
-      `INSERT INTO payments (id, user_id, announcement_id, amount, method, status, transaction_id) VALUES (?, ?, ?, ?, ?, 'pending', ?)`,
-      [paymentId, req.user.id, announcementId, expectedPrice, method, transactionId]
+      `INSERT INTO payments (id, user_id, announcement_id, amount, method, purpose, status, transaction_id) VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`,
+      [paymentId, req.user.id, announcementId, expectedPrice, method, purpose, transactionId]
     );
 
     const paymentData = await initializePayment(
@@ -122,6 +148,7 @@ router.post('/create', authenticateToken, async (req, res) => {
         paymentId,
         transactionId,
         method,
+        purpose,
         userId: req.user.id,
         custom_fields: [
           {
@@ -133,6 +160,11 @@ router.post('/create', authenticateToken, async (req, res) => {
             display_name: 'Méthode de paiement',
             variable_name: 'payment_method',
             value: method,
+          },
+          {
+            display_name: 'Type de paiement',
+            variable_name: 'payment_purpose',
+            value: purpose,
           },
         ],
       },
@@ -164,7 +196,7 @@ router.get('/callback', async (req, res) => {
     const reference = req.query.trxref || req.query.reference;
     if (!reference) {
       console.error('❌ [PAYSTACK REDIRECT] Référence manquante dans query params');
-      return res.redirect(`${process.env.FRONTEND_URL || 'https://zel-chi.vercel.app'}/?error=payment_reference_missing`);
+      return res.redirect(`${process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app'}/?error=payment_reference_missing`);
     }
 
     console.log(`📊 [PAYSTACK REDIRECT] Vérification du paiement: ${reference}`);

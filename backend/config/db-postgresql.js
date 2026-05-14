@@ -118,6 +118,8 @@ const createTables = async () => {
         metadata TEXT,
         status VARCHAR(50) DEFAULT 'pending',
         payment_status SMALLINT DEFAULT 0,
+        is_boosted BOOLEAN DEFAULT FALSE,
+        boost_expiry TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -132,6 +134,7 @@ const createTables = async () => {
         announcement_id VARCHAR(36) NOT NULL,
         amount DECIMAL(10,2) NOT NULL,
         method VARCHAR(100) NOT NULL,
+        purpose VARCHAR(50) NOT NULL DEFAULT 'publication',
         status VARCHAR(50) NOT NULL DEFAULT 'pending',
         transaction_id VARCHAR(255),
         reference VARCHAR(255),
@@ -152,6 +155,47 @@ const createTables = async () => {
         subject VARCHAR(255),
         message TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await runAsync(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id VARCHAR(36) PRIMARY KEY,
+        reviewer_id VARCHAR(36) NOT NULL,
+        target_user_id VARCHAR(36) NOT NULL,
+        announcement_id VARCHAR(36),
+        rating SMALLINT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(reviewer_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY(target_user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY(announcement_id) REFERENCES announcements(id) ON DELETE SET NULL
+      )
+    `);
+
+    await runAsync(`
+      CREATE TABLE IF NOT EXISTS reports (
+        id VARCHAR(36) PRIMARY KEY,
+        announcement_id VARCHAR(36) NOT NULL,
+        reporter_id VARCHAR(36) NOT NULL,
+        reason TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(announcement_id) REFERENCES announcements(id) ON DELETE CASCADE,
+        FOREIGN KEY(reporter_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    await runAsync(`
+      CREATE TABLE IF NOT EXISTS favorites (
+        id VARCHAR(36) PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        announcement_id VARCHAR(36) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY(announcement_id) REFERENCES announcements(id) ON DELETE CASCADE,
+        UNIQUE(user_id, announcement_id)
       )
     `);
 
@@ -258,8 +302,8 @@ const seedPricing = async () => {
         category: null,
         name: 'Boost annonce',
         description: 'Boost d\'une annonce',
-        price: 1500,
-        features: JSON.stringify(['Meilleure visibilité', '7 jours']),
+        price: 1000,
+        features: JSON.stringify(['Meilleure visibilité', '24 heures']),
         active: 1,
       },
     ];

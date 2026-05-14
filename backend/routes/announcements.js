@@ -4,8 +4,9 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
 const { query } = require('../config/db');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, JWT_SECRET } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
 const { getCategoryPrice } = require('../config/pricing');
 
@@ -83,8 +84,22 @@ router.get('/', async (req, res) => {
     const limit = Number(req.query.limit) || 12;
     const offset = (page - 1) * limit;
 
+    let userId = null;
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+        userId = decoded.id;
+      } catch (err) {
+        console.warn('Token invalide pour récupération facultative de favoris:', err.message);
+      }
+    }
+
     let sql = `
-      SELECT a.*, u.name as user_name, u.phone as user_phone
+      SELECT a.*, u.name as user_name, u.phone as user_phone,
+        COALESCE((SELECT ROUND(AVG(r.rating)::numeric, 1) FROM reviews r WHERE r.target_user_id = a.user_id), 0) as average_rating,
+        COALESCE((SELECT COUNT(*) FROM reviews r WHERE r.target_user_id = a.user_id), 0) as review_count
       FROM announcements a
       LEFT JOIN users u ON a.user_id = u.id
       WHERE a.status = 'active' AND a.payment_status = 1
@@ -123,15 +138,22 @@ router.get('/', async (req, res) => {
     }
 
     // COUNT
-    const countSql = sql.replace(/SELECT a\.\*, u\.name as user_name, u\.phone as user_phone/, 'SELECT COUNT(*) as count');
+    const countSql = sql.replace(/SELECT a\.\*, u\.name as user_name, u\.phone as user_phone,\n        COALESCE\(\(SELECT ROUND\(AVG\(r.rating\)::numeric, 1\) FROM reviews r WHERE r.target_user_id = a.user_id\), 0\) as average_rating,\n        COALESCE\(\(SELECT COUNT\(\*\) FROM reviews r WHERE r.target_user_id = a.user_id\), 0\) as review_count/, 'SELECT COUNT(*) as count');
     const countResult = await query(countSql, params);
     const total = countResult[0]?.count || 0;
 
-    // Pagination
-    sql += ` ORDER BY a.created_at DESC LIMIT ? OFFSET ?`;
+    sql += ` ORDER BY a.is_boosted DESC, a.created_at DESC LIMIT ? OFFSET ?`;
     params.push(limit, offset);
 
     const result = await query(sql, params);
+
+    if (userId) {
+      const favoriteRows = await query('SELECT announcement_id FROM favorites WHERE user_id = ?', [userId]);
+      const favoriteIds = new Set(favoriteRows.map((row) => row.announcement_id));
+      result.forEach((item) => {
+        item.is_favorite = favoriteIds.has(item.id);
+      });
+    }
 
     res.json({
       announcements: result,
@@ -209,7 +231,9 @@ router.get('/nearby', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const result = await query(
-      `SELECT a.*, u.name as user_name, u.phone as user_phone, u.email as user_email
+      `SELECT a.*, u.name as user_name, u.phone as user_phone, u.email as user_email,
+        COALESCE((SELECT ROUND(AVG(r.rating)::numeric, 1) FROM reviews r WHERE r.target_user_id = a.user_id), 0) as average_rating,
+        COALESCE((SELECT COUNT(*) FROM reviews r WHERE r.target_user_id = a.user_id), 0) as review_count
        FROM announcements a
        LEFT JOIN users u ON a.user_id = u.id
        WHERE a.id = ?`,
