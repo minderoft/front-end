@@ -2,9 +2,9 @@ const { initDatabase, closeDatabase } = require('./config/db');
 
 const run = async () => {
   try {
-    console.log('🔧 Initialisation de la base MySQL...');
+    console.log('🔧 Initialisation de la base PostgreSQL/Neon...');
     await initDatabase();
-    console.log('✅ Base de données MySQL initialisée avec succès.');
+    console.log('✅ Base de données PostgreSQL/Neon initialisée avec succès.');
   } catch (error) {
     console.error('❌ Erreur pendant l initialisation de la base de données :', error);
     process.exit(1);

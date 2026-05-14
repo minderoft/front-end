@@ -12,8 +12,15 @@ router.get('/', async (req, res) => {
     const allPricing = await pricing.getAllPricing();
     
     if (!allPricing || allPricing.length === 0) {
-      console.warn('⚠️ Aucun tarif trouvé en base de données');
-      return res.status(500).json({ error: 'Tarifs non initialisés en base de données' });
+      console.warn('⚠️ Aucun tarif trouvé en base de données. Retourne un tableau vide.');
+      return res.json({
+        categories: [],
+        boost: [],
+        options: [],
+        durations: pricing.durations,
+        paymentMethods: pricing.paymentMethods,
+        lastUpdated: new Date().toISOString(),
+      });
     }
 
     const categories = allPricing.filter((item) => item.type === 'publication');
