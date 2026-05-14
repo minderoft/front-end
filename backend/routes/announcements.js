@@ -12,6 +12,34 @@ const { getCategoryPrice } = require('../config/pricing');
 
 const router = express.Router();
 
+const normalizeAnnouncement = (announcement) => {
+  if (!announcement || typeof announcement !== 'object') return announcement;
+
+  const normalized = { ...announcement };
+
+  if (typeof normalized.images === 'string') {
+    try {
+      normalized.images = JSON.parse(normalized.images);
+    } catch (error) {
+      console.error('Erreur parse images:', error.message, normalized.images);
+      normalized.images = [];
+    }
+  }
+
+  if (typeof normalized.metadata === 'string') {
+    try {
+      normalized.metadata = JSON.parse(normalized.metadata);
+    } catch (error) {
+      console.error('Erreur parse metadata:', error.message, normalized.metadata);
+      normalized.metadata = {};
+    }
+  }
+
+  return normalized;
+};
+
+const normalizeAnnouncements = (rows) => rows.map(normalizeAnnouncement);
+
 // Multer config
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -145,7 +173,7 @@ router.get('/', async (req, res) => {
     sql += ` ORDER BY a.is_boosted DESC, a.created_at DESC LIMIT ? OFFSET ?`;
     params.push(limit, offset);
 
-    const result = await query(sql, params);
+    const result = normalizeAnnouncements(await query(sql, params));
 
     if (userId) {
       const favoriteRows = await query('SELECT announcement_id FROM favorites WHERE user_id = ?', [userId]);
@@ -173,10 +201,10 @@ router.get('/', async (req, res) => {
 // GET MY ANNOUNCEMENTS
 router.get('/user/my-announcements', authenticateToken, async (req, res) => {
   try {
-    const result = await query(
+    const result = normalizeAnnouncements(await query(
       'SELECT * FROM announcements WHERE user_id = ? ORDER BY created_at DESC',
       [req.user.id]
-    );
+    ));
     res.json({ announcements: result });
   } catch (error) {
     console.error('Erreur my-announcements:', error);
@@ -219,7 +247,7 @@ router.get('/nearby', async (req, res) => {
       LIMIT 50
     `;
 
-    const nearby = await query(sql, [lat, lng, lat, 10]);
+    const nearby = normalizeAnnouncements(await query(sql, [lat, lng, lat, 10]));
     res.json({ announcements: nearby });
   } catch (error) {
     console.error('Erreur recherche nearby:', error);
@@ -244,7 +272,7 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Annonce non trouvée' });
     }
 
-    res.json({ announcement: result[0] });
+    res.json({ announcement: normalizeAnnouncement(result[0]) });
   } catch (error) {
     res.status(500).json({ error: 'Erreur serveur' });
   }
@@ -319,8 +347,9 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     console.log('Création annonce - Après INSERT');
     const result = await query('SELECT * FROM announcements WHERE id = ?', [id]);
     console.log('Création annonce - Résultat SELECT:', result.length);
+    const savedAnnouncement = normalizeAnnouncement(result[0]);
 
-    res.status(201).json(result[0]);
+    res.status(201).json(savedAnnouncement);
   } catch (error) {
     return sendAnnouncementError(res, error, {
       userId: req.user?.id,

@@ -5,6 +5,19 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+const normalizeImages = (images) => {
+  if (Array.isArray(images)) return images;
+  if (typeof images === 'string') {
+    try {
+      return JSON.parse(images);
+    } catch (error) {
+      console.error('Erreur parse favorite images:', error.message, images);
+      return [];
+    }
+  }
+  return images || [];
+};
+
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const favorites = await query(
@@ -16,7 +29,12 @@ router.get('/', authenticateToken, async (req, res) => {
       [req.user.id]
     );
 
-    res.json({ favorites });
+    const normalizedFavorites = favorites.map((favorite) => ({
+      ...favorite,
+      images: normalizeImages(favorite.images),
+    }));
+
+    res.json({ favorites: normalizedFavorites });
   } catch (error) {
     console.error('Erreur récupération favoris:', error);
     res.status(500).json({ error: 'Erreur serveur' });
