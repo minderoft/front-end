@@ -150,7 +150,7 @@ const Announcements = () => {
               type="number"
               name="maxPrice"
               className="form-input"
-              placeholder="999999999"
+              placeholder=" "
               value={filters.maxPrice}
               onChange={handleFilterChange}
             />
@@ -185,9 +185,9 @@ const Announcements = () => {
                 key={announcement.id}
                 className="card"
               >
-                {announcement.images && announcement.images.length > 0 ? (
+                {announcement.images && Array.isArray(announcement.images) && announcement.images.length > 0 ? (
                   <img 
-                    src={announcement.images[0]} 
+                    src={`https://backend-ovbc.onrender.com${announcement.images[0]}`} 
                     alt={announcement.title}
                     className="card-image"
                   />
@@ -233,7 +233,7 @@ const Announcements = () => {
                   </div>
                   <div className="card-meta">
                     <span>📍 {announcement.location}</span>
-                    {announcement.phone && <span>📞 {announcement.phone}</span>}
+                    {announcement.user_phone ? <span>📞 {announcement.user_phone}</span> : announcement.phone && <span>📞 {announcement.phone}</span>}
                   </div>
                 </div>
               </Link>

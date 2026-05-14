@@ -85,7 +85,7 @@ const AnnouncementDetail = () => {
           >
             🏠
           </div>
-          {images.length > 1 && (
+          {images && Array.isArray(images) && images.length > 1 && (
             <div className="announcement-thumbnails">
               {images.map((img, index) => (
                 <img
