@@ -6,7 +6,7 @@ const Success = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(3);
 
   const reference = searchParams.get('reference');
   const status = searchParams.get('status');
