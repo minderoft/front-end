@@ -180,11 +180,11 @@ const initDatabase = async () => {
       console.log('🔧 [DB] Seed default pricing items');
       await pool.query(`
         INSERT INTO pricing (id, type, category, name, description, price, features, active) VALUES
-        ('pub-immobilier', 'publication', 'immobilier', 'Publication Immobilier', 'Publication d\'annonces immobilières', 5000, $1, 1),
-        ('pub-vehicule', 'publication', 'vehicule', 'Publication Véhicule', 'Publication d\'annonces de véhicules', 4000, $2, 1),
-        ('pub-materiaux', 'publication', 'materiaux', 'Publication Matériaux', 'Publication d\'annonces pour matériaux', 3000, $3, 1),
-        ('pub-technicien', 'publication', 'technicien', 'Publication Technicien', 'Publication d\'annonces de techniciens', 2000, $4, 1),
-        ('boost-standard', 'boost', NULL, 'Boost annonce', 'Boost d\'une annonce', 1500, $5, 1)
+        ('pub-immobilier', 'publication', 'immobilier', 'Publication Immobilier', 'Publication d''annonces immobilières', 5000, $1, 1),
+        ('pub-vehicule', 'publication', 'vehicule', 'Publication Véhicule', 'Publication d''annonces de véhicules', 4000, $2, 1),
+        ('pub-materiaux', 'publication', 'materiaux', 'Publication Matériaux', 'Publication d''annonces pour matériaux', 3000, $3, 1),
+        ('pub-technicien', 'publication', 'technicien', 'Publication Technicien', 'Publication d''annonces de techniciens', 2000, $4, 1),
+        ('boost-standard', 'boost', NULL, 'Boost annonce', 'Boost d''une annonce', 1500, $5, 1)
       `, [
         JSON.stringify(['Annonce 30 jours', 'Visibilité standard']),
         JSON.stringify(['Annonce 30 jours', 'Visibilité standard']),
