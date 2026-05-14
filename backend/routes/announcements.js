@@ -272,6 +272,10 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Annonce non trouvée' });
     }
 
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('GET /announcements/:id images:', result[0].images);
+    }
+
     res.json({ announcement: normalizeAnnouncement(result[0]) });
   } catch (error) {
     res.status(500).json({ error: 'Erreur serveur' });
@@ -346,7 +350,9 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
 
     console.log('Création annonce - Après INSERT');
     const result = await query('SELECT * FROM announcements WHERE id = ?', [id]);
-    console.log('Création annonce - Résultat SELECT:', result.length);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Création annonce - Résultat SELECT:', result.length, result[0]?.images);
+    }
     const savedAnnouncement = normalizeAnnouncement(result[0]);
 
     res.status(201).json(savedAnnouncement);
