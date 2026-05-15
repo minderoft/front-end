@@ -17,26 +17,43 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
+    // ✅ Restaurer la session au chargement de la page
+    const restoreSession = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const savedUser = localStorage.getItem('user');
+        
+        if (token) {
+          // On a un token, essayer de vérifier auprès du serveur
+          if (savedUser) {
+            setUser(JSON.parse(savedUser));
+          }
+          
+          // Valider le token avec le serveur
+          try {
+            const res = await authService.getProfile();
+            if (res.data.user) {
+              setUser(res.data.user);
+              localStorage.setItem('user', JSON.stringify(res.data.user));
+              console.log('✅ [AuthContext] Session restaurée avec succès');
+            }
+          } catch (error) {
+            // Token invalide ou expiré
+            console.warn('⚠️ [AuthContext] Token invalide ou expiré, déconnexion');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setUser(null);
+          }
+        }
+      } catch (error) {
+        console.error('❌ [AuthContext] Erreur restauration session:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
-      // Vérifier le token avec le serveur
-      authService.getProfile()
-        .then(res => {
-          setUser(res.data.user);
-          localStorage.setItem('user', JSON.stringify(res.data.user));
-        })
-        .catch(() => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          setUser(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    restoreSession();
   }, []);
 
   const login = async (email, password) => {
