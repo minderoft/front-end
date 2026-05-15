@@ -26,6 +26,15 @@ const normalizeAnnouncement = (announcement) => {
     }
   }
 
+  // Exposer un champ image_url pratique (première image) pour le frontend
+  try {
+    normalized.image_url = Array.isArray(normalized.images) && normalized.images.length > 0
+      ? normalized.images[0]
+      : null;
+  } catch (err) {
+    normalized.image_url = null;
+  }
+
   if (typeof normalized.metadata === 'string') {
     try {
       normalized.metadata = JSON.parse(normalized.metadata);
@@ -305,6 +314,7 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     }
 
     const images = req.files?.map((f) => '/uploads/' + f.filename) || [];
+    const firstImage = images.length > 0 ? images[0] : null;
     let metadataValue = {};
 
     if (typeof metadata === 'string' && metadata.trim() !== '') {
@@ -329,8 +339,8 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     console.log('Création annonce - Avant INSERT:', { id, userId: req.user.id });
 
     await query(
-      `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, latitude, longitude, phone, images, metadata, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+      `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, latitude, longitude, phone, images, image_url, metadata, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
       [
         id,
         req.user.id,
@@ -344,6 +354,7 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
         longitudeValue,
         phone,
         JSON.stringify(images),
+        firstImage,
         JSON.stringify(metadataValue),
       ]
     );

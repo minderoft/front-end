@@ -114,6 +114,7 @@ const initDatabase = async () => {
         longitude DECIMAL(11,8),
         phone VARCHAR(60),
         images TEXT,
+        image_url TEXT,
         metadata TEXT,
         status VARCHAR(50) DEFAULT 'pending',
         payment_status SMALLINT DEFAULT 0,

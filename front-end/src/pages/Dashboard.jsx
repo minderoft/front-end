@@ -193,7 +193,8 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center" style={{ padding: '64px' }}>
