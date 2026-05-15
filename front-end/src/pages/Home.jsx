@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { announcementService } from '../services/api';
+import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
 
 const categories = [
   { id: 'immobilier', name: 'Immobilier', icon: '🏠', description: 'Terrains, villas, appartements' },
@@ -159,9 +160,17 @@ const Home = () => {
                 </p>
                 <div className="announcements-grid">
                   {nearbyAnnouncements.map((announcement) => {
-                    const imageUrl = announcement.images && announcement.images.length > 0
-                      ? `https://backend-ovbc.onrender.com${announcement.images[0]}`
-                      : null;
+                    const parsedImages = parseImages(announcement.images);
+                    const imageUrl = resolveImageUrl(parsedImages[0]);
+
+                    if (import.meta.env.DEV) {
+                      console.log('DEBUG Home nearby image', {
+                        announcementId: announcement.id,
+                        rawImages: announcement.images,
+                        parsedImages,
+                        imageUrl,
+                      });
+                    }
 
                     return (
                       <div 
@@ -174,11 +183,8 @@ const Home = () => {
                             src={imageUrl} 
                             alt={announcement.title}
                             className="card-image"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                              const placeholder = e.target.nextElementSibling;
-                              if (placeholder) placeholder.style.display = 'flex';
-                            }}
+                            loading="lazy"
+                            onError={handleImageError}
                           />
                         ) : null}
                         <div 
@@ -345,9 +351,17 @@ const Home = () => {
         ) : announcements.length > 0 ? (
           <div className="announcements-grid">
             {announcements.map((announcement) => {
-              const imageUrl = announcement.images && announcement.images.length > 0
-                ? `https://backend-ovbc.onrender.com${announcement.images[0]}`
-                : null;
+                const parsedImages = parseImages(announcement.images);
+                const imageUrl = resolveImageUrl(parsedImages[0]);
+
+                if (import.meta.env.DEV) {
+                  console.log('DEBUG Home recent image', {
+                    announcementId: announcement.id,
+                    rawImages: announcement.images,
+                    parsedImages,
+                    imageUrl,
+                  });
+                }
 
               return (
                 <div 
@@ -360,11 +374,8 @@ const Home = () => {
                       src={imageUrl} 
                       alt={announcement.title}
                       className="card-image"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        const placeholder = e.target.nextElementSibling;
-                        if (placeholder) placeholder.style.display = 'flex';
-                      }}
+                      loading="lazy"
+                      onError={handleImageError}
                     />
                   ) : null}
                   <div 

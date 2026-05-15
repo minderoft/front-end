@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { announcementService, paymentService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -117,15 +118,30 @@ const Dashboard = () => {
             <>
               {announcements.length > 0 ? (
                 <div className="announcements-grid">
-                  {announcements.map(announcement => (
-                    <div key={announcement.id} className="card">
-                      {announcement.images && announcement.images.length > 0 ? (
-                        <img 
-                          src={announcement.images[0]} 
-                          alt={announcement.title}
-                          className="card-image"
-                        />
-                      ) : (
+                  {announcements.map(announcement => {
+                    const parsedImages = parseImages(announcement.images);
+                    const imageUrl = resolveImageUrl(parsedImages[0]);
+
+                    if (import.meta.env.DEV) {
+                      console.log('DEBUG Dashboard image', {
+                        announcementId: announcement.id,
+                        rawImages: announcement.images,
+                        parsedImages,
+                        imageUrl,
+                      });
+                    }
+
+                    return (
+                      <div key={announcement.id} className="card">
+                        {imageUrl ? (
+                          <img 
+                            src={imageUrl} 
+                            alt={announcement.title}
+                            className="card-image"
+                            loading="lazy"
+                            onError={handleImageError}
+                          />
+                        ) : (
                         <div className="card-image" style={{ 
                           backgroundColor: '#E2E8F0', 
                           display: 'flex', 

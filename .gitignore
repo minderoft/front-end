@@ -17,8 +17,7 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
-yarn.lock
+# On ne met pas package-lock.json ici pour que Vercel garde les versions stables
 
 # --------------------------------------------
 # Build et distribution
@@ -55,7 +54,7 @@ uploads/*
 # --------------------------------------------
 .vscode/
 .idea/
-*.sublime-*
+.sublime-
 
 # --------------------------------------------
 # Tests

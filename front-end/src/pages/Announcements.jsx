@@ -1,9 +1,12 @@
 // filepath: front-end/src/pages/Announcements.jsx
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { announcementService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { announcementService, reportService } from '../services/api';
+import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
 
 const Announcements = () => {
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,6 +21,7 @@ const Announcements = () => {
     location: searchParams.get('location') || '',
     search: searchParams.get('search') || '',
   });
+
 
   useEffect(() => {
     fetchAnnouncements();
@@ -64,6 +68,25 @@ const Announcements = () => {
       search: '',
     });
     setSearchParams({});
+  };
+
+  const handleReport = async (announcementId) => {
+    if (!user) {
+      return window.alert('Veuillez vous connecter pour signaler une annonce.');
+    }
+
+    const reason = window.prompt('Indiquez la raison du signalement :');
+    if (!reason || !reason.trim()) {
+      return;
+    }
+
+    try {
+      await reportService.create({ announcementId, reason: reason.trim() });
+      window.alert('Signalement envoyé.');
+    } catch (err) {
+      console.error('Erreur signalement:', err);
+      window.alert(err.response?.data?.error || 'Impossible de signaler cette annonce.');
+    }
   };
 
   const handlePageChange = (newPage) => {
@@ -179,65 +202,114 @@ const Announcements = () => {
           </p>
           
           <div className="announcements-grid">
-            {announcements.map((announcement) => (
-              <Link 
-                to={`/announcements/${announcement.id}`} 
-                key={announcement.id}
-                className="card"
-              >
-                {announcement.images && Array.isArray(announcement.images) && announcement.images.length > 0 ? (
-                  <img 
-                    src={`https://backend-ovbc.onrender.com${announcement.images[0]}`} 
-                    alt={announcement.title}
-                    className="card-image"
-                  />
-                ) : (
-                  <div className="card-image" style={{ 
-                    backgroundColor: '#E2E8F0', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    fontSize: '3rem'
-                  }}>
-                    🏠
-                  </div>
-                )}
-                <div className="card-body">
-                  <div className="d-flex justify-between align-center mb-2">
-                    <span style={{ 
-                      fontSize: '0.75rem', 
-                      color: 'var(--accent)',
-                      textTransform: 'uppercase',
-                      fontWeight: '600'
+            {announcements.map((announcement) => {
+              const parsedImages = parseImages(announcement.images);
+              const imageUrl = resolveImageUrl(parsedImages[0]);
+
+              if (import.meta.env.DEV) {
+                console.log('DEBUG Announcements image', {
+                  announcementId: announcement.id,
+                  rawImages: announcement.images,
+                  parsedImages,
+                  imageUrl,
+                });
+              }
+
+              return (
+                <Link 
+                  to={`/announcements/${announcement.id}`} 
+                  key={announcement.id}
+                  className="card"
+                >
+                  {imageUrl ? (
+                    <img 
+                      src={imageUrl} 
+                      alt={announcement.title}
+                      className="card-image"
+                      loading="lazy"
+                      onError={handleImageError}
+                    />
+                  ) : (
+                    <div className="card-image" style={{ 
+                      backgroundColor: '#E2E8F0', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      fontSize: '3rem'
                     }}>
-                      {announcement.category}
-                    </span>
-                    {announcement.type && (
+                      🏠
+                    </div>
+                  )}
+                  <div className="card-body">
+                    <div className="d-flex justify-between align-center mb-2">
                       <span style={{ 
                         fontSize: '0.75rem', 
-                        backgroundColor: 'var(--primary)',
-                        color: 'white',
-                        padding: '2px 8px',
-                        borderRadius: '4px'
+                        color: 'var(--accent)',
+                        textTransform: 'uppercase',
+                        fontWeight: '600'
                       }}>
-                        {announcement.type}
+                        {announcement.category}
                       </span>
-                    )}
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        {announcement.is_boosted && (
+                          <span style={{ 
+                            fontSize: '0.75rem', 
+                            backgroundColor: '#FFB703',
+                            color: 'var(--primary)',
+                            padding: '2px 8px',
+                            borderRadius: '4px'
+                          }}>
+                            🚀 Boosté
+                          </span>
+                        )}
+                        {announcement.is_favorite && (
+                          <span style={{
+                            fontSize: '0.75rem',
+                            color: '#E53E3E',
+                            fontWeight: '700'
+                          }}>
+                            ♥ Favori
+                          </span>
+                        )}
+                        {announcement.type && (
+                          <span style={{ 
+                            fontSize: '0.75rem', 
+                            backgroundColor: 'var(--primary)',
+                            color: 'white',
+                            padding: '2px 8px',
+                            borderRadius: '4px'
+                          }}>
+                            {announcement.type}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <h3 className="card-title">{announcement.title}</h3>
+                    <p className="card-text">{announcement.description?.substring(0, 80)}...</p>
+                    <div className="card-price">
+                      {announcement.category === 'technicien' || announcement.price === 0 
+                        ? 'Prix à négocier' 
+                        : `${announcement.price?.toLocaleString()} FCFA`}
+                    </div>
+                    <div className="card-meta">
+                      <span>📍 {announcement.location}</span>
+                      {announcement.user_phone ? <span>📞 {announcement.user_phone}</span> : announcement.phone && <span>📞 {announcement.phone}</span>}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleReport(announcement.id);
+                      }}
+                      className="btn btn-outline"
+                      style={{ marginTop: '12px' }}
+                    >
+                      Signaler
+                    </button>
                   </div>
-                  <h3 className="card-title">{announcement.title}</h3>
-                  <p className="card-text">{announcement.description?.substring(0, 80)}...</p>
-                  <div className="card-price">
-                    {announcement.category === 'technicien' || announcement.price === 0 
-                      ? 'Prix à négocier' 
-                      : `${announcement.price?.toLocaleString()} FCFA`}
-                  </div>
-                  <div className="card-meta">
-                    <span>📍 {announcement.location}</span>
-                    {announcement.user_phone ? <span>📞 {announcement.user_phone}</span> : announcement.phone && <span>📞 {announcement.phone}</span>}
-                  </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Pagination */}

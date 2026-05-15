@@ -171,6 +171,30 @@ export const contactService = {
 };
 
 // ============================================
+// REVIEWS
+// ============================================
+export const reviewService = {
+  create: (data) => api.post('/reviews', data),
+  getByUser: (userId) => api.get(`/reviews/user/${userId}`),
+};
+
+// ============================================
+// REPORTS
+// ============================================
+export const reportService = {
+  create: (data) => api.post('/reports', data),
+};
+
+// ============================================
+// FAVORITES
+// ============================================
+export const favoriteService = {
+  getAll: () => api.get('/favorites'),
+  add: (announcementId) => api.post(`/favorites/${announcementId}`),
+  remove: (announcementId) => api.delete(`/favorites/${announcementId}`),
+};
+
+// ============================================
 // CHAT
 // ============================================
 export const chatService = {

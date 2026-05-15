@@ -2,8 +2,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { announcementService } from '../services/api';
+import { announcementService, paymentService, reportService, favoriteService } from '../services/api';
 import AnnouncementMap from '../components/AnnouncementMap';
+import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
 
 const AnnouncementDetail = () => {
   const { id } = useParams();
@@ -12,6 +13,10 @@ const AnnouncementDetail = () => {
   const [announcement, setAnnouncement] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [boostLoading, setBoostLoading] = useState(false);
 
   useEffect(() => {
     const fetchAnnouncement = async () => {
@@ -26,6 +31,21 @@ const AnnouncementDetail = () => {
     };
     fetchAnnouncement();
   }, [id]);
+
+  useEffect(() => {
+    const fetchFavorite = async () => {
+      if (!user || !announcement?.id) return;
+      try {
+        const response = await favoriteService.getAll();
+        const favoriteIds = response.data.favorites.map((item) => item.announcement_id);
+        setIsFavorite(favoriteIds.includes(announcement.id));
+      } catch (error) {
+        console.error('Erreur chargement favoris:', error);
+      }
+    };
+
+    fetchFavorite();
+  }, [user, announcement]);
 
   if (loading) {
     return (
@@ -46,12 +66,113 @@ const AnnouncementDetail = () => {
     );
   }
 
-  const images = announcement.images || [];
+  const images = parseImages(announcement.images);
+  const selectedImageUrl = resolveImageUrl(images[selectedImage]);
+
+  if (import.meta.env.DEV) {
+    console.log('DEBUG AnnouncementDetail images', {
+      announcementId: announcement.id,
+      rawImages: announcement.images,
+      parsedImages: images,
+      selectedImageUrl,
+    });
+  }
+
   const categoryLabels = {
     immobilier: 'Immobilier',
     vehicule: 'Véhicule',
     materiaux: 'Matériaux de construction',
     technicien: 'Technicien',
+  };
+
+  const detailsData = announcement.metadata ?? announcement.details;
+  let detailsObj = null;
+  try {
+    detailsObj = typeof detailsData === 'string' ? JSON.parse(detailsData) : detailsData;
+  } catch (error) {
+    console.error('Erreur parsing details/metadata:', error, detailsData);
+    detailsObj = null;
+  }
+
+  const detailsEntries = detailsObj && typeof detailsObj === 'object'
+    ? Object.entries(detailsObj)
+    : [];
+
+  const sellerPhone = announcement.user_phone || announcement.phone || announcement.phone_number || announcement.user_phone_number;
+
+  const handleToggleFavorite = async () => {
+    if (!user) {
+      return window.alert('Veuillez vous connecter pour gérer vos favoris.');
+    }
+
+    setFavoriteLoading(true);
+    try {
+      if (isFavorite) {
+        await favoriteService.remove(announcement.id);
+        setIsFavorite(false);
+      } else {
+        await favoriteService.add(announcement.id);
+        setIsFavorite(true);
+      }
+    } catch (error) {
+      console.error('Erreur favoris:', error);
+      window.alert(error.response?.data?.error || 'Impossible de mettre à jour les favoris.');
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
+
+  const handleReport = async () => {
+    if (!user) {
+      return window.alert('Veuillez vous connecter pour signaler une annonce.');
+    }
+
+    const reason = window.prompt('Indiquez la raison du signalement (ex: annonce frauduleuse, contenu inapproprié)');
+    if (!reason || !reason.trim()) {
+      return;
+    }
+
+    setReportLoading(true);
+    try {
+      await reportService.create({ announcementId: announcement.id, reason: reason.trim() });
+      window.alert('Votre signalement a été envoyé.');
+    } catch (error) {
+      console.error('Erreur signalement:', error);
+      window.alert(error.response?.data?.error || 'Impossible d\'envoyer le signalement.');
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  const handleBoost = async () => {
+    if (!user || user.id !== announcement.user_id) {
+      return window.alert('Seul le propriétaire peut booster cette annonce.');
+    }
+
+    if (!window.confirm('Booster cette annonce pour 1000 FCFA pendant 24h ?')) {
+      return;
+    }
+
+    setBoostLoading(true);
+    try {
+      const response = await paymentService.create({
+        announcementId: announcement.id,
+        amount: 1000,
+        method: 'mobile_money',
+        purpose: 'boost',
+      });
+
+      if (response.data.authorizationUrl) {
+        window.location.href = response.data.authorizationUrl;
+      } else {
+        window.alert('Erreur lors de la création du paiement de boost.');
+      }
+    } catch (error) {
+      console.error('Erreur boost:', error);
+      window.alert(error.response?.data?.error || 'Impossible de lancer le boost.');
+    } finally {
+      setBoostLoading(false);
+    }
   };
 
   return (
@@ -63,16 +184,29 @@ const AnnouncementDetail = () => {
       {/* Galerie d'images */}
       {images.length > 0 ? (
         <div className="announcement-gallery">
-          <img
-            src={`https://backend-ovbc.onrender.com${images[selectedImage]}`}
-            alt={announcement.title}
-            className="announcement-main-image"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              const placeholder = e.target.nextElementSibling;
-              if (placeholder) placeholder.style.display = 'flex';
-            }}
-          />
+          {selectedImageUrl ? (
+            <img
+              src={selectedImageUrl}
+              alt={announcement.title}
+              className="announcement-main-image"
+              loading="lazy"
+              onError={handleImageError}
+            />
+          ) : (
+            <div
+              className="announcement-main-image"
+              style={{
+                backgroundColor: '#E2E8F0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '5rem'
+              }}
+            >
+              🏠
+            </div>
+          )}
+
           <div
             className="announcement-main-image"
             style={{
@@ -90,9 +224,10 @@ const AnnouncementDetail = () => {
               {images.map((img, index) => (
                 <img
                   key={index}
-                  src={`https://backend-ovbc.onrender.com${img}`}
+                  src={resolveImageUrl(img)}
                   alt={`${announcement.title} - ${index + 1}`}
                   className="announcement-thumbnail"
+                  loading="lazy"
                   onClick={() => setSelectedImage(index)}
                   style={{ opacity: selectedImage === index ? 1 : 0.7 }}
                   onError={(e) => {
@@ -151,8 +286,34 @@ const AnnouncementDetail = () => {
           )}
         </div>
 
-        <h1 style={{ marginBottom: 'var(--spacing-md)' }}>{announcement.title}</h1>
-        
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: 'var(--spacing-md)' }}>
+          <h1 style={{ margin: 0, flex: 1 }}>{announcement.title}</h1>
+          <button
+            className="btn btn-ghost"
+            onClick={handleToggleFavorite}
+            disabled={favoriteLoading}
+            style={{ minWidth: '120px' }}
+          >
+            {isFavorite ? '♥ Favori' : '♡ Favoris'}
+          </button>
+        </div>
+
+        {announcement.is_boosted && announcement.boost_expiry ? (
+          <div style={{ marginBottom: 'var(--spacing-sm)', color: 'var(--accent)', fontWeight: '600' }}>
+            🚀 Boost actif jusqu'au {new Date(announcement.boost_expiry).toLocaleDateString('fr-FR')} à {new Date(announcement.boost_expiry).toLocaleTimeString('fr-FR')}
+          </div>
+        ) : null}
+
+        {announcement.average_rating ? (
+          <div style={{ marginBottom: 'var(--spacing-sm)', color: 'var(--text-light)' }}>
+            ⭐ {announcement.average_rating} / 5 · {announcement.review_count} avis
+          </div>
+        ) : (
+          <div style={{ marginBottom: 'var(--spacing-sm)', color: 'var(--text-light)' }}>
+            ⭐ Pas encore de note pour ce prestataire
+          </div>
+        )}
+
         <div className="announcement-price">
           {announcement.category === 'technicien' || announcement.price === 0 
             ? 'Prix à négocier' 
@@ -165,6 +326,23 @@ const AnnouncementDetail = () => {
           <span>📅 Publié le {new Date(announcement.created_at).toLocaleDateString('fr-FR')}</span>
         </div>
 
+        {user?.id === announcement.user_id && !announcement.is_boosted && (
+          <button
+            onClick={handleBoost}
+            disabled={boostLoading}
+            className="btn btn-accent"
+            style={{ marginTop: 'var(--spacing-md)' }}
+          >
+            {boostLoading ? 'Génération du paiement...' : 'Booster cette annonce (1000 FCFA)'}
+          </button>
+        )}
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: 'var(--spacing-md)' }}>
+          <button onClick={handleReport} className="btn btn-outline" disabled={reportLoading}>
+            {reportLoading ? 'Signalement en cours...' : 'Signaler cette annonce'}
+          </button>
+        </div>
+
         <hr style={{ margin: 'var(--spacing-lg) 0', border: 'none', borderTop: '1px solid var(--border)' }} />
 
         <h3 className="mb-2">Description</h3>
@@ -173,12 +351,12 @@ const AnnouncementDetail = () => {
         </p>
 
         {/* Métadonnées spécifiques selon la catégorie */}
-        {announcement.metadata && (
+        {detailsEntries.length > 0 && (
           <>
             <hr style={{ margin: 'var(--spacing-lg) 0', border: 'none', borderTop: '1px solid var(--border)' }} />
             <h3 className="mb-2">Détails</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--spacing-md)' }}>
-              {Object.entries(announcement.metadata).map(([key, value]) => (
+              {detailsEntries.map(([key, value]) => (
                 <div key={key}>
                   <strong style={{ color: 'var(--text-light)' }}>{key}:</strong> {value}
                 </div>
@@ -203,22 +381,21 @@ const AnnouncementDetail = () => {
             </p>
           )}
           
-          {announcement.user_phone && (
+          {sellerPhone && (
             <p className="mb-2">
-              <strong>Téléphone:</strong> {announcement.user_phone}
+              <strong>Téléphone:</strong> {sellerPhone}
             </p>
           )}
           
           {announcement.user_email && (
             <p className="mb-3">
-              <strong>Email:</strong> {announcement.user_email}
-            </p>
+              <strong>Email:</strong> {announcement.user_email}</p>
           )}
 
-          {announcement.user_phone ? (
+          {sellerPhone ? (
             <>
               <a
-                href={`https://wa.me/${announcement.user_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
+                href={`https://wa.me/${sellerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn w-full mb-3"
@@ -232,7 +409,7 @@ const AnnouncementDetail = () => {
                 💬 Contacter sur WhatsApp
               </a>
               <a 
-                href={`tel:${announcement.user_phone}`} 
+                href={`tel:${sellerPhone}`} 
                 className="btn btn-accent w-full"
               >
                 📞 Appeler maintenant
