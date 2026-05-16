@@ -1,0 +1,522 @@
+/* Enhancement CSS for Phase 5 Features */
+
+/* ============================================
+   ANNOUNCEMENT CARDS - Enhancements
+   ============================================ */
+
+.announcement-card {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.announcement-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Image container with badges */
+.announcement-image {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+.announcement-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.announcement-card:hover .announcement-image img {
+  transform: scale(1.05);
+}
+
+/* Badges positioning */
+.announcement-image .boosted-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+}
+
+.announcement-image .status-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+/* Info section */
+.announcement-info {
+  padding: 1rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.announcement-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Seller info with verification badge */
+.seller-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.seller-info strong {
+  color: #333;
+}
+
+/* Rating display */
+.announcement-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.announcement-rating .stars {
+  font-size: 0.85rem;
+  color: #ff9800;
+}
+
+.announcement-rating .review-count {
+  font-size: 0.75rem;
+  color: #999;
+  margin-left: 0.25rem;
+}
+
+/* Price */
+.announcement-price {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ff6b35;
+  margin: 0.5rem 0 0.75rem 0;
+}
+
+/* Category */
+.announcement-category {
+  font-size: 0.8rem;
+  color: #999;
+  margin: 0;
+}
+
+/* Actions section */
+.announcement-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eee;
+}
+
+.announcement-actions button {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.btn-view {
+  background-color: #ff6b35;
+  color: white;
+}
+
+.btn-view:hover {
+  background-color: #e55a2b;
+}
+
+.btn-favorite {
+  background-color: transparent;
+  color: #ff6b35;
+  border: 1.5px solid #ff6b35;
+}
+
+.btn-favorite:hover {
+  background-color: #ffe6e0;
+}
+
+.btn-favorite.favorited {
+  background-color: #ff6b35;
+  color: white;
+  border-color: #ff6b35;
+}
+
+/* ============================================
+   SELLER CARD
+   ============================================ */
+
+.seller-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.seller-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0 auto 1rem;
+}
+
+.seller-name-with-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.seller-name-with-badge h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.seller-rating-summary {
+  margin: 1rem 0;
+  padding: 1rem 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.seller-rating-summary .average-rating {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ff6b35;
+}
+
+.seller-rating-summary .review-count {
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 0.25rem;
+}
+
+.seller-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.seller-actions button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-contact {
+  background-color: #ff6b35;
+  color: white;
+}
+
+.btn-contact:hover {
+  background-color: #e55a2b;
+}
+
+.btn-verify {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.btn-verify:hover {
+  background-color: #45a049;
+}
+
+/* ============================================
+   REVIEWS SECTION
+   ============================================ */
+
+.reviews-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.reviews-section h3 {
+  margin-top: 0;
+  color: #333;
+  border-bottom: 2px solid #ff6b35;
+  padding-bottom: 0.75rem;
+}
+
+.rating-summary {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 1rem 0;
+}
+
+.average-rating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.average-rating .value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #ff6b35;
+}
+
+.average-rating .stars {
+  font-size: 1.5rem;
+  color: #ff9800;
+  margin-top: 0.5rem;
+}
+
+.review-count {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+/* Review form */
+.review-form {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  margin: 1.5rem 0;
+  border: 1px solid #ddd;
+}
+
+.review-form h4 {
+  margin-top: 0;
+  color: #333;
+}
+
+.rating-input {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.rating-input button {
+  background: none;
+  border: 2px solid #ddd;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.rating-input button:hover,
+.rating-input button.selected {
+  border-color: #ff9800;
+  background-color: #fffbf0;
+  transform: scale(1.1);
+}
+
+.review-form textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 1rem;
+}
+
+.review-form .btn-submit {
+  background-color: #ff6b35;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.review-form .btn-submit:hover {
+  background-color: #e55a2b;
+}
+
+/* Reviews list */
+.reviews-list {
+  margin-top: 1.5rem;
+}
+
+.review-item {
+  background: white;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 6px;
+  border-left: 3px solid #ff6b35;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.review-header strong {
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.review-header .rating {
+  font-size: 0.85rem;
+  color: #ff9800;
+}
+
+.review-comment {
+  color: #666;
+  margin: 0.5rem 0;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.review-date {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+/* ============================================
+   BOOST SECTION
+   ============================================ */
+
+.boost-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #fff5eb 0%, #ffe6d9 100%);
+  border-radius: 8px;
+  border: 2px solid #ff6b35;
+  text-align: center;
+}
+
+.boost-section h3 {
+  margin-top: 0;
+  color: #ff6b35;
+  font-size: 1.3rem;
+}
+
+.boost-section p {
+  color: #666;
+  margin: 0.5rem 0 1rem 0;
+}
+
+.boost-section .btn-boost {
+  background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
+  color: white;
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.boost-section .btn-boost:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+  .announcement-card {
+    margin-bottom: 1rem;
+  }
+
+  .seller-card {
+    margin-bottom: 1.5rem;
+  }
+
+  .rating-summary {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .reviews-section {
+    padding: 1rem;
+  }
+
+  .review-form {
+    padding: 0.75rem;
+  }
+
+  .announcement-actions {
+    flex-direction: column;
+  }
+
+  .seller-actions {
+    flex-direction: column;
+  }
+
+  .rating-input {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .announcement-image {
+    height: 150px;
+  }
+
+  .announcement-info {
+    padding: 0.75rem;
+  }
+
+  .average-rating .value {
+    font-size: 2rem;
+  }
+
+  .boost-section {
+    padding: 1rem;
+  }
+
+  .boost-section .btn-boost {
+    width: 100%;
+  }
+}

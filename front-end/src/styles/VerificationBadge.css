@@ -1,0 +1,41 @@
+/* Verification Badge Styles */
+
+.verification-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: help;
+  margin-left: 0.25rem;
+}
+
+.verification-badge .checkmark {
+  color: white;
+  font-weight: bold;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+/* Sizes */
+.verification-badge.small {
+  width: 16px;
+  height: 16px;
+}
+
+.verification-badge.small .checkmark {
+  font-size: 0.7rem;
+}
+
+.verification-badge.large {
+  width: 28px;
+  height: 28px;
+}
+
+.verification-badge.large .checkmark {
+  font-size: 1.1rem;
+}

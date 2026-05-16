@@ -1,0 +1,28 @@
+/* Boosted Badge Styles */
+
+.boosted-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: linear-gradient(135deg, #FF6B35 0%, #E55A2B 100%);
+  color: white;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  box-shadow: 0 3px 8px rgba(255, 107, 53, 0.3);
+  animation: pulse-boost 2s infinite;
+}
+
+.boosted-badge .rocket {
+  font-size: 0.9rem;
+}
+
+@keyframes pulse-boost {
+  0%, 100% {
+    box-shadow: 0 3px 8px rgba(255, 107, 53, 0.3);
+  }
+  50% {
+    box-shadow: 0 3px 12px rgba(255, 107, 53, 0.5);
+  }
+}
