@@ -101,6 +101,7 @@ const AnnouncementDetail = () => {
     : [];
 
   const sellerPhone = announcement.user_phone || announcement.phone || announcement.phone_number || announcement.user_phone_number;
+  const sellerEmail = announcement.user_email || announcement.email;
 
   const handleToggleFavorite = async () => {
     if (!user) {
@@ -417,8 +418,16 @@ const AnnouncementDetail = () => {
                 📞 Appeler maintenant
               </a>
             </>
+          ) : sellerEmail ? (
+            <a
+              href={`mailto:${sellerEmail}?subject=${encodeURIComponent(`Contact LocaPlus : ${announcement.title}`)}`}
+              className="btn btn-accent w-full"
+              style={{ textAlign: 'center' }}
+            >
+              ✉️ Contacter par email
+            </a>
           ) : (
-            <p style={{ color: '#999', fontSize: '0.875rem' }}>Aucun numéro de téléphone disponible</p>
+            <p style={{ color: '#999', fontSize: '0.875rem' }}>Aucun contact disponible pour cette annonce</p>
           )}
         </div>
       </div>

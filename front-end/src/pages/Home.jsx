@@ -151,7 +151,7 @@ const Home = () => {
       <section className="hero">
         <div className="hero-grid">
           <div className="hero-copy">
-            <span className="hero-eyebrow">Fintech + Sécurité · Présence Abidjan</span>
+            <span className="hero-eyebrow">Fintech + Sécurité </span>
             <h1>LocaPlus, l'application multiservices de mise en relation sécurisée pour l'immobilier, véhicules, BTP et techniciens.</h1>
             <p>
               Une expérience professionnelle, visuelle et ultra-fiable pour chercher des annonces. Données chiffrées, vendeurs vérifiés.
@@ -346,6 +346,7 @@ const Home = () => {
             {announcements.map((announcement) => {
               const parsedImages = parseImages(announcement.images);
               const imageUrl = resolveImageUrl(parsedImages[0]);
+              const sellerPhone = announcement.user_phone || announcement.phone || announcement.phone_number || announcement.user_phone_number;
 
               return (
                 <article key={announcement.id} className="card announcement-card">
@@ -376,14 +377,20 @@ const Home = () => {
                       >
                         Voir
                       </button>
-                      <a
-                        href={`https://wa.me/${announcement.user_phone?.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn btn-whatsapp"
-                      >
-                        💬 WhatsApp
-                      </a>
+                      {sellerPhone ? (
+                        <a
+                          href={`https://wa.me/${sellerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-whatsapp"
+                        >
+                          💬 WhatsApp
+                        </a>
+                      ) : (
+                        <button type="button" className="btn btn-outline" disabled>
+                          Aucun contact disponible
+                        </button>
+                      )}
                     </div>
                   </div>
                 </article>

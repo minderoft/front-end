@@ -11,9 +11,36 @@ L.Icon.Default.mergeOptions({
 });
 
 const AnnouncementMap = ({ latitude, longitude, title, location }) => {
-  // Si les coordonnées ne sont pas disponibles, retourner null
-  if (!latitude || !longitude) {
-    return null;
+  const hasCoordinates = latitude !== undefined && latitude !== null && longitude !== undefined && longitude !== null && latitude !== '' && longitude !== '';
+
+  if (!hasCoordinates) {
+    return (
+      <div
+        style={{
+          width: '100%',
+          borderRadius: 'var(--radius-md, 8px)',
+          overflow: 'hidden',
+          border: '1px solid var(--border, #E2E8F0)',
+          marginTop: 'var(--spacing-lg, 24px)',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          backgroundColor: '#fff',
+        }}
+      >
+        <h3 style={{
+          margin: '0 0 12px 0',
+          padding: '16px',
+          fontSize: '1.125rem',
+          fontWeight: '600',
+          color: 'var(--text, #1A202C)',
+        }}>
+          📍 Localisation
+        </h3>
+        <div style={{ padding: '16px', color: '#475569', fontSize: '0.95rem' }}>
+          <p style={{ margin: 0 }}>Géolocalisation non disponible pour cette annonce.</p>
+          {location && <p style={{ margin: '8px 0 0 0' }}>Adresse renseignée : <strong>{location}</strong></p>}
+        </div>
+      </div>
+    );
   }
 
   const position = [parseFloat(latitude), parseFloat(longitude)];

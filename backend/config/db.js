@@ -59,29 +59,35 @@ const initDatabase = async () => {
   try {
     await testConnection();
 
-    console.log('\n📝 [DB] Dropping existing tables with CASCADE to resolve type conflicts...');
-    
-    // Drop tables in dependency order (reverse of creation order)
-    const dropOrder = [
-      'DROP TABLE IF EXISTS messages CASCADE',
-      'DROP TABLE IF EXISTS conversations CASCADE',
-      'DROP TABLE IF EXISTS payments CASCADE',
-      'DROP TABLE IF EXISTS announcements CASCADE',
-      'DROP TABLE IF EXISTS pricing CASCADE',
-      'DROP TABLE IF EXISTS contact_messages CASCADE',
-      'DROP TABLE IF EXISTS users CASCADE',
-    ];
+    const resetDatabase = process.env.DB_RESET_ON_STARTUP === 'true';
 
-    for (const dropStatement of dropOrder) {
-      try {
-        await pool.query(dropStatement);
-        console.log(`✅ ${dropStatement}`);
-      } catch (err) {
-        console.warn(`⚠️ ${dropStatement} - ${err.message}`);
+    if (resetDatabase) {
+      console.log('\n📝 [DB] Dropping existing tables with CASCADE to resolve type conflicts...');
+      
+      // Drop tables in dependency order (reverse of creation order)
+      const dropOrder = [
+        'DROP TABLE IF EXISTS messages CASCADE',
+        'DROP TABLE IF EXISTS conversations CASCADE',
+        'DROP TABLE IF EXISTS payments CASCADE',
+        'DROP TABLE IF EXISTS announcements CASCADE',
+        'DROP TABLE IF EXISTS pricing CASCADE',
+        'DROP TABLE IF EXISTS contact_messages CASCADE',
+        'DROP TABLE IF EXISTS users CASCADE',
+      ];
+
+      for (const dropStatement of dropOrder) {
+        try {
+          await pool.query(dropStatement);
+          console.log(`✅ ${dropStatement}`);
+        } catch (err) {
+          console.warn(`⚠️ ${dropStatement} - ${err.message}`);
+        }
       }
-    }
 
-    console.log('\n📝 [DB] Creating tables with consistent VARCHAR(36) type for all IDs...');
+      console.log('\n📝 [DB] Creating tables with consistent VARCHAR(36) type for all IDs...');
+    } else {
+      console.log('\n📝 [DB] Database reset disabled on startup. Existing data will be preserved.');
+    }
     
     // Create users table with VARCHAR(36) for UUIDs
     await pool.query(`
