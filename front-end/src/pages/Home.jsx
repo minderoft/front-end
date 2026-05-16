@@ -3,12 +3,41 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { announcementService } from '../services/api';
 import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
+import CategoryCarousel from '../components/CategoryCarousel';
 
 const categories = [
-  { id: 'immobilier', name: 'Immobilier', icon: '🏠', description: 'Terrains, villas, appartements', theme: 'immobilier' },
-  { id: 'vehicule', name: 'Véhicules', icon: '🚗', description: 'Voitures, motos, trucks', theme: 'vehicule' },
-  { id: 'materiaux', name: 'BTP', icon: '🧱', description: 'Matériaux et fournitures', theme: 'materiaux' },
-  { id: 'technicien', name: 'Techniciens', icon: '🔧', description: 'Plombiers, électriciens, maçons', theme: 'technicien' },
+  {
+    id: 'immobilier',
+    name: 'Immobilier',
+    icon: '🏠',
+    description: 'Maisons, appartements, terrains',
+    theme: 'immobilier',
+    image: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1050&q=80',
+  },
+  {
+    id: 'vehicule',
+    name: 'Véhicules',
+    icon: '🚗',
+    description: 'Voitures, motos et utilitaires',
+    theme: 'vehicule',
+    image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1050&q=80',
+  },
+  {
+    id: 'materiaux',
+    name: 'BTP',
+    icon: '🧱',
+    description: 'Matériaux et équipements de construction',
+    theme: 'materiaux',
+    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1050&q=80',
+  },
+  {
+    id: 'technicien',
+    name: 'Techniciens',
+    icon: '🔧',
+    description: 'Artisans, serruriers, électriciens, plombiers',
+    theme: 'technicien',
+    image: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1050&q=80',
+  },
 ];
 
 const professionalPricing = [
@@ -123,9 +152,9 @@ const Home = () => {
         <div className="hero-grid">
           <div className="hero-copy">
             <span className="hero-eyebrow">Fintech + Sécurité · Présence Abidjan</span>
-            <h1>LocaPlus, la marketplace sécurisée pour l’immobilier, véhicules, BTP et techniciens.</h1>
+            <h1>LocaPlus, l'application multiservices de mise en relation sécurisée pour l'immobilier, véhicules, BTP et techniciens.</h1>
             <p>
-              Une expérience professionnelle, visuelle et ultra fiable pour publier ou chercher des annonces à Abidjan. Données chiffrées, vendeurs vérifiés et paiement sécurisé à portée de main.
+              Une expérience professionnelle, visuelle et ultra-fiable pour chercher des annonces. Données chiffrées, vendeurs vérifiés.
             </p>
             <div className="hero-buttons">
               <Link to="/announcements" className="btn btn-primary btn-lg">
@@ -162,28 +191,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="ecosystem-section">
-        <div className="section-head">
-          <span className="section-label">Explorez notre Écosystème</span>
-          <h2>Navigation visuelle par catégorie</h2>
-        </div>
-        <div className="ecosystem-grid">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              type="button"
-              className={`ecosystem-card ${category.theme}`}
-              onClick={() => handleCategoryClick(category.id)}
-            >
-              <div className="ecosystem-card-overlay" />
-              <div className="ecosystem-card-content">
-                <span className="ecosystem-icon">{category.icon}</span>
-                <h3>{category.name}</h3>
-              </div>
-            </button>
-          ))}
-        </div>
-      </section>
+      <CategoryCarousel categories={categories} onCategoryClick={handleCategoryClick} />
 
       <section className="security-trust">
         <div className="section-head">

@@ -619,17 +619,28 @@ a:hover {
   margin-bottom: 0;
 }
 
+.ecosystem-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+}
+
 .ecosystem-card {
   height: 260px;
   display: grid;
   align-items: end;
   justify-items: start;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .ecosystem-card-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(30, 41, 59, 0.08), rgba(15, 23, 42, 0.6));
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.85) 28%, rgba(15, 23, 42, 0.3) 70%, rgba(15, 23, 42, 0.12) 100%);
+  pointer-events: none;
 }
 
 .ecosystem-card-content {
@@ -637,8 +648,11 @@ a:hover {
   z-index: 1;
 }
 
-.ecosystem-card.immobilier {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.9), rgba(15, 23, 42, 0.88));
+.ecosystem-card.immobilier,
+.ecosystem-card.vehicule,
+.ecosystem-card.materiaux,
+.ecosystem-card.technicien {
+  background-color: transparent;
 }
 
 .ecosystem-card.vehicule {
@@ -653,10 +667,55 @@ a:hover {
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.92), rgba(15, 23, 42, 0.88));
 }
 
-.ecosystem-section {
+.ecosystem-section,
+.categories-section {
   padding: var(--spacing-2xl) var(--spacing-xl);
   max-width: 1200px;
   margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .categories-section,
+  .security-trust,
+  .announcements-section,
+  .hero {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .ecosystem-grid {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 12px;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+  }
+
+  .ecosystem-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ecosystem-card {
+    flex: 0 0 75%;
+    min-width: 75%;
+    max-width: 75%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    height: 320px;
+  }
+
+  @media (max-width: 640px) {
+    .ecosystem-card {
+      flex: 0 0 80%;
+      min-width: 80%;
+      max-width: 80%;
+    }
+  }
 }
 
 .section-head {
