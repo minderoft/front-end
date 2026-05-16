@@ -57,7 +57,7 @@ const Home = () => {
     const fetchData = async () => {
       try {
         const announcementsRes = await announcementService.getAll({ limit: 6 });
-        setAnnouncements(announcementsRes.data.announcements);
+        setAnnouncements(Array.isArray(announcementsRes.data.announcements) ? announcementsRes.data.announcements : []);
       } catch (error) {
         console.error('Erreur:', error);
       } finally {
@@ -161,7 +161,8 @@ const Home = () => {
                 <div className="announcements-grid">
                   {nearbyAnnouncements.map((announcement) => {
                     const parsedImages = parseImages(announcement.images);
-                    const imageUrl = resolveImageUrl(parsedImages[0]);
+                    const rawImage = announcement.image_url || parsedImages[0];
+                    const imageUrl = resolveImageUrl(rawImage);
 
                     if (import.meta.env.DEV) {
                       console.log('DEBUG Home nearby image', {

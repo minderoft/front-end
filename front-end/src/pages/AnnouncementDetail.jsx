@@ -37,7 +37,7 @@ const AnnouncementDetail = () => {
       if (!user || !announcement?.id) return;
       try {
         const response = await favoriteService.getAll();
-        const favoriteIds = response.data.favorites.map((item) => item.announcement_id);
+        const favoriteIds = Array.isArray(response.data.favorites) ? response.data.favorites.map((item) => item.announcement_id) : [];
         setIsFavorite(favoriteIds.includes(announcement.id));
       } catch (error) {
         console.error('Erreur chargement favoris:', error);
@@ -67,7 +67,9 @@ const AnnouncementDetail = () => {
   }
 
   const images = parseImages(announcement.images);
-  const selectedImageUrl = resolveImageUrl(images[selectedImage]);
+  const allImages = announcement.image_url ? [announcement.image_url, ...images.filter(i => i !== announcement.image_url)] : images;
+  const safeIndex = Math.max(0, Math.min(selectedImage, allImages.length - 1));
+  const selectedImageUrl = resolveImageUrl(allImages[safeIndex]);
 
   if (import.meta.env.DEV) {
     console.log('DEBUG AnnouncementDetail images', {
@@ -181,73 +183,73 @@ const AnnouncementDetail = () => {
         ← Retour aux annonces
       </Link>
 
-      {/* Galerie d'images */}
+      {/* Galerie d'images - Améliorée */}
       {images.length > 0 ? (
         <div className="announcement-gallery">
-          {selectedImageUrl ? (
-            <img
-              src={selectedImageUrl}
-              alt={announcement.title}
-              className="announcement-main-image"
-              loading="lazy"
-              onError={handleImageError}
-            />
-          ) : (
-            <div
-              className="announcement-main-image"
-              style={{
-                backgroundColor: '#E2E8F0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '5rem'
-              }}
-            >
-              🏠
-            </div>
-          )}
-
-          <div
-            className="announcement-main-image"
-            style={{
-              backgroundColor: '#E2E8F0',
-              display: 'none',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '3rem'
-            }}
-          >
-            🏠
+          {/* Image principale */}
+          <div>
+            {selectedImageUrl ? (
+              <img
+                src={selectedImageUrl}
+                alt={announcement.title}
+                className="announcement-main-image"
+                loading="lazy"
+                onError={handleImageError}
+              />
+            ) : (
+              <div
+                className="announcement-main-image"
+                style={{
+                  backgroundColor: '#E2E8F0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '5rem',
+                  color: '#CBD5E0'
+                }}
+              >
+                🏠
+              </div>
+            )}
           </div>
+
+          {/* Miniatures - Visible seulement s'il y a plusieurs images */}
           {images && Array.isArray(images) && images.length > 1 && (
             <div className="announcement-thumbnails">
-              {images.map((img, index) => (
-                <img
-                  key={index}
-                  src={resolveImageUrl(img)}
-                  alt={`${announcement.title} - ${index + 1}`}
-                  className="announcement-thumbnail"
-                  loading="lazy"
-                  onClick={() => setSelectedImage(index)}
-                  style={{ opacity: selectedImage === index ? 1 : 0.7 }}
-                  onError={(e) => {
-                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iI0UyRThGMCIvPgo8dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPu+4jzwvdGV4dD4KPHN2Zz4=';
-                  }}
-                />
-              ))}
+              {images.map((img, index) => {
+                const thumbUrl = resolveImageUrl(img);
+                return (
+                  <img
+                    key={index}
+                    src={thumbUrl}
+                    alt={`${announcement.title} - ${index + 1}`}
+                    className={`announcement-thumbnail ${selectedImage === index ? 'active' : ''}`}
+                    loading="lazy"
+                    onClick={() => setSelectedImage(index)}
+                    onError={(e) => {
+                      e.target.style.backgroundColor = '#E2E8F0';
+                      e.target.style.display = 'flex';
+                      e.target.style.alignItems = 'center';
+                      e.target.style.justifyContent = 'center';
+                      e.target.textContent = '🏠';
+                    }}
+                  />
+                );
+              })}
             </div>
           )}
         </div>
       ) : (
         <div style={{ 
           backgroundColor: '#E2E8F0', 
-          height: '300px', 
+          height: '400px', 
           borderRadius: 'var(--radius-lg)',
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center',
           fontSize: '5rem',
-          marginBottom: 'var(--spacing-xl)'
+          marginBottom: 'var(--spacing-2xl)',
+          color: '#CBD5E0'
         }}>
           🏠
         </div>

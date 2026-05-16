@@ -7,6 +7,7 @@ const path = require('path');
 require('dotenv').config();
 
 const { initDatabase } = require('./config/db');
+const { ipTracking } = require('./middleware/ipTracking');
 const authRoutes = require('./routes/auth');
 const announcementRoutes = require('./routes/announcements');
 const paymentRoutes = require('./routes/payments');
@@ -16,6 +17,7 @@ const favoriteRoutes = require('./routes/favorites');
 const contactRoutes = require('./routes/contact');
 const pricingRoutes = require('./routes/pricing');
 const chatRoutes = require('./routes/chat');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -162,6 +164,15 @@ app.get('/', (req, res) => {
 // ROUTES API
 // ============================================
 
+// Middleware pour tracker IP et dernière connexion (après authentification)
+app.use((req, res, next) => {
+  if (req.user) {
+    ipTracking(req, res, next);
+  } else {
+    next();
+  }
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/payment', paymentRoutes);
@@ -171,6 +182,7 @@ app.use('/api/favorites', favoriteRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/pricing', pricingRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Route de santé avec CORS debug info
 app.get('/api/health', (req, res) => {

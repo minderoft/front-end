@@ -36,7 +36,7 @@ const Announcements = () => {
         page: pagination.page,
         limit: pagination.limit,
       });
-      setAnnouncements(response.data.announcements);
+      setAnnouncements(Array.isArray(response.data.announcements) ? response.data.announcements : []);
       setPagination(prev => ({ ...prev, ...response.data.pagination }));
     } catch (error) {
       console.error('Erreur:', error);
@@ -204,7 +204,8 @@ const Announcements = () => {
           <div className="announcements-grid">
             {announcements.map((announcement) => {
               const parsedImages = parseImages(announcement.images);
-              const imageUrl = resolveImageUrl(parsedImages[0]);
+              const rawImage = announcement.image_url || parsedImages[0];
+              const imageUrl = resolveImageUrl(rawImage);
 
               if (import.meta.env.DEV) {
                 console.log('DEBUG Announcements image', {

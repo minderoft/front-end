@@ -19,9 +19,9 @@ const Dashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      if (activeTab === 'announcements') {
+        if (activeTab === 'announcements') {
         const response = await announcementService.getMyAnnouncements();
-        setAnnouncements(response.data.announcements);
+        setAnnouncements(Array.isArray(response.data.announcements) ? response.data.announcements : []);
       } else if (activeTab === 'payments') {
         const response = await paymentService.getHistory();
         setPayments(response.data.payments);
@@ -120,7 +120,8 @@ const Dashboard = () => {
                 <div className="announcements-grid">
                   {announcements.map(announcement => {
                     const parsedImages = parseImages(announcement.images);
-                    const imageUrl = resolveImageUrl(parsedImages[0]);
+                    const rawImage = announcement.image_url || parsedImages[0];
+                    const imageUrl = resolveImageUrl(rawImage);
 
                     if (import.meta.env.DEV) {
                       console.log('DEBUG Dashboard image', {

@@ -58,7 +58,7 @@ const AdminPricing = () => {
         active: 1
       });
       
-      setPricing(pricing.map(p => p.id === id ? { ...p, price: parseInt(editValue) } : p));
+      setPricing(prev => Array.isArray(prev) ? prev.map(p => p.id === id ? { ...p, price: parseInt(editValue) } : p) : prev);
       setEditing(null);
       setMessage('✅ Tarif mis à jour avec succès !');
       setTimeout(() => setMessage(''), 3000);

@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
-const { query } = require('../config/db');
+const { pool } = require('../config/db');
 const { authenticateToken, JWT_SECRET } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
 const { getCategoryPrice } = require('../config/pricing');
@@ -134,7 +134,7 @@ router.get('/', async (req, res) => {
     }
 
     let sql = `
-      SELECT a.*, u.name as user_name, u.phone as user_phone,
+      SELECT a.*, u.name as user_name, u.phone as user_phone, u.is_verified,
         COALESCE((SELECT ROUND(AVG(r.rating)::numeric, 1) FROM reviews r WHERE r.target_user_id = a.user_id), 0) as average_rating,
         COALESCE((SELECT COUNT(*) FROM reviews r WHERE r.target_user_id = a.user_id), 0) as review_count
       FROM announcements a
@@ -143,57 +143,68 @@ router.get('/', async (req, res) => {
     `;
 
     const params = [];
+    let paramCount = 1;
 
     if (category) {
-      sql += ` AND a.category = ?`;
+      sql += ` AND a.category = $${paramCount}`;
       params.push(category);
+      paramCount++;
     }
 
     if (type) {
-      sql += ` AND a.type = ?`;
+      sql += ` AND a.type = $${paramCount}`;
       params.push(type);
+      paramCount++;
     }
 
     if (minPrice) {
-      sql += ` AND a.price >= ?`;
+      sql += ` AND a.price >= $${paramCount}`;
       params.push(Number(minPrice));
+      paramCount++;
     }
 
     if (maxPrice) {
-      sql += ` AND a.price <= ?`;
+      sql += ` AND a.price <= $${paramCount}`;
       params.push(Number(maxPrice));
+      paramCount++;
     }
 
     if (location) {
-      sql += ` AND a.location LIKE ?`;
+      sql += ` AND a.location ILIKE $${paramCount}`;
       params.push('%' + location + '%');
+      paramCount++;
     }
 
     if (search) {
-      sql += ` AND (a.title LIKE ? OR a.description LIKE ?)`;
+      sql += ` AND (a.title ILIKE $${paramCount} OR a.description ILIKE $${paramCount + 1})`;
       params.push('%' + search + '%', '%' + search + '%');
+      paramCount += 2;
     }
 
     // COUNT
-    const countSql = sql.replace(/SELECT a\.\*, u\.name as user_name, u\.phone as user_phone,\n        COALESCE\(\(SELECT ROUND\(AVG\(r.rating\)::numeric, 1\) FROM reviews r WHERE r.target_user_id = a.user_id\), 0\) as average_rating,\n        COALESCE\(\(SELECT COUNT\(\*\) FROM reviews r WHERE r.target_user_id = a.user_id\), 0\) as review_count/, 'SELECT COUNT(*) as count');
-    const countResult = await query(countSql, params);
-    const total = countResult[0]?.count || 0;
+    const countSql = sql.replace(
+      /SELECT a\.\*,.*?FROM announcements a/s,
+      'SELECT COUNT(*) as count FROM announcements a'
+    );
+    const countResult = await pool.query(countSql, params);
+    const total = countResult.rows[0]?.count || 0;
 
-    sql += ` ORDER BY a.is_boosted DESC, a.created_at DESC LIMIT ? OFFSET ?`;
+    sql += ` ORDER BY a.is_boosted DESC, a.created_at DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
     params.push(limit, offset);
 
-    const result = normalizeAnnouncements(await query(sql, params));
+    const result = await pool.query(sql, params);
+    const announcements = normalizeAnnouncements(result.rows);
 
     if (userId) {
-      const favoriteRows = await query('SELECT announcement_id FROM favorites WHERE user_id = ?', [userId]);
-      const favoriteIds = new Set(favoriteRows.map((row) => row.announcement_id));
-      result.forEach((item) => {
+      const favoriteResult = await pool.query('SELECT announcement_id FROM favorites WHERE user_id = $1', [userId]);
+      const favoriteIds = new Set(favoriteResult.rows.map((row) => row.announcement_id));
+      announcements.forEach((item) => {
         item.is_favorite = favoriteIds.has(item.id);
       });
     }
 
     res.json({
-      announcements: result,
+      announcements,
       pagination: {
         page,
         limit,
@@ -210,11 +221,11 @@ router.get('/', async (req, res) => {
 // GET MY ANNOUNCEMENTS
 router.get('/user/my-announcements', authenticateToken, async (req, res) => {
   try {
-    const result = normalizeAnnouncements(await query(
-      'SELECT * FROM announcements WHERE user_id = ? ORDER BY created_at DESC',
+    const result = await pool.query(
+      'SELECT * FROM announcements WHERE user_id = $1 ORDER BY created_at DESC',
       [req.user.id]
-    ));
-    res.json({ announcements: result });
+    );
+    res.json({ announcements: normalizeAnnouncements(result.rows) });
   } catch (error) {
     console.error('Erreur my-announcements:', error);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -224,8 +235,8 @@ router.get('/user/my-announcements', authenticateToken, async (req, res) => {
 // Obtenir les prix des annonces (utilisé par le frontend)
 router.get('/prices', async (req, res) => {
   try {
-    const result = await query('SELECT category, price FROM pricing WHERE type = ? AND active = 1', ['publication']);
-    res.json({ prices: result });
+    const result = await pool.query('SELECT category, price FROM pricing WHERE type = $1 AND active = 1', ['publication']);
+    res.json({ prices: result.rows });
   } catch (error) {
     console.error('Erreur récupération tarifs annonces:', error);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -243,20 +254,21 @@ router.get('/nearby', async (req, res) => {
     }
 
     const sql = `
-      SELECT a.*, u.name as user_name, u.phone as user_phone,
+      SELECT a.*, u.name as user_name, u.phone as user_phone, u.is_verified,
         (6371 * ACOS(
-          COS(RADIANS(?)) * COS(RADIANS(a.latitude)) * COS(RADIANS(a.longitude) - RADIANS(?)) +
-          SIN(RADIANS(?)) * SIN(RADIANS(a.latitude))
+          COS(RADIANS($1)) * COS(RADIANS(a.latitude)) * COS(RADIANS(a.longitude) - RADIANS($2)) +
+          SIN(RADIANS($3)) * SIN(RADIANS(a.latitude))
         )) AS distance_km
       FROM announcements a
       LEFT JOIN users u ON a.user_id = u.id
       WHERE a.status = 'active' AND a.payment_status = 1 AND a.latitude IS NOT NULL AND a.longitude IS NOT NULL
-      HAVING distance_km <= ?
+      HAVING distance_km <= $4
       ORDER BY distance_km ASC
       LIMIT 50
     `;
 
-    const nearby = normalizeAnnouncements(await query(sql, [lat, lng, lat, 10]));
+    const result = await pool.query(sql, [lat, lng, lat, 10]);
+    const nearby = normalizeAnnouncements(result.rows);
     res.json({ announcements: nearby });
   } catch (error) {
     console.error('Erreur recherche nearby:', error);
@@ -267,25 +279,25 @@ router.get('/nearby', async (req, res) => {
 // GET ONE
 router.get('/:id', async (req, res) => {
   try {
-    const result = await query(
-      `SELECT a.*, u.name as user_name, u.phone as user_phone, u.email as user_email,
+    const result = await pool.query(
+      `SELECT a.*, u.name as user_name, u.phone as user_phone, u.email as user_email, u.is_verified,
         COALESCE((SELECT ROUND(AVG(r.rating)::numeric, 1) FROM reviews r WHERE r.target_user_id = a.user_id), 0) as average_rating,
         COALESCE((SELECT COUNT(*) FROM reviews r WHERE r.target_user_id = a.user_id), 0) as review_count
        FROM announcements a
        LEFT JOIN users u ON a.user_id = u.id
-       WHERE a.id = ?`,
+       WHERE a.id = $1`,
       [req.params.id]
     );
 
-    if (!result.length) {
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Annonce non trouvée' });
     }
 
     if (process.env.NODE_ENV !== 'production') {
-      console.log('GET /announcements/:id images:', result[0].images);
+      console.log('GET /announcements/:id images:', result.rows[0].images);
     }
 
-    res.json({ announcement: normalizeAnnouncement(result[0]) });
+    res.json({ announcement: normalizeAnnouncement(result.rows[0]) });
   } catch (error) {
     res.status(500).json({ error: 'Erreur serveur' });
   }
@@ -338,9 +350,9 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     const id = uuidv4();
     console.log('Création annonce - Avant INSERT:', { id, userId: req.user.id });
 
-    await query(
-      `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, latitude, longitude, phone, images, image_url, metadata, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+    await pool.query(
+      `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, latitude, longitude, phone, images, image_url, metadata, status, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'pending', CURRENT_TIMESTAMP)`,
       [
         id,
         req.user.id,
@@ -360,11 +372,11 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     );
 
     console.log('Création annonce - Après INSERT');
-    const result = await query('SELECT * FROM announcements WHERE id = ?', [id]);
+    const result = await pool.query('SELECT * FROM announcements WHERE id = $1', [id]);
     if (process.env.NODE_ENV !== 'production') {
-      console.log('Création annonce - Résultat SELECT:', result.length, result[0]?.images);
+      console.log('Création annonce - Résultat SELECT:', result.rows.length, result.rows[0]?.images);
     }
-    const savedAnnouncement = normalizeAnnouncement(result[0]);
+    const savedAnnouncement = normalizeAnnouncement(result.rows[0]);
 
     res.status(201).json(savedAnnouncement);
   } catch (error) {
@@ -380,7 +392,7 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
 // DELETE
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    await query('DELETE FROM announcements WHERE id = ?', [req.params.id]);
+    await pool.query('DELETE FROM announcements WHERE id = $1', [req.params.id]);
     res.json({ message: 'Supprimé' });
   } catch (error) {
     res.status(500).json({ error: 'Erreur suppression' });
