@@ -877,7 +877,28 @@ a:hover {
 .announcement-card {
   display: flex;
   flex-direction: column;
+  min-height: 100%;
   overflow: hidden;
+}
+
+.announcement-card .card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+}
+
+.announcement-card .card-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.announcement-card .card-actions .btn,
+.announcement-card .card-actions a {
+  flex: 1;
+  min-width: 120px;
 }
 
 .card-image-fallback {

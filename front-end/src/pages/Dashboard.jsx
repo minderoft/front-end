@@ -122,6 +122,8 @@ const Dashboard = () => {
                     const parsedImages = parseImages(announcement.images);
                     const rawImage = announcement.image_url || parsedImages[0];
                     const imageUrl = resolveImageUrl(rawImage);
+                    const location = announcement.location || announcement.geolocalisation || '';
+                    const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
 
                     if (import.meta.env.DEV) {
                       console.log('DEBUG Dashboard image', {
@@ -133,7 +135,7 @@ const Dashboard = () => {
                     }
 
                     return (
-                      <div key={announcement.id} className="card">
+                      <div key={announcement.id} className="card announcement-card">
                         {imageUrl ? (
                           <img 
                             src={imageUrl} 
@@ -154,7 +156,7 @@ const Dashboard = () => {
                         </div>
                       )}
                       <div className="card-body">
-                        <div className="d-flex justify-between align-center mb-2">
+                        <div className="d-flex justify-between align-center mb-2" style={{ gap: '8px' }}>
                           <span style={{ 
                             fontSize: '0.75rem', 
                             color: 'var(--accent)',
@@ -163,18 +165,31 @@ const Dashboard = () => {
                           }}>
                             {categoryLabels[announcement.category]}
                           </span>
-                          <span style={{ 
-                            fontSize: '0.75rem',
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            backgroundColor: announcement.status === 'active' ? 'var(--success)' : 'var(--warning)',
-                            color: 'white'
-                          }}>
-                            {statusLabels[announcement.status]}
-                          </span>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            {isBoosted && (
+                              <span style={{
+                                fontSize: '0.75rem',
+                                backgroundColor: '#ffebc2',
+                                color: '#b45309',
+                                padding: '2px 8px',
+                                borderRadius: '4px'
+                              }}>
+                                🚀 Boosté
+                              </span>
+                            )}
+                            <span style={{ 
+                              fontSize: '0.75rem',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              backgroundColor: announcement.status === 'active' ? 'var(--success)' : 'var(--warning)',
+                              color: 'white'
+                            }}>
+                              {statusLabels[announcement.status]}
+                            </span>
+                          </div>
                         </div>
                         <h3 className="card-title">{announcement.title}</h3>
-                        <p className="card-text">{announcement.location}</p>
+                        <p className="card-text">{location}</p>
                         <div className="card-price">{announcement.price?.toLocaleString()} FCFA</div>
                         <div className="d-flex gap-2 mt-3">
                           <Link 

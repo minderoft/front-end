@@ -98,6 +98,7 @@ const initDatabase = async () => {
         name VARCHAR(255) NOT NULL,
         phone VARCHAR(60),
         role VARCHAR(50) DEFAULT 'user',
+        is_verified BOOLEAN DEFAULT FALSE,
         accepted_policy BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

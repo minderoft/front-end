@@ -37,8 +37,9 @@ const Announcements = () => {
         page: pagination.page,
         limit: pagination.limit,
       });
-      setAnnouncements(Array.isArray(response.data.announcements) ? response.data.announcements : []);
-      setPagination(prev => ({ ...prev, ...response.data.pagination }));
+      const results = response.data?.announcements ?? response.data ?? [];
+      setAnnouncements(Array.isArray(results) ? results : []);
+      setPagination(prev => ({ ...prev, ...response.data?.pagination }));
     } catch (error) {
       console.error('Erreur:', error);
     } finally {
@@ -224,7 +225,7 @@ const Announcements = () => {
                 <Link 
                   to={`/announcements/${announcement.id}`} 
                   key={announcement.id}
-                  className="card"
+                  className="card announcement-card"
                 >
                   {imageUrl ? (
                     <img 

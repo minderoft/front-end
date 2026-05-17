@@ -111,18 +111,25 @@ export const announcementService = {
   getNearby: (lat, lng) => api.get('/announcements/nearby', { params: { lat, lng } }),
   getById: (id) => api.get(`/announcements/${id}`),
   create: (data) => {
+    if (data instanceof FormData) {
+      return api.post('/announcements', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+    }
     const formData = new FormData();
     Object.keys(data).forEach(key => {
       if (key === 'images') {
         data.images.forEach(image => formData.append('images', image));
       } else if (key === 'metadata') {
-        formData.append(key, JSON.stringify(data[key]));
+        formData.append(key, typeof data[key] === 'string' ? data[key] : JSON.stringify(data[key]));
       } else {
         formData.append(key, data[key]);
       }
     });
-    return api.post('/announcements', formData);
-  },
+    return api.post('/announcements', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  }
   update: (id, data) => {
     const formData = new FormData();
     Object.keys(data).forEach(key => {

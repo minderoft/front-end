@@ -122,7 +122,7 @@ router.post('/create', authenticateToken, async (req, res) => {
       });
     }
 
-    if (purpose === 'publication' && announcement.payment_status) {
+    if (purpose === 'publication' && announcement.payment_status === 1) {
       return res.status(400).json({ error: 'Cette annonce a déjà été payée' });
     }
 

@@ -104,7 +104,8 @@ const Home = () => {
     const fetchData = async () => {
       try {
         const announcementsRes = await announcementService.getAll({ limit: 6 });
-        setAnnouncements(Array.isArray(announcementsRes.data.announcements) ? announcementsRes.data.announcements : []);
+        const results = announcementsRes.data?.announcements ?? announcementsRes.data ?? [];
+        setAnnouncements(Array.isArray(results) ? results : []);
       } catch (error) {
         console.error('Erreur:', error);
       } finally {
@@ -127,7 +128,8 @@ const Home = () => {
         try {
           const { latitude, longitude } = position.coords;
           const response = await announcementService.getNearby(latitude, longitude);
-          setNearbyAnnouncements(response.data.announcements);
+          const nearbyResults = response.data?.announcements ?? response.data ?? [];
+          setNearbyAnnouncements(Array.isArray(nearbyResults) ? nearbyResults : []);
         } catch (error) {
           console.error('Erreur recherche nearby:', error);
           alert('Erreur lors de la recherche des annonces proches');
@@ -237,6 +239,7 @@ const Home = () => {
                     const imageUrl = resolveImageUrl(rawImage);
                     const sellerPhone = announcement.user_phone || announcement.phone || announcement.phone_number || announcement.user_phone_number;
                     const location = announcement.location || announcement.geolocalisation || '';
+                    const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
 
                     return (
                       <article key={announcement.id} className="card announcement-card">
@@ -252,7 +255,14 @@ const Home = () => {
                           <div className="card-image card-image-fallback">🏠</div>
                         )}
                         <div className="card-body">
-                          <span className="card-tag">{announcement.category}</span>
+                          <div className="d-flex justify-between align-center" style={{ gap: '8px' }}>
+                            <span className="card-tag">{announcement.category}</span>
+                            {isBoosted && (
+                              <span className="card-tag" style={{ backgroundColor: '#ffebc2', color: '#b45309' }}>
+                                🚀 Boosté
+                              </span>
+                            )}
+                          </div>
                           <h3 className="card-title">{announcement.title}</h3>
                           <p className="card-text">{announcement.description?.substring(0, 100)}...</p>
                           <div className="card-price">{announcement.price?.toLocaleString()} FCFA</div>
@@ -260,27 +270,25 @@ const Home = () => {
                             <span>📍 {location}</span>
                             {announcement.distance_km && <span>📏 {announcement.distance_km.toFixed(1)}km</span>}
                           </div>
-                          <div className="card-actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <div className="card-actions" style={{ gap: '8px' }}>
                             <button
                               type="button"
                               onClick={() => navigate(`/announcements/${announcement.id}`)}
                               className="btn btn-outline"
-                              style={{ flex: 1, minWidth: '100px' }}
                             >
                               Voir
                             </button>
-                            {(sellerPhone) ? (
+                            {sellerPhone ? (
                               <a
                                 href={`https://wa.me/${sellerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="btn btn-whatsapp"
-                                style={{ flex: 1, minWidth: '140px', textDecoration: 'none', textAlign: 'center' }}
                               >
                                 💬 Contacter
                               </a>
                             ) : (
-                              <button type="button" className="btn btn-outline" disabled style={{ flex: 1, minWidth: '140px' }}>
+                              <button type="button" className="btn btn-outline" disabled>
                                 Pas de contact
                               </button>
                             )}
@@ -357,6 +365,8 @@ const Home = () => {
               const parsedImages = parseImages(announcement.images);
               const imageUrl = resolveImageUrl(parsedImages[0]);
               const sellerPhone = announcement.user_phone || announcement.phone || announcement.phone_number || announcement.user_phone_number;
+              const location = announcement.location || announcement.geolocalisation || '';
+              const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
 
               return (
                 <article key={announcement.id} className="card announcement-card">
@@ -372,12 +382,19 @@ const Home = () => {
                     <div className="card-image card-image-fallback">🏠</div>
                   )}
                   <div className="card-body">
-                    <span className="card-tag">{announcement.category}</span>
+                    <div className="d-flex justify-between align-center" style={{ gap: '8px' }}>
+                      <span className="card-tag">{announcement.category}</span>
+                      {isBoosted && (
+                        <span className="card-tag" style={{ backgroundColor: '#ffebc2', color: '#b45309' }}>
+                          🚀 Boosté
+                        </span>
+                      )}
+                    </div>
                     <h3 className="card-title">{announcement.title}</h3>
                     <p className="card-text">{announcement.description?.substring(0, 100)}...</p>
                     <div className="card-price">{announcement.price?.toLocaleString()} FCFA</div>
                     <div className="card-meta">
-                      <span>📍 {announcement.location}</span>
+                      <span>📍 {location}</span>
                     </div>
                     <div className="card-actions">
                       <button

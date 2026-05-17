@@ -126,19 +126,33 @@ const CreateAnnouncement = () => {
     setLoading(true);
 
     try {
-      // Préparer les données de l'annonce
-      const announcementData = { ...formData };
-      
-      // Pour les techniciens, définir le prix à 0 (à négocier)
-      if (formData.category === 'technicien') {
-        announcementData.price = 0;
+      // Validation des champs obligatoires
+      if (!formData.category || !formData.title || !formData.description || !formData.location || !formData.phone) {
+        setError('Veuillez remplir tous les champs obligatoires: catégorie, titre, description, localisation, téléphone');
+        setLoading(false);
+        return;
       }
 
-      // Si nous avons une latitude/longitude, on l'envoie au backend
-      if (formData.latitude && formData.longitude) {
-        announcementData.latitude = formData.latitude;
-        announcementData.longitude = formData.longitude;
+      if (formData.images.length === 0) {
+        setError('Veuillez ajouter au moins une image');
+        setLoading(false);
+        return;
       }
+
+      // Préparer les données avec FormData pour les fichiers
+      const announcementData = new FormData();
+      announcementData.append('category', formData.category);
+      announcementData.append('type', formData.type);
+      announcementData.append('title', formData.title);
+      announcementData.append('description', formData.description);
+      announcementData.append('price', formData.category === 'technicien' ? 0 : formData.price);
+      announcementData.append('location', formData.location);
+      announcementData.append('phone', formData.phone);
+      announcementData.append('metadata', JSON.stringify(formData.metadata));
+      if (formData.latitude) announcementData.append('latitude', formData.latitude);
+      if (formData.longitude) announcementData.append('longitude', formData.longitude);
+      formData.images.forEach((image) => announcementData.append('images', image));
+
 
       // Créer l'annonce
       const response = await announcementService.create(announcementData);
