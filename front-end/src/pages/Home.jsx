@@ -235,6 +235,8 @@ const Home = () => {
                     const parsedImages = parseImages(announcement.images);
                     const rawImage = announcement.image_url || parsedImages[0];
                     const imageUrl = resolveImageUrl(rawImage);
+                    const sellerPhone = announcement.user_phone || announcement.phone || announcement.phone_number || announcement.user_phone_number;
+                    const location = announcement.location || announcement.geolocalisation || '';
 
                     return (
                       <article key={announcement.id} className="card announcement-card">
@@ -255,25 +257,33 @@ const Home = () => {
                           <p className="card-text">{announcement.description?.substring(0, 100)}...</p>
                           <div className="card-price">{announcement.price?.toLocaleString()} FCFA</div>
                           <div className="card-meta">
-                            <span>📍 {announcement.location}</span>
+                            <span>📍 {location}</span>
                             {announcement.distance_km && <span>📏 {announcement.distance_km.toFixed(1)}km</span>}
                           </div>
-                          <div className="card-actions">
+                          <div className="card-actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                             <button
                               type="button"
                               onClick={() => navigate(`/announcements/${announcement.id}`)}
                               className="btn btn-outline"
+                              style={{ flex: 1, minWidth: '100px' }}
                             >
                               Voir
                             </button>
-                            <a
-                              href={`https://wa.me/${announcement.user_phone?.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="btn btn-whatsapp"
-                            >
-                              💬 WhatsApp
-                            </a>
+                            {(sellerPhone) ? (
+                              <a
+                                href={`https://wa.me/${sellerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-whatsapp"
+                                style={{ flex: 1, minWidth: '140px', textDecoration: 'none', textAlign: 'center' }}
+                              >
+                                💬 Contacter
+                              </a>
+                            ) : (
+                              <button type="button" className="btn btn-outline" disabled style={{ flex: 1, minWidth: '140px' }}>
+                                Pas de contact
+                              </button>
+                            )}
                           </div>
                         </div>
                       </article>

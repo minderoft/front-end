@@ -102,6 +102,10 @@ const AnnouncementDetail = () => {
 
   const sellerPhone = announcement.user_phone || announcement.phone || announcement.phone_number || announcement.user_phone_number;
   const sellerEmail = announcement.user_email || announcement.email;
+  const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
+  const announcementLocation = announcement.location || announcement.geolocalisation || '';
+  const announcementLatitude = announcement.latitude ?? announcement.geolocalisation?.latitude ?? announcement.geolocalisation?.lat ?? null;
+  const announcementLongitude = announcement.longitude ?? announcement.geolocalisation?.longitude ?? announcement.geolocalisation?.lng ?? null;
 
   const handleToggleFavorite = async () => {
     if (!user) {
@@ -258,10 +262,10 @@ const AnnouncementDetail = () => {
 
       {/* Carte de géolocalisation */}
       <AnnouncementMap 
-        latitude={announcement.latitude} 
-        longitude={announcement.longitude}
+        latitude={announcementLatitude}
+        longitude={announcementLongitude}
         title={announcement.title}
-        location={announcement.location}
+        location={announcementLocation}
       />
 
       {/* Informations */}
@@ -301,7 +305,7 @@ const AnnouncementDetail = () => {
           </button>
         </div>
 
-        {announcement.is_boosted && announcement.boost_expiry ? (
+        {isBoosted && announcement.boost_expiry ? (
           <div style={{ marginBottom: 'var(--spacing-sm)', color: 'var(--accent)', fontWeight: '600' }}>
             🚀 Boost actif jusqu'au {new Date(announcement.boost_expiry).toLocaleDateString('fr-FR')} à {new Date(announcement.boost_expiry).toLocaleTimeString('fr-FR')}
           </div>
@@ -329,7 +333,7 @@ const AnnouncementDetail = () => {
           <span>📅 Publié le {new Date(announcement.created_at).toLocaleDateString('fr-FR')}</span>
         </div>
 
-        {user?.id === announcement.user_id && !announcement.is_boosted && (
+        {user?.id === announcement.user_id && !isBoosted && (
           <button
             onClick={handleBoost}
             disabled={boostLoading}
@@ -341,8 +345,43 @@ const AnnouncementDetail = () => {
         )}
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: 'var(--spacing-md)' }}>
+          {/* Bouton Contacter - Visible si on n'est pas le propriétaire */}
+          {user?.id !== announcement.user_id && (
+            <>
+              {sellerPhone && (
+                <a
+                  href={`https://wa.me/${sellerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-accent"
+                  style={{ textDecoration: 'none', textAlign: 'center' }}
+                >
+                  💬 Contacter via WhatsApp
+                </a>
+              )}
+              {sellerPhone && (
+                <a
+                  href={`tel:${sellerPhone.replace(/\D/g, '')}`}
+                  className="btn btn-outline"
+                  style={{ textDecoration: 'none', textAlign: 'center' }}
+                >
+                  ☎️ Appeler
+                </a>
+              )}
+              {sellerEmail && (
+                <a
+                  href={`mailto:${sellerEmail}?subject=${encodeURIComponent(`Demande de contact - ${announcement.title}`)}&body=${encodeURIComponent(`Bonjour,\n\nJe vous contacte depuis LocaPlus concernant votre annonce : ${announcement.title}`)}`}
+                  className="btn btn-outline"
+                  style={{ textDecoration: 'none', textAlign: 'center' }}
+                >
+                  📧 Email
+                </a>
+              )}
+            </>
+          )}
+          
           <button onClick={handleReport} className="btn btn-outline" disabled={reportLoading}>
-            {reportLoading ? 'Signalement en cours...' : 'Signaler cette annonce'}
+            {reportLoading ? 'Signalement en cours...' : '🚩 Signaler'}
           </button>
         </div>
 

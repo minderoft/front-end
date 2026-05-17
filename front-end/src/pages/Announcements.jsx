@@ -1,12 +1,13 @@
 // filepath: front-end/src/pages/Announcements.jsx
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { announcementService, reportService } from '../services/api';
 import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
 
 const Announcements = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -206,6 +207,9 @@ const Announcements = () => {
               const parsedImages = parseImages(announcement.images);
               const rawImage = announcement.image_url || parsedImages[0];
               const imageUrl = resolveImageUrl(rawImage);
+              const sellerPhone = announcement.user_phone || announcement.phone || announcement.phone_number || announcement.user_phone_number;
+              const location = announcement.location || announcement.geolocalisation || '';
+              const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
 
               if (import.meta.env.DEV) {
                 console.log('DEBUG Announcements image', {
@@ -252,7 +256,7 @@ const Announcements = () => {
                         {announcement.category}
                       </span>
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        {announcement.is_boosted && (
+                        {isBoosted && (
                           <span style={{ 
                             fontSize: '0.75rem', 
                             backgroundColor: '#FFB703',
@@ -293,20 +297,49 @@ const Announcements = () => {
                         : `${announcement.price?.toLocaleString()} FCFA`}
                     </div>
                     <div className="card-meta">
-                      <span>📍 {announcement.location}</span>
-                      {announcement.user_phone ? <span>📞 {announcement.user_phone}</span> : announcement.phone && <span>📞 {announcement.phone}</span>}
+                      <span>📍 {location}</span>
+                      {sellerPhone ? <span>📞 {sellerPhone}</span> : null}
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleReport(announcement.id);
-                      }}
-                      className="btn btn-outline"
-                      style={{ marginTop: '12px' }}
-                    >
-                      Signaler
-                    </button>
+                    <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          navigate(`/announcements/${announcement.id}`);
+                        }}
+                        className="btn btn-outline"
+                        style={{ flex: 1, minWidth: '80px' }}
+                      >
+                        Voir
+                      </button>
+                      {(announcement.user_phone || announcement.phone) ? (
+                        <a
+                          href={`https://wa.me/${(announcement.user_phone || announcement.phone).replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-whatsapp"
+                          style={{ flex: 1, minWidth: '100px', textDecoration: 'none', textAlign: 'center' }}
+                        >
+                          💬 WhatsApp
+                        </a>
+                      ) : (
+                        <button type="button" className="btn btn-outline" disabled style={{ flex: 1, minWidth: '100px' }}>
+                          Pas de contact
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleReport(announcement.id);
+                        }}
+                        className="btn btn-ghost"
+                        style={{ minWidth: '80px', fontSize: '0.875rem' }}
+                      >
+                        🚩 Signaler
+                      </button>
+                    </div>
                   </div>
                 </Link>
               );

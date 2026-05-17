@@ -1382,6 +1382,216 @@ a:hover {
   .auth-card {
     padding: var(--spacing-lg);
   }
+
+  /* Amélioration responsive mobile pour les sections */
+  .announcements-section {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+
+  .announcement-detail {
+    padding: var(--spacing-md);
+  }
+
+  .announcement-info {
+    padding: var(--spacing-lg);
+  }
+
+  .card-body {
+    padding: var(--spacing-md);
+  }
+
+  /* Grille responsive */
+  .announcements-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card-actions {
+    flex-direction: column;
+  }
+
+  .card-actions .btn,
+  .card-actions a {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Hero responsive */
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  /* Navbar responsive */
+  .navbar {
+    padding: 0 var(--spacing-md);
+  }
+
+  .navbar-brand {
+    font-size: 1.25rem;
+  }
+
+  /* Footer responsive */
+  .footer {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+
+  /* Filtres responsive */
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* CTA banner responsive */
+  .cta-banner {
+    padding: var(--spacing-lg) var(--spacing-md);
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .cta-copy h2 {
+    font-size: 1.5rem;
+  }
+
+  /* Containers avec padding de sécurité */
+  .main-content {
+    padding-left: max(var(--spacing-md), env(safe-area-inset-left));
+    padding-right: max(var(--spacing-md), env(safe-area-inset-right));
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+  }
+
+  .card-price {
+    font-size: 1.25rem;
+  }
+
+  .announcement-price {
+    font-size: 1.75rem;
+  }
+}
+
+/* ============================================
+   Boutons WhatsApp & Styles Additionnels
+   ============================================ */
+.btn-whatsapp {
+  background-color: #25D366;
+  color: white;
+  text-decoration: none;
+}
+
+.btn-whatsapp:hover:not(:disabled) {
+  background-color: #1FA85C;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Amélioration du conteneur des actions */
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.card-actions .btn,
+.card-actions a {
+  flex: 1;
+  min-width: 80px;
+  text-decoration: none;
+  text-align: center;
+}
+
+/* Padding de sécurité pour les zones critiques sur mobile */
+@media (max-width: 640px) {
+  body {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+
+  .container,
+  .announcements-section,
+  .announcement-detail,
+  .auth-card {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  /* Assurer que rien ne déborde */
+  * {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Textes adaptatifs */
+  .card-text,
+  .announcement-detail p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  h4 { font-size: 1.1rem; }
+
+  /* Buttons full width sur mobile */
+  .btn {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .btn-group,
+  .card-actions {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .btn-group .btn,
+  .card-actions .btn {
+    width: 100%;
+  }
+
+  /* Annonce detail adaptée */
+  .announcement-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .announcement-main-image {
+    height: 300px;
+  }
+
+  .announcement-thumbnails {
+    max-height: 300px;
+  }
+
+  .announcement-meta {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  /* Images responsive */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Formules responsive */
+  .form-input,
+  .form-select,
+  .form-textarea {
+    font-size: 16px; /* Prévenir le zoom accidentel sur iOS */
+  }
 }
 
 /* ============================================
