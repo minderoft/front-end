@@ -129,7 +129,7 @@ export const announcementService = {
     return api.post('/announcements', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
-  }
+  },
   update: (id, data) => {
     const formData = new FormData();
     Object.keys(data).forEach(key => {
