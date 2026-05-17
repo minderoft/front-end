@@ -15,6 +15,7 @@ import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
 import Chat from './pages/Chat';
 import Success from './pages/Success';
+import PaymentError from './pages/PaymentError';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/success" element={<Success />} />
+          <Route path="/payment-error" element={<PaymentError />} />
           
           {/* Routes protégées */}
           <Route path="/create" element={

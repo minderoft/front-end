@@ -112,9 +112,7 @@ export const announcementService = {
   getById: (id) => api.get(`/announcements/${id}`),
   create: (data) => {
     if (data instanceof FormData) {
-      return api.post('/announcements', data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      return api.post('/announcements', data);
     }
     const formData = new FormData();
     Object.keys(data).forEach(key => {
@@ -126,9 +124,7 @@ export const announcementService = {
         formData.append(key, data[key]);
       }
     });
-    return api.post('/announcements', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    return api.post('/announcements', formData);
   },
   update: (id, data) => {
     const formData = new FormData();

@@ -32,14 +32,16 @@ const Announcements = () => {
     setLoading(true);
     try {
       const params = Object.fromEntries(searchParams);
-      const response = await announcementService.getAll({
-        ...params,
-        page: pagination.page,
-        limit: pagination.limit,
-      });
+      const response = await announcementService.getAll(params);
       const results = response.data?.announcements ?? response.data ?? [];
       setAnnouncements(Array.isArray(results) ? results : []);
-      setPagination(prev => ({ ...prev, ...response.data?.pagination }));
+      setPagination(prev => ({
+        ...prev,
+        page: Number(response.data?.pagination?.page) || 1,
+        limit: Number(response.data?.pagination?.limit) || prev.limit,
+        total: Number(response.data?.pagination?.total) || 0,
+        pages: Number(response.data?.pagination?.pages) || 0,
+      }));
     } catch (error) {
       console.error('Erreur:', error);
     } finally {
@@ -57,6 +59,7 @@ const Announcements = () => {
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params.set(key, value);
     });
+    params.set('page', '1');
     setSearchParams(params);
   };
 
@@ -69,7 +72,7 @@ const Announcements = () => {
       location: '',
       search: '',
     });
-    setSearchParams({});
+    setSearchParams({ page: '1' });
   };
 
   const handleReport = async (announcementId) => {
@@ -92,7 +95,9 @@ const Announcements = () => {
   };
 
   const handlePageChange = (newPage) => {
-    setPagination(prev => ({ ...prev, page: newPage }));
+    const params = new URLSearchParams(searchParams);
+    params.set('page', newPage);
+    setSearchParams(params);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

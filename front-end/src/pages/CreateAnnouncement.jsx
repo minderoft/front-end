@@ -139,13 +139,20 @@ const CreateAnnouncement = () => {
         return;
       }
 
+      const priceValue = formData.category === 'technicien' ? 0 : Number(formData.price);
+      if (formData.category !== 'technicien' && (Number.isNaN(priceValue) || priceValue <= 0)) {
+        setError('Le prix doit être un nombre positif pour cette catégorie');
+        setLoading(false);
+        return;
+      }
+
       // Préparer les données avec FormData pour les fichiers
       const announcementData = new FormData();
       announcementData.append('category', formData.category);
       announcementData.append('type', formData.type);
       announcementData.append('title', formData.title);
       announcementData.append('description', formData.description);
-      announcementData.append('price', formData.category === 'technicien' ? 0 : formData.price);
+      announcementData.append('price', priceValue);
       announcementData.append('location', formData.location);
       announcementData.append('phone', formData.phone);
       announcementData.append('metadata', JSON.stringify(formData.metadata));

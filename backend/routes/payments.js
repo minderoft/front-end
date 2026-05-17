@@ -133,7 +133,8 @@ router.post('/create', authenticateToken, async (req, res) => {
     const transactionId = `TXN-${uuidv4().substring(0, 8).toUpperCase()}-${Date.now()}`;
     const paymentId = uuidv4();
     const channels = buildPaymentChannels(method);
-    const callbackUrl = process.env.PAYSTACK_CALLBACK_URL || process.env.FRONTEND_URL || null;
+    const callbackUrl = process.env.PAYSTACK_CALLBACK_URL || `${process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app'}/success`;
+    console.log('✅ [PAYMENT] Callback URL utilisée:', callbackUrl);
 
     await query(
       `INSERT INTO payments (id, user_id, announcement_id, amount, method, purpose, status, transaction_id) VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`,
@@ -223,7 +224,7 @@ router.get('/callback', async (req, res) => {
       console.log(`✅ [PAYSTACK REDIRECT] Paiement confirmé et annonce activée - ID: ${payment.announcement_id}`);
       
       // Rediriger vers la page de succès
-      const successUrl = `${process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app'}/success?reference=${reference}&status=success`;
+      const successUrl = `${process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app'}/success?reference=${reference}&status=success&announcementId=${payment.announcement_id}`;
       console.log('   Redirection vers:', successUrl);
       return res.redirect(successUrl);
       
@@ -232,7 +233,7 @@ router.get('/callback', async (req, res) => {
       console.log(`❌ [PAYSTACK REDIRECT] Paiement échoué - Statut: ${paymentData.status}`);
       await query(`UPDATE payments SET status = 'failed' WHERE reference = ?`, [reference]);
       
-      const errorUrl = `${process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app'}/?error=payment_failed&reference=${reference}`;
+      const errorUrl = `${process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app'}/payment-error?reference=${reference}&status=failed&message=payment_failed`;
       return res.redirect(errorUrl);
     }
     

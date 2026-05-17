@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -6,18 +6,18 @@ const Success = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [countdown, setCountdown] = useState(3);
+  const [countdown, setCountdown] = useState(4);
 
   const reference = searchParams.get('reference');
   const status = searchParams.get('status');
+  const announcementId = searchParams.get('announcementId');
 
   useEffect(() => {
     if (status !== 'success') {
-      navigate('/');
+      navigate('/payment-error');
       return;
     }
 
-    // Countdown pour redirection automatique
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -32,185 +32,89 @@ const Success = () => {
   }, [status, navigate, user]);
 
   if (status !== 'success') {
-    return null; // Sera redirigé
+    return null;
   }
 
   return (
-    <div className="success-page">
-      <div className="success-container">
-        <div className="success-icon">
-          <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="40" cy="40" r="40" fill="#10B981"/>
-            <path d="M26 40L36 50L54 32" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: '20px',
+    }}>
+      <div style={{
+        background: '#ffffff',
+        borderRadius: '20px',
+        padding: '36px',
+        textAlign: 'center',
+        boxShadow: '0 28px 60px rgba(15, 23, 42, 0.16)',
+        maxWidth: '520px',
+        width: '100%',
+      }}>
+        <div style={{ marginBottom: '24px' }}>
+          <svg width="88" height="88" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="44" cy="44" r="44" fill="#10B981" />
+            <path d="M28 45L39 57L60 35" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
 
-        <h1 className="success-title">Paiement réussi !</h1>
+        <h1 style={{ fontSize: '2rem', marginBottom: '16px', color: '#111827' }}>Paiement réussi !</h1>
 
-        <div className="success-content">
-          <p className="success-message">
-            Votre annonce a été publiée avec succès sur LocaPlus.
+        <p style={{ marginBottom: '18px', color: '#4b5563', fontSize: '1rem' }}>
+          Votre annonce est désormais active et visible sur LocaPlus.
+        </p>
+
+        {reference && (
+          <p style={{ marginBottom: '16px', color: '#6b7280', fontSize: '0.95rem' }}>
+            Référence de paiement : <strong>{reference}</strong>
           </p>
+        )}
 
-          {reference && (
-            <p className="success-reference">
-              Référence de paiement : <strong>{reference}</strong>
-            </p>
+        <div style={{
+          background: '#f8fafc',
+          borderRadius: '16px',
+          padding: '20px',
+          marginBottom: '24px',
+          textAlign: 'left',
+          color: '#475569',
+          fontSize: '0.96rem',
+        }}>
+          <p style={{ margin: '0 0 8px' }}>🎉 Votre annonce est en ligne et consultable par tous.</p>
+          <p style={{ margin: 0 }}>🔎 Elle apparaîtra dans les recherches publiques et sur la page des annonces.</p>
+        </div>
+
+        <p style={{ margin: '0 0 24px', color: '#6b7280' }}>
+          Redirection automatique dans <strong>{countdown}</strong> seconde{countdown > 1 ? 's' : ''}...
+        </p>
+
+        <div style={{ display: 'grid', gap: '12px' }}>
+          {announcementId && (
+            <button
+              className="btn btn-primary"
+              onClick={() => navigate(`/announcements/${announcementId}`)}
+              style={{ width: '100%' }}
+            >
+              Voir l'annonce publiée
+            </button>
           )}
-
-          <div className="success-info">
-            <p>🎉 Votre annonce est maintenant visible par tous les utilisateurs !</p>
-            <p>📍 Elle apparaîtra dans les résultats de recherche et sur la carte.</p>
-          </div>
-
-          <div className="success-actions">
-            <p className="redirect-message">
-              Redirection automatique dans {countdown} seconde{countdown > 1 ? 's' : ''}...
-            </p>
-
-            <div className="success-buttons">
-              <button
-                className="btn btn-primary"
-                onClick={() => navigate(user ? '/dashboard' : '/announcements')}
-              >
-                {user ? 'Voir mes annonces' : 'Voir les annonces'}
-              </button>
-
-              <button
-                className="btn btn-secondary"
-                onClick={() => navigate('/')}
-              >
-                Retour à l'accueil
-              </button>
-            </div>
-          </div>
+          <button
+            className="btn btn-primary"
+            onClick={() => navigate(user ? '/dashboard' : '/announcements')}
+            style={{ width: '100%' }}
+          >
+            {user ? 'Voir mon dashboard' : 'Explorer les annonces'}
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => navigate('/')}
+            style={{ width: '100%' }}
+          >
+            Retour à l'accueil
+          </button>
         </div>
       </div>
-
-      <style jsx>{`
-        .success-page {
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          padding: 20px;
-        }
-
-        .success-container {
-          background: white;
-          border-radius: 16px;
-          padding: 40px;
-          text-align: center;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-          max-width: 500px;
-          width: 100%;
-        }
-
-        .success-icon {
-          margin-bottom: 24px;
-        }
-
-        .success-title {
-          font-size: 2rem;
-          font-weight: 700;
-          color: #1f2937;
-          margin-bottom: 16px;
-        }
-
-        .success-content {
-          color: #6b7280;
-        }
-
-        .success-message {
-          font-size: 1.125rem;
-          margin-bottom: 12px;
-          color: #374151;
-        }
-
-        .success-reference {
-          font-size: 0.875rem;
-          color: #6b7280;
-          margin-bottom: 20px;
-        }
-
-        .success-info {
-          background: #f3f4f6;
-          border-radius: 8px;
-          padding: 16px;
-          margin: 20px 0;
-          text-align: left;
-        }
-
-        .success-info p {
-          margin: 8px 0;
-          font-size: 0.875rem;
-        }
-
-        .success-actions {
-          margin-top: 24px;
-        }
-
-        .redirect-message {
-          font-size: 0.875rem;
-          color: #6b7280;
-          margin-bottom: 16px;
-        }
-
-        .success-buttons {
-          display: flex;
-          gap: 12px;
-          justify-content: center;
-          flex-wrap: wrap;
-        }
-
-        .btn {
-          padding: 12px 24px;
-          border-radius: 8px;
-          font-weight: 600;
-          text-decoration: none;
-          border: none;
-          cursor: pointer;
-          transition: all 0.2s;
-          font-size: 0.875rem;
-        }
-
-        .btn-primary {
-          background: #3b82f6;
-          color: white;
-        }
-
-        .btn-primary:hover {
-          background: #2563eb;
-        }
-
-        .btn-secondary {
-          background: #f3f4f6;
-          color: #374151;
-        }
-
-        .btn-secondary:hover {
-          background: #e5e7eb;
-        }
-
-        @media (max-width: 640px) {
-          .success-container {
-            padding: 24px;
-          }
-
-          .success-title {
-            font-size: 1.5rem;
-          }
-
-          .success-buttons {
-            flex-direction: column;
-          }
-
-          .btn {
-            width: 100%;
-          }
-        }
-      `}</style>
     </div>
   );
 };
