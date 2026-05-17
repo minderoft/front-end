@@ -351,8 +351,8 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     console.log('Création annonce - Avant INSERT:', { id, userId: req.user.id });
 
     await pool.query(
-      `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, latitude, longitude, phone, images, image_url, metadata, status, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'pending', CURRENT_TIMESTAMP)`,
+      `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, latitude, longitude, phone, images, image_url, metadata, status, payment_status, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'active', 1, CURRENT_TIMESTAMP)`,
       [
         id,
         req.user.id,
