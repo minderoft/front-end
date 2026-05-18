@@ -13,9 +13,19 @@ const AdCard = ({ announcement, onBoost }) => {
   const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
 
   const handleView = () => navigate(`/announcements/${announcement.id}`);
-  const handleCall = () => {
-    if (!sellerPhone) return;
-    window.location.href = `tel:${sellerPhone.replace(/\D/g, '')}`;
+  const handleWhatsApp = (e) => {
+    e.preventDefault();
+    if (sellerPhone) {
+      const phoneNumber = sellerPhone.replace(/\D/g, '');
+      const message = encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`);
+      window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+    }
+  };
+  const handleCall = (e) => {
+    e.preventDefault();
+    if (sellerPhone) {
+      window.location.href = `tel:${sellerPhone.replace(/\D/g, '')}`;
+    }
   };
 
   return (
@@ -40,26 +50,19 @@ const AdCard = ({ announcement, onBoost }) => {
         <div className="card-meta"><span>📍 {location}</span></div>
 
         <div className="card-actions">
-          <button type="button" onClick={handleView} className="btn btn-outline">Voir</button>
+          <button type="button" onClick={handleView} className="btn btn-outline btn-sm">Voir</button>
 
           {sellerPhone ? (
             <>
-              <a href={`tel:${sellerPhone.replace(/\D/g, '')}`} className="btn btn-call">📞 Appeler</a>
-              <a
-                href={`https://wa.me/${sellerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-whatsapp"
-              >
-                💬 WhatsApp
-              </a>
+              <button type="button" onClick={handleCall} className="btn btn-call btn-sm">📞 Appeler</button>
+              <button type="button" onClick={handleWhatsApp} className="btn btn-whatsapp btn-sm">💬 WhatsApp</button>
             </>
           ) : (
-            <button type="button" className="btn btn-outline" disabled>Pas de contact</button>
+            <button type="button" className="btn btn-outline btn-sm" disabled>Pas de contact</button>
           )}
 
           {!isBoosted && onBoost && (
-            <button type="button" className="btn btn-boost" onClick={() => onBoost(announcement.id)}>
+            <button type="button" className="btn btn-boost btn-sm" onClick={() => onBoost(announcement.id)}>
               🚀 Booster (1000 FCFA)
             </button>
           )}

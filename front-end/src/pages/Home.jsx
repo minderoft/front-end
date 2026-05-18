@@ -103,10 +103,10 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Use public endpoint (no auth) to ensure global announcements are returned
-        const announcementsRes = await announcementService.getPublicAll({ limit: 6 });
-        const results = announcementsRes.data?.announcements ?? announcementsRes.data ?? [];
-        console.log('DEBUG Home.jsx - Annonces chargées (public):', results.length, results);
+        // Use getAll (with auth) instead of getPublicAll for global announcements
+        const announcementsRes = await announcementService.getAll({ limit: 6 });
+        const results = announcementsRes.data?.announcements ?? [];
+        console.log('DEBUG Home.jsx - Annonces chargées:', results.length, results);
         setAnnouncements(Array.isArray(results) ? results : []);
       } catch (error) {
         console.error('Erreur chargement annonces Home:', error);

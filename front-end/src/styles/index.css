@@ -684,9 +684,9 @@ a:hover {
   }
 
   .ecosystem-grid {
-    /* Stacked vertical list on smaller screens for better accessibility */
+    /* Change to 2 columns on tablets */
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
     overflow: visible;
     padding-bottom: 12px;
@@ -702,10 +702,15 @@ a:hover {
   }
 
   @media (max-width: 640px) {
+    .ecosystem-grid {
+      /* Single column on mobile */
+      grid-template-columns: 1fr;
+    }
+
     .ecosystem-card {
-      flex: 0 0 80%;
-      min-width: 80%;
-      max-width: 80%;
+      flex: 1;
+      min-width: 100%;
+      max-width: 100%;
     }
   }
 }
@@ -1314,15 +1319,16 @@ a:hover {
     padding: var(--spacing-md);
     gap: var(--spacing-sm);
     max-height: 0;
-    overflow: auto;
-    transition: max-height 0.28s ease, transform 0.16s ease;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
     border-bottom: 1px solid var(--border);
     box-shadow: var(--shadow-md);
-    z-index: 9999;
+    z-index: 1001;
   }
 
   .navbar-menu.active {
-    max-height: 320px;
+    max-height: 400px;
+    overflow: auto;
   }
 
   .navbar-link {
@@ -1332,7 +1338,7 @@ a:hover {
 
   .navbar-actions {
     position: fixed;
-    top: calc(70px + 320px);
+    top: 70px;
     left: 0;
     right: 0;
     background-color: var(--secondary);
@@ -1341,15 +1347,15 @@ a:hover {
     padding: var(--spacing-md);
     gap: var(--spacing-sm);
     max-height: 0;
-    overflow: auto;
-    transition: max-height 0.28s ease, transform 0.16s ease;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
     border-bottom: 1px solid var(--border);
-    z-index: 9998;
+    z-index: 1000;
   }
 
   .navbar-actions.active {
-    max-height: 240px;
-    top: auto;
+    max-height: 300px;
+    overflow: auto;
     border-bottom: none;
   }
 

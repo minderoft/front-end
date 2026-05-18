@@ -10,7 +10,8 @@ export const parseImages = (images) => {
       return Array.isArray(parsed) ? parsed : [];
     } catch (error) {
       console.error('Erreur parseImages:', error.message, images);
-      return [];
+      // If it's a single string path, return it as an array
+      return images.trim() ? [images] : [];
     }
   }
 
@@ -25,17 +26,20 @@ export const resolveImageUrl = (image) => {
   if (!trimmed) return null;
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
 
+  // Ensure the URL doesn't have double slashes
   if (trimmed.startsWith('/')) {
     return `${BACKEND_BASE_URL}${trimmed}`;
   }
 
-  return `${BACKEND_BASE_URL}/${trimmed}`;
+  // Remove 'uploads/' prefix if present to avoid duplication
+  const cleanPath = trimmed.startsWith('uploads/') ? trimmed : `uploads/${trimmed}`;
+  return `${BACKEND_BASE_URL}/${cleanPath}`;
 };
 
 export const handleImageError = (event) => {
   const img = event.target;
   img.onerror = null;
   img.style.display = 'none';
-  const placeholder = img.nextElementSibling;
-  if (placeholder) placeholder.style.display = 'flex';
+  const sibling = img.parentElement?.querySelector('.card-image-fallback');
+  if (sibling) sibling.style.display = 'flex';
 };

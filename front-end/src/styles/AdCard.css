@@ -1,12 +1,128 @@
-.adcard{display:flex;flex-direction:column;height:100%;}
-.adcard .card-image{width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;}
-.adcard .card-body{padding:16px;display:flex;flex-direction:column;gap:10px;}
-.adcard .card-title{font-size:1.05rem;margin:0}
-.adcard .card-text{color:var(--text-light);font-size:0.95rem;margin:0}
-.adcard .card-price{font-weight:700;color:var(--accent)}
-.adcard .card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-.adcard .btn-call{background:var(--primary);color:white;padding:8px 12px;border-radius:8px;text-decoration:none}
-.adcard .btn-whatsapp{background:#25D366;color:white;padding:8px 12px;border-radius:8px;text-decoration:none}
-.adcard .btn-boost{background:linear-gradient(90deg,#f97316,#f59e0b);color:white;padding:8px 12px;border-radius:8px;border:none}
-.adcard .card-tag.boosted{background:#ffebc2;color:#b45309}
-@media (max-width:768px){.adcard .card-image{height:200px}}
+.adcard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.adcard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.adcard .card-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px 8px 0 0;
+}
+
+.adcard .card-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.adcard .card-title {
+  font-size: 1.05rem;
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.adcard .card-text {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.adcard .card-price {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 1.1rem;
+}
+
+.adcard .card-meta {
+  display: flex;
+  gap: 8px;
+  color: var(--text-light);
+  font-size: 0.85rem;
+}
+
+.adcard .card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.adcard .card-actions .btn,
+.adcard .card-actions a {
+  flex: 1;
+  min-width: 100px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.adcard .btn-call {
+  background: var(--primary);
+  color: white;
+  border-radius: 8px;
+}
+
+.adcard .btn-call:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+.adcard .btn-whatsapp {
+  background: #25D366;
+  color: white;
+  border-radius: 8px;
+}
+
+.adcard .btn-whatsapp:hover:not(:disabled) {
+  background: #1FA85C;
+  transform: translateY(-2px);
+}
+
+.adcard .btn-boost {
+  background: linear-gradient(90deg, #f97316, #f59e0b);
+  color: white;
+  border-radius: 8px;
+  border: none;
+}
+
+.adcard .btn-boost:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.adcard .card-tag.boosted {
+  background: #ffebc2;
+  color: #b45309;
+}
+
+@media (max-width: 768px) {
+  .adcard .card-image {
+    height: 200px;
+  }
+
+  .adcard .card-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .adcard .card-actions .btn,
+  .adcard .card-actions a {
+    width: 100%;
+    min-width: auto;
+  }
+}
