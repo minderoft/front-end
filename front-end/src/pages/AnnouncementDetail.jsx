@@ -246,7 +246,7 @@ const AnnouncementDetail = () => {
         </div>
       ) : (
         <div style={{ 
-          backgroundColor: '#E2E8F0', 
+          backgroundColor: '#33b187', 
           height: '400px', 
           borderRadius: 'var(--radius-lg)',
           display: 'flex', 
@@ -254,7 +254,7 @@ const AnnouncementDetail = () => {
           justifyContent: 'center',
           fontSize: '5rem',
           marginBottom: 'var(--spacing-2xl)',
-          color: '#CBD5E0'
+          color: '#4f1e8f'
         }}>
           🏠
         </div>
