@@ -104,10 +104,12 @@ const Home = () => {
     const fetchData = async () => {
       try {
         const announcementsRes = await announcementService.getAll({ limit: 6 });
-        const results = announcementsRes.data?.announcements ?? announcementsRes.data ?? [];
+        const results = announcementsRes.data?.announcements ?? [];
+        console.log('DEBUG Home.jsx - Annonces chargées:', results.length, results);
         setAnnouncements(Array.isArray(results) ? results : []);
       } catch (error) {
-        console.error('Erreur:', error);
+        console.error('Erreur chargement annonces Home:', error);
+        setAnnouncements([]);
       } finally {
         setLoading(false);
       }
@@ -128,7 +130,8 @@ const Home = () => {
         try {
           const { latitude, longitude } = position.coords;
           const response = await announcementService.getNearby(latitude, longitude);
-          const nearbyResults = response.data?.announcements ?? response.data ?? [];
+          const nearbyResults = response.data?.announcements ?? [];
+          console.log('DEBUG Annonces proches chargées:', nearbyResults.length, nearbyResults);
           setNearbyAnnouncements(Array.isArray(nearbyResults) ? nearbyResults : []);
         } catch (error) {
           console.error('Erreur recherche nearby:', error);
@@ -363,10 +366,23 @@ const Home = () => {
           <div className="announcements-grid">
             {announcements.map((announcement) => {
               const parsedImages = parseImages(announcement.images);
-              const imageUrl = resolveImageUrl(parsedImages[0]);
+              const rawImage = announcement.image_url || parsedImages[0];
+              const imageUrl = resolveImageUrl(rawImage);
               const sellerPhone = announcement.user_phone || announcement.phone || announcement.phone_number || announcement.user_phone_number;
               const location = announcement.location || announcement.geolocalisation || '';
               const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
+              
+              if (import.meta.env.DEV) {
+                console.log('DEBUG Annonce Récentes:', {
+                  id: announcement.id,
+                  title: announcement.title,
+                  image_url: announcement.image_url,
+                  images: announcement.images,
+                  parsedImages,
+                  rawImage,
+                  imageUrl,
+                });
+              }
 
               return (
                 <article key={announcement.id} className="card announcement-card">

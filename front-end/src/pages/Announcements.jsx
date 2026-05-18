@@ -33,7 +33,8 @@ const Announcements = () => {
     try {
       const params = Object.fromEntries(searchParams);
       const response = await announcementService.getAll(params);
-      const results = response.data?.announcements ?? response.data ?? [];
+      const results = response.data?.announcements ?? [];
+      console.log('DEBUG Announcements.jsx - Annonces chargées:', results.length, results);
       setAnnouncements(Array.isArray(results) ? results : []);
       setPagination(prev => ({
         ...prev,
