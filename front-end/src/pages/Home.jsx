@@ -103,8 +103,8 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Use getAll (with auth) instead of getPublicAll for global announcements
-        const announcementsRes = await announcementService.getAll({ limit: 6 });
+        // Use getPublicAll for global announcements (no auth required)
+        const announcementsRes = await announcementService.getPublicAll({ limit: 6 });
         const results = announcementsRes.data?.announcements ?? [];
         console.log('DEBUG Home.jsx - Annonces chargées:', results.length, results);
         setAnnouncements(Array.isArray(results) ? results : []);

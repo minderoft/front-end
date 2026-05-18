@@ -12,7 +12,7 @@ const AdCard = ({ announcement, onBoost }) => {
   const location = announcement.location || announcement.geolocalisation || '';
   const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
 
-  const handleView = () => navigate(`/announcements/${announcement.id}`);
+  const handleView = () => navigate(`/announcements/${announcement._id || announcement.id}`);
   const handleWhatsApp = (e) => {
     e.preventDefault();
     if (sellerPhone) {

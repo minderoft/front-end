@@ -674,44 +674,17 @@ a:hover {
   margin: 0 auto;
 }
 
-@media (max-width: 900px) {
-  .categories-section,
-  .security-trust,
-  .announcements-section,
-  .hero {
-    padding-left: 20px;
-    padding-right: 20px;
+@media (max-width: 767px) {
+  .categories-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-md);
   }
 
-  .ecosystem-grid {
-    /* Change to 2 columns on tablets */
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    overflow: visible;
-    padding-bottom: 12px;
-  }
-
-  .ecosystem-grid::-webkit-scrollbar {
-    display: none;
-  }
-
+  .category-card,
   .ecosystem-card {
-    width: 100%;
-    height: 280px;
-  }
-
-  @media (max-width: 640px) {
-    .ecosystem-grid {
-      /* Single column on mobile */
-      grid-template-columns: 1fr;
-    }
-
-    .ecosystem-card {
-      flex: 1;
-      min-width: 100%;
-      max-width: 100%;
-    }
+    min-height: 140px;
   }
 }
 
@@ -1308,7 +1281,6 @@ a:hover {
   }
 
   .navbar-menu {
-    /* Fixed on mobile to avoid being clipped by parent overflow and ensure visibility */
     position: fixed;
     top: 70px;
     left: 0;
@@ -1323,7 +1295,8 @@ a:hover {
     transition: max-height 0.3s ease;
     border-bottom: 1px solid var(--border);
     box-shadow: var(--shadow-md);
-    z-index: 1001;
+    z-index: 9999;
+    width: 100%;
   }
 
   .navbar-menu.active {
@@ -1350,7 +1323,8 @@ a:hover {
     overflow: hidden;
     transition: max-height 0.3s ease;
     border-bottom: 1px solid var(--border);
-    z-index: 1000;
+    z-index: 9998;
+    width: 100%;
   }
 
   .navbar-actions.active {
