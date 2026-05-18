@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { announcementService } from '../services/api';
-import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
+import AdCard from '../components/AdCard';
 import CategoryCarousel from '../components/CategoryCarousel';
 
 const categories = [
@@ -103,9 +103,10 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const announcementsRes = await announcementService.getAll({ limit: 6 });
-        const results = announcementsRes.data?.announcements ?? [];
-        console.log('DEBUG Home.jsx - Annonces chargées:', results.length, results);
+        // Use public endpoint (no auth) to ensure global announcements are returned
+        const announcementsRes = await announcementService.getPublicAll({ limit: 6 });
+        const results = announcementsRes.data?.announcements ?? announcementsRes.data ?? [];
+        console.log('DEBUG Home.jsx - Annonces chargées (public):', results.length, results);
         setAnnouncements(Array.isArray(results) ? results : []);
       } catch (error) {
         console.error('Erreur chargement annonces Home:', error);
@@ -236,70 +237,9 @@ const Home = () => {
                   {nearbyAnnouncements.length} annonce{nearbyAnnouncements.length > 1 ? 's' : ''} trouvée{nearbyAnnouncements.length > 1 ? 's' : ''} autour de vous
                 </p>
                 <div className="announcements-grid">
-                  {nearbyAnnouncements.map((announcement) => {
-                    const parsedImages = parseImages(announcement.images);
-                    const rawImage = announcement.image_url || parsedImages[0];
-                    const imageUrl = resolveImageUrl(rawImage);
-                    const sellerPhone = announcement.user_phone || announcement.phone || announcement.phone_number || announcement.user_phone_number;
-                    const location = announcement.location || announcement.geolocalisation || '';
-                    const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
-
-                    return (
-                      <article key={announcement.id} className="card announcement-card">
-                        {imageUrl ? (
-                          <img
-                            src={imageUrl}
-                            alt={announcement.title}
-                            className="card-image"
-                            loading="lazy"
-                            onError={handleImageError}
-                          />
-                        ) : (
-                          <div className="card-image card-image-fallback">🏠</div>
-                        )}
-                        <div className="card-body">
-                          <div className="d-flex justify-between align-center" style={{ gap: '8px' }}>
-                            <span className="card-tag">{announcement.category}</span>
-                            {isBoosted && (
-                              <span className="card-tag" style={{ backgroundColor: '#ffebc2', color: '#b45309' }}>
-                                🚀 Boosté
-                              </span>
-                            )}
-                          </div>
-                          <h3 className="card-title">{announcement.title}</h3>
-                          <p className="card-text">{announcement.description?.substring(0, 100)}...</p>
-                          <div className="card-price">{announcement.price?.toLocaleString()} FCFA</div>
-                          <div className="card-meta">
-                            <span>📍 {location}</span>
-                            {announcement.distance_km && <span>📏 {announcement.distance_km.toFixed(1)}km</span>}
-                          </div>
-                          <div className="card-actions" style={{ gap: '8px' }}>
-                            <button
-                              type="button"
-                              onClick={() => navigate(`/announcements/${announcement.id}`)}
-                              className="btn btn-outline"
-                            >
-                              Voir
-                            </button>
-                            {sellerPhone ? (
-                              <a
-                                href={`https://wa.me/${sellerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="btn btn-whatsapp"
-                              >
-                                💬 Contacter
-                              </a>
-                            ) : (
-                              <button type="button" className="btn btn-outline" disabled>
-                                Pas de contact
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </article>
-                    );
-                  })}
+                  {nearbyAnnouncements.map((announcement) => (
+                    <AdCard key={announcement.id} announcement={announcement} onBoost={() => navigate(`/announcements/${announcement.id}`)} />
+                  ))}
                 </div>
               </>
             ) : (
@@ -364,81 +304,9 @@ const Home = () => {
           </div>
         ) : announcements.length > 0 ? (
           <div className="announcements-grid">
-            {announcements.map((announcement) => {
-              const parsedImages = parseImages(announcement.images);
-              const rawImage = announcement.image_url || parsedImages[0];
-              const imageUrl = resolveImageUrl(rawImage);
-              const sellerPhone = announcement.user_phone || announcement.phone || announcement.phone_number || announcement.user_phone_number;
-              const location = announcement.location || announcement.geolocalisation || '';
-              const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
-              
-              if (import.meta.env.DEV) {
-                console.log('DEBUG Annonce Récentes:', {
-                  id: announcement.id,
-                  title: announcement.title,
-                  image_url: announcement.image_url,
-                  images: announcement.images,
-                  parsedImages,
-                  rawImage,
-                  imageUrl,
-                });
-              }
-
-              return (
-                <article key={announcement.id} className="card announcement-card">
-                  {imageUrl ? (
-                    <img
-                      src={imageUrl}
-                      alt={announcement.title}
-                      className="card-image"
-                      loading="lazy"
-                      onError={handleImageError}
-                    />
-                  ) : (
-                    <div className="card-image card-image-fallback">🏠</div>
-                  )}
-                  <div className="card-body">
-                    <div className="d-flex justify-between align-center" style={{ gap: '8px' }}>
-                      <span className="card-tag">{announcement.category}</span>
-                      {isBoosted && (
-                        <span className="card-tag" style={{ backgroundColor: '#ffebc2', color: '#b45309' }}>
-                          🚀 Boosté
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="card-title">{announcement.title}</h3>
-                    <p className="card-text">{announcement.description?.substring(0, 100)}...</p>
-                    <div className="card-price">{announcement.price?.toLocaleString()} FCFA</div>
-                    <div className="card-meta">
-                      <span>📍 {location}</span>
-                    </div>
-                    <div className="card-actions">
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/announcements/${announcement.id}`)}
-                        className="btn btn-outline"
-                      >
-                        Voir
-                      </button>
-                      {sellerPhone ? (
-                        <a
-                          href={`https://wa.me/${sellerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-whatsapp"
-                        >
-                          💬 WhatsApp
-                        </a>
-                      ) : (
-                        <button type="button" className="btn btn-outline" disabled>
-                          Aucun contact disponible
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+            {announcements.map((announcement) => (
+              <AdCard key={announcement.id} announcement={announcement} onBoost={() => navigate(`/announcements/${announcement.id}`)} />
+            ))}
           </div>
         ) : (
           <div className="empty-state">

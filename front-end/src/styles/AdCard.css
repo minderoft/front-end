@@ -1,0 +1,12 @@
+.adcard{display:flex;flex-direction:column;height:100%;}
+.adcard .card-image{width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;}
+.adcard .card-body{padding:16px;display:flex;flex-direction:column;gap:10px;}
+.adcard .card-title{font-size:1.05rem;margin:0}
+.adcard .card-text{color:var(--text-light);font-size:0.95rem;margin:0}
+.adcard .card-price{font-weight:700;color:var(--accent)}
+.adcard .card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.adcard .btn-call{background:var(--primary);color:white;padding:8px 12px;border-radius:8px;text-decoration:none}
+.adcard .btn-whatsapp{background:#25D366;color:white;padding:8px 12px;border-radius:8px;text-decoration:none}
+.adcard .btn-boost{background:linear-gradient(90deg,#f97316,#f59e0b);color:white;padding:8px 12px;border-radius:8px;border:none}
+.adcard .card-tag.boosted{background:#ffebc2;color:#b45309}
+@media (max-width:768px){.adcard .card-image{height:200px}}

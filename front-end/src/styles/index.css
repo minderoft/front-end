@@ -684,16 +684,12 @@ a:hover {
   }
 
   .ecosystem-grid {
-    display: flex;
+    /* Stacked vertical list on smaller screens for better accessibility */
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 16px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    overflow: visible;
     padding-bottom: 12px;
-    touch-action: pan-x;
-    overscroll-behavior-x: contain;
   }
 
   .ecosystem-grid::-webkit-scrollbar {
@@ -701,12 +697,8 @@ a:hover {
   }
 
   .ecosystem-card {
-    flex: 0 0 75%;
-    min-width: 75%;
-    max-width: 75%;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-    height: 320px;
+    width: 100%;
+    height: 280px;
   }
 
   @media (max-width: 640px) {
@@ -1311,7 +1303,8 @@ a:hover {
   }
 
   .navbar-menu {
-    position: absolute;
+    /* Fixed on mobile to avoid being clipped by parent overflow and ensure visibility */
+    position: fixed;
     top: 70px;
     left: 0;
     right: 0;
@@ -1321,14 +1314,15 @@ a:hover {
     padding: var(--spacing-md);
     gap: var(--spacing-sm);
     max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
+    overflow: auto;
+    transition: max-height 0.28s ease, transform 0.16s ease;
     border-bottom: 1px solid var(--border);
     box-shadow: var(--shadow-md);
+    z-index: 9999;
   }
 
   .navbar-menu.active {
-    max-height: 300px;
+    max-height: 320px;
   }
 
   .navbar-link {
@@ -1337,8 +1331,8 @@ a:hover {
   }
 
   .navbar-actions {
-    position: absolute;
-    top: 70px;
+    position: fixed;
+    top: calc(70px + 320px);
     left: 0;
     right: 0;
     background-color: var(--secondary);
@@ -1347,13 +1341,14 @@ a:hover {
     padding: var(--spacing-md);
     gap: var(--spacing-sm);
     max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
+    overflow: auto;
+    transition: max-height 0.28s ease, transform 0.16s ease;
     border-bottom: 1px solid var(--border);
+    z-index: 9998;
   }
 
   .navbar-actions.active {
-    max-height: 500px;
+    max-height: 240px;
     top: auto;
     border-bottom: none;
   }
