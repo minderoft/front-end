@@ -194,7 +194,7 @@ router.get('/callback', async (req, res) => {
     console.log('   Query params:', JSON.stringify(req.query, null, 2));
     console.log('   URL complète:', req.originalUrl);
     
-    const reference = req.query.trxref || req.query.reference;
+    const reference = req.query.trxref || req.query.reference || req.query.tx_ref;
     if (!reference) {
       console.error('❌ [PAYSTACK REDIRECT] Référence manquante dans query params');
       return res.redirect(`${process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app'}/?error=payment_reference_missing`);

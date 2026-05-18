@@ -84,7 +84,8 @@ const CreateAnnouncement = () => {
       try {
         const response = await pricingService.getAll();
         const pricingMap = {};
-        response.data.categories.forEach(cat => {
+        const categoriesData = response.data?.categories || [];
+        categoriesData.forEach(cat => {
           pricingMap[cat.category] = cat.price;
         });
         setPricing(pricingMap);
@@ -181,11 +182,21 @@ const CreateAnnouncement = () => {
     setError('');
 
     try {
+      if (!formData.announcementId) {
+        setError('Impossible de lancer le paiement: annonce introuvable.');
+        return;
+      }
+
       // Le prix vient du catalogue via l'API
       const categoryPrice = pricing[formData.category];
       
-      if (!categoryPrice) {
+      if (categoryPrice === undefined || categoryPrice === null) {
         setError('Tarif non trouvé pour cette catégorie');
+        return;
+      }
+
+      if (categoryPrice <= 0) {
+        setSuccess('Votre annonce a été créée avec succès. Aucun paiement requis pour cette catégorie.');
         return;
       }
       
