@@ -58,10 +58,10 @@ const CreateAnnouncement = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [pricing, setPricing] = useState({});
+  const [success, setSuccess] = useState('');
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
-  
+ 
   const [formData, setFormData] = useState({
     category: searchParams.get('category') || '',
     type: '',
@@ -286,7 +286,7 @@ const CreateAnnouncement = () => {
                 >
                   <option value="">Sélectionner le type</option>
                   {selectedCategory.types.map(t => (
-                    <option key={t} value={t}>{t === 'vente' ? 'À vendre' : 'À location'}</option>
+                    <option key={t} value={t}>{t === 'vente' ? 'À vendre' : 'À louer'}</option>
                   ))}
                 </select>
               </div>
