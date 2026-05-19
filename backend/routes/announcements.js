@@ -117,8 +117,10 @@ const sendAnnouncementError = (res, error, context = {}) => {
 router.get('/', async (req, res) => {
   try {
     const { category, type, minPrice, maxPrice, location, search } = req.query;
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 12;
+    const pageParam = Number.parseInt(req.query.page, 10);
+    const limitParam = Number.parseInt(req.query.limit, 10);
+    const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+    const limit = Number.isNaN(limitParam) || limitParam < 1 ? 12 : Math.min(limitParam, 100);
     const offset = (page - 1) * limit;
 
     let userId = null;
@@ -133,66 +135,69 @@ router.get('/', async (req, res) => {
       }
     }
 
-    let sql = `
-      SELECT a.*, u.name as user_name, u.phone as user_phone, u.is_verified,
-        COALESCE((SELECT ROUND(AVG(r.rating)::numeric, 1) FROM reviews r WHERE r.target_user_id = a.user_id), 0) as average_rating,
-        COALESCE((SELECT COUNT(*) FROM reviews r WHERE r.target_user_id = a.user_id), 0) as review_count
-      FROM announcements a
-      LEFT JOIN users u ON a.user_id = u.id
-      WHERE a.status = 'active' AND a.payment_status = 1
-    `;
-
-    const params = [];
-    let paramCount = 1;
+    const filters = ['a.status = $1', 'a.payment_status = $2'];
+    const params = ['active', 1];
+    let paramCount = 3;
 
     if (category) {
-      sql += ` AND a.category = $${paramCount}`;
+      filters.push(`a.category = $${paramCount}`);
       params.push(category);
       paramCount++;
     }
 
     if (type) {
-      sql += ` AND a.type = $${paramCount}`;
+      filters.push(`a.type = $${paramCount}`);
       params.push(type);
       paramCount++;
     }
 
     if (minPrice) {
-      sql += ` AND a.price >= $${paramCount}`;
-      params.push(Number(minPrice));
-      paramCount++;
+      const minValue = Number(minPrice);
+      if (!Number.isNaN(minValue)) {
+        filters.push(`a.price >= $${paramCount}`);
+        params.push(minValue);
+        paramCount++;
+      }
     }
 
     if (maxPrice) {
-      sql += ` AND a.price <= $${paramCount}`;
-      params.push(Number(maxPrice));
-      paramCount++;
+      const maxValue = Number(maxPrice);
+      if (!Number.isNaN(maxValue)) {
+        filters.push(`a.price <= $${paramCount}`);
+        params.push(maxValue);
+        paramCount++;
+      }
     }
 
     if (location) {
-      sql += ` AND a.location ILIKE $${paramCount}`;
-      params.push('%' + location + '%');
+      filters.push(`a.location ILIKE $${paramCount}`);
+      params.push(`%${location}%`);
       paramCount++;
     }
 
     if (search) {
-      sql += ` AND (a.title ILIKE $${paramCount} OR a.description ILIKE $${paramCount + 1})`;
-      params.push('%' + search + '%', '%' + search + '%');
+      filters.push(`(a.title ILIKE $${paramCount} OR a.description ILIKE $${paramCount + 1})`);
+      params.push(`%${search}%`, `%${search}%`);
       paramCount += 2;
     }
 
-    // COUNT
-    const countSql = sql.replace(
-      /SELECT a\.\*,.*?FROM announcements a/s,
-      'SELECT COUNT(*) as count FROM announcements a'
-    );
+    const whereClause = filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : '';
+    const baseSql = `
+      SELECT a.*, u.name as user_name, u.phone as user_phone,
+        COALESCE((SELECT ROUND(AVG(r.rating)::numeric, 1) FROM reviews r WHERE r.target_user_id = a.user_id), 0) as average_rating,
+        COALESCE((SELECT COUNT(*) FROM reviews r WHERE r.target_user_id = a.user_id), 0) as review_count
+      FROM announcements a
+      LEFT JOIN users u ON a.user_id = u.id
+      ${whereClause}
+    `;
+
+    const countSql = `SELECT COUNT(*) as count FROM announcements a ${whereClause}`;
     const countResult = await pool.query(countSql, params);
-    const total = countResult.rows[0]?.count || 0;
+    const total = Number(countResult.rows[0]?.count || 0);
 
-    sql += ` ORDER BY a.is_boosted DESC, a.created_at DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
-    params.push(limit, offset);
-
-    const result = await pool.query(sql, params);
+    const querySql = `${baseSql} ORDER BY a.is_boosted DESC, a.created_at DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
+    const queryParams = [...params, limit, offset];
+    const result = await pool.query(querySql, queryParams);
     const announcements = normalizeAnnouncements(result.rows);
 
     if (userId) {
@@ -254,7 +259,7 @@ router.get('/nearby', async (req, res) => {
     }
 
     const sql = `
-      SELECT a.*, u.name as user_name, u.phone as user_phone, u.is_verified,
+      SELECT a.*, u.name as user_name, u.phone as user_phone,
         (6371 * ACOS(
           COS(RADIANS($1)) * COS(RADIANS(a.latitude)) * COS(RADIANS(a.longitude) - RADIANS($2)) +
           SIN(RADIANS($3)) * SIN(RADIANS(a.latitude))
@@ -280,7 +285,7 @@ router.get('/nearby', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT a.*, u.name as user_name, u.phone as user_phone, u.email as user_email, u.is_verified,
+      `SELECT a.*, u.name as user_name, u.phone as user_phone, u.email as user_email,
         COALESCE((SELECT ROUND(AVG(r.rating)::numeric, 1) FROM reviews r WHERE r.target_user_id = a.user_id), 0) as average_rating,
         COALESCE((SELECT COUNT(*) FROM reviews r WHERE r.target_user_id = a.user_id), 0) as review_count
        FROM announcements a
