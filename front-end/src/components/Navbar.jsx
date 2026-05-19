@@ -19,7 +19,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar">
+    <nav className="navbar relative">
       <Link to="/" className="navbar-brand">
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
           {/* Background */}
@@ -99,34 +99,32 @@ const Navbar = () => {
       </div>
 
       {isOpen && (
-        <div className="navbar-mobile-drawer">
-          <div className="navbar-menu mobile-menu">
-            <Link to="/" className="navbar-link" onClick={handleNavClick}>Accueil</Link>
-            <Link to="/announcements" className="navbar-link" onClick={handleNavClick}>Annonces</Link>
-            <Link to="/help" className="navbar-link" onClick={handleNavClick}>Aide</Link>
-            <Link to="/faq" className="navbar-link" onClick={handleNavClick}>FAQ</Link>
-            <Link to="/contact" className="navbar-link" onClick={handleNavClick}>Contact</Link>
-          </div>
+        <div className="absolute top-full left-0 w-full bg-white shadow-xl z-[9999] flex flex-col p-6 space-y-4 md:hidden" style={{ position: 'absolute', top: '100%', left: 0, width: '100%', backgroundColor: '#ffffff', boxShadow: '0 25px 50px rgba(0, 0, 0, 0.1)', zIndex: 9999, display: 'flex', flexDirection: 'column', padding: '24px', gap: '16px' }}>
+          <Link to="/" className="text-gray-800 font-medium text-lg hover:text-blue-600" onClick={handleNavClick}>Accueil</Link>
+          <Link to="/announcements" className="text-gray-800 font-medium text-lg hover:text-blue-600" onClick={handleNavClick}>Annonces</Link>
+          <Link to="/help" className="text-gray-800 font-medium text-lg hover:text-blue-600" onClick={handleNavClick}>Aide</Link>
+          <Link to="/faq" className="text-gray-800 font-medium text-lg hover:text-blue-600" onClick={handleNavClick}>FAQ</Link>
+          <Link to="/contact" className="text-gray-800 font-medium text-lg hover:text-blue-600" onClick={handleNavClick}>Contact</Link>
 
-          <div className="navbar-actions mobile-actions">
+          <div className="flex flex-col gap-3">
             {user ? (
               <>
-                <Link to="/create" className="btn btn-accent" onClick={handleNavClick}>
+                <Link to="/create" className="btn btn-accent w-full" onClick={handleNavClick}>
                   + Publier
                 </Link>
-                <Link to="/dashboard" className="btn btn-ghost" onClick={handleNavClick}>
+                <Link to="/dashboard" className="btn btn-ghost w-full" onClick={handleNavClick}>
                   Mon Dashboard
                 </Link>
-                <button onClick={handleLogout} className="btn btn-outline btn-sm">
+                <button onClick={handleLogout} className="btn btn-outline btn-sm w-full">
                   Déconnexion
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" className="btn btn-ghost" onClick={handleNavClick}>
+                <Link to="/login" className="btn btn-ghost w-full" onClick={handleNavClick}>
                   Connexion
                 </Link>
-                <Link to="/register" className="btn btn-primary" onClick={handleNavClick}>
+                <Link to="/register" className="btn btn-primary w-full" onClick={handleNavClick}>
                   Inscription
                 </Link>
               </>
