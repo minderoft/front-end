@@ -65,37 +65,39 @@ const Navbar = () => {
       </button>
 
       {/* Menu Desktop et Mobile */}
-      <div className={`navbar-menu ${menuOpen ? 'active' : ''}`}>
-        <Link to="/" className="navbar-link" onClick={handleNavClick}>Accueil</Link>
-        <Link to="/announcements" className="navbar-link" onClick={handleNavClick}>Annonces</Link>
-        <Link to="/help" className="navbar-link" onClick={handleNavClick}>Aide</Link>
-        <Link to="/faq" className="navbar-link" onClick={handleNavClick}>FAQ</Link>
-        <Link to="/contact" className="navbar-link" onClick={handleNavClick}>Contact</Link>
-      </div>
+      <div className={`navbar-dropdown ${menuOpen ? 'active' : ''}`}>
+        <div className={`navbar-menu ${menuOpen ? 'active' : ''}`}>
+          <Link to="/" className="navbar-link" onClick={handleNavClick}>Accueil</Link>
+          <Link to="/announcements" className="navbar-link" onClick={handleNavClick}>Annonces</Link>
+          <Link to="/help" className="navbar-link" onClick={handleNavClick}>Aide</Link>
+          <Link to="/faq" className="navbar-link" onClick={handleNavClick}>FAQ</Link>
+          <Link to="/contact" className="navbar-link" onClick={handleNavClick}>Contact</Link>
+        </div>
 
-      <div className={`navbar-actions ${menuOpen ? 'active' : ''}`}>
-        {user ? (
-          <>
-            <Link to="/create" className="btn btn-accent" onClick={handleNavClick}>
-              + Publier
-            </Link>
-            <Link to="/dashboard" className="btn btn-ghost" onClick={handleNavClick}>
-              Mon Dashboard
-            </Link>
-            <button onClick={handleLogout} className="btn btn-outline btn-sm">
-              Déconnexion
-            </button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" className="btn btn-ghost" onClick={handleNavClick}>
-              Connexion
-            </Link>
-            <Link to="/register" className="btn btn-primary" onClick={handleNavClick}>
-              Inscription
-            </Link>
-          </>
-        )}
+        <div className={`navbar-actions ${menuOpen ? 'active' : ''}`}>
+          {user ? (
+            <>
+              <Link to="/create" className="btn btn-accent" onClick={handleNavClick}>
+                + Publier
+              </Link>
+              <Link to="/dashboard" className="btn btn-ghost" onClick={handleNavClick}>
+                Mon Dashboard
+              </Link>
+              <button onClick={handleLogout} className="btn btn-outline btn-sm">
+                Déconnexion
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="btn btn-ghost" onClick={handleNavClick}>
+                Connexion
+              </Link>
+              <Link to="/register" className="btn btn-primary" onClick={handleNavClick}>
+                Inscription
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );

@@ -79,7 +79,7 @@ body {
 
 .main-content {
   flex: 1;
-  padding-top: 70px;
+  padding-top: 80px;
 }
 
 /* ============================================
@@ -362,6 +362,13 @@ a:hover {
   gap: var(--spacing-lg);
   flex: 1;
   margin: 0 var(--spacing-xl);
+}
+
+.navbar-dropdown {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: var(--spacing-lg);
 }
 
 .navbar-link {
@@ -1280,12 +1287,29 @@ a:hover {
     display: flex;
   }
 
-  .navbar-menu {
+  .navbar-dropdown {
+    display: none;
+  }
+
+  .navbar-dropdown.active {
+    display: block;
     position: fixed;
-    top: 70px;
+    top: 80px;
     left: 0;
     right: 0;
+    width: 100%;
     background-color: var(--secondary);
+    z-index: 9999;
+    box-shadow: var(--shadow-md);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .navbar-menu {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    background-color: transparent;
     flex-direction: column;
     align-items: flex-start;
     padding: var(--spacing-md);
@@ -1293,15 +1317,14 @@ a:hover {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease;
-    border-bottom: 1px solid var(--border);
-    box-shadow: var(--shadow-md);
-    z-index: 9999;
+    border: none;
+    box-shadow: none;
     width: 100%;
   }
 
-  .navbar-menu.active {
-    max-height: 400px;
-    overflow: auto;
+  .navbar-dropdown.active .navbar-menu {
+    max-height: none;
+    overflow: visible;
   }
 
   .navbar-link {
@@ -1310,11 +1333,11 @@ a:hover {
   }
 
   .navbar-actions {
-    position: fixed;
-    top: 70px;
-    left: 0;
-    right: 0;
-    background-color: var(--secondary);
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    background-color: transparent;
     flex-direction: column;
     align-items: stretch;
     padding: var(--spacing-md);
@@ -1322,15 +1345,15 @@ a:hover {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease;
-    border-bottom: 1px solid var(--border);
-    z-index: 9998;
+    border: none;
+    z-index: auto;
     width: 100%;
   }
 
-  .navbar-actions.active {
-    max-height: 300px;
-    overflow: auto;
-    border-bottom: none;
+  .navbar-dropdown.active .navbar-actions {
+    max-height: none;
+    overflow: visible;
+    border-top: 1px solid var(--border);
   }
 
   .navbar-actions .btn {

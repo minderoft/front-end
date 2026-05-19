@@ -99,6 +99,8 @@ const CreateAnnouncement = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setError('');
+    setSuccess('');
   };
 
   const handleMetadataChange = (e) => {
@@ -107,11 +109,15 @@ const CreateAnnouncement = () => {
       ...prev, 
       metadata: { ...prev.metadata, [name]: value } 
     }));
+    setError('');
+    setSuccess('');
   };
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     setFormData(prev => ({ ...prev, images: [...prev.images, ...files] }));
+    setError('');
+    setSuccess('');
   };
 
   const removeImage = (index) => {
@@ -124,6 +130,7 @@ const CreateAnnouncement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
@@ -180,6 +187,7 @@ const CreateAnnouncement = () => {
   const handlePayment = async () => {
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
       if (!formData.announcementId) {
