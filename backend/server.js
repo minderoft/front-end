@@ -152,8 +152,15 @@ app.use('/api/auth/login', authLimiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Servir les fichiers statiques (images uploadées)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Servir les fichiers statiques (images uploadées) avec CORS explicite
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res, path, stat) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    res.set('Cache-Control', 'public, max-age=31536000');
+  }
+}));
 
 // Route racine pour les health checks Render
 app.get('/', (req, res) => {

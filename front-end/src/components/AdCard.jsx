@@ -31,7 +31,16 @@ const AdCard = ({ announcement, onBoost }) => {
   return (
     <article className="card announcement-card adcard">
       {imageUrl ? (
-        <img src={imageUrl} alt={announcement.title} className="card-image" loading="lazy" onError={handleImageError} />
+        <img 
+          src={imageUrl} 
+          alt={announcement.title} 
+          className="card-image" 
+          loading="lazy" 
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = 'https://placehold.co/600x400?text=Image+non+disponible';
+          }}
+        />
       ) : (
         <div className="card-image card-image-fallback">🏠</div>
       )}
