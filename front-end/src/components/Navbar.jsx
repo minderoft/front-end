@@ -99,37 +99,45 @@ const Navbar = () => {
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 w-full bg-white shadow-xl z-[9999] flex flex-col p-6 space-y-4 md:hidden" style={{ position: 'absolute', top: '100%', left: 0, width: '100%', backgroundColor: '#ffffff', boxShadow: '0 25px 50px rgba(0, 0, 0, 0.1)', zIndex: 9999, display: 'flex', flexDirection: 'column', padding: '24px', gap: '16px' }}>
-          <Link to="/" className="text-gray-800 font-medium text-lg hover:text-blue-600" onClick={handleNavClick}>Accueil</Link>
-          <Link to="/announcements" className="text-gray-800 font-medium text-lg hover:text-blue-600" onClick={handleNavClick}>Annonces</Link>
-          <Link to="/help" className="text-gray-800 font-medium text-lg hover:text-blue-600" onClick={handleNavClick}>Aide</Link>
-          <Link to="/faq" className="text-gray-800 font-medium text-lg hover:text-blue-600" onClick={handleNavClick}>FAQ</Link>
-          <Link to="/contact" className="text-gray-800 font-medium text-lg hover:text-blue-600" onClick={handleNavClick}>Contact</Link>
+        <div className="absolute top-full left-0 w-full bg-white shadow-xl z-[9999] flex flex-col p-6 space-y-4 md:hidden">
+          <Link to="/" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
+            Accueil
+          </Link>
+          <Link to="/announcements" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
+            Annonces
+          </Link>
+          <Link to="/help" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
+            Aide
+          </Link>
+          <Link to="/faq" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
+            FAQ
+          </Link>
+          <Link to="/contact" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
+            Contact
+          </Link>
 
-          <div className="flex flex-col gap-3">
-            {user ? (
-              <>
-                <Link to="/create" className="btn btn-accent w-full" onClick={handleNavClick}>
-                  + Publier
-                </Link>
-                <Link to="/dashboard" className="btn btn-ghost w-full" onClick={handleNavClick}>
-                  Mon Dashboard
-                </Link>
-                <button onClick={handleLogout} className="btn btn-outline btn-sm w-full">
-                  Déconnexion
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="btn btn-ghost w-full" onClick={handleNavClick}>
-                  Connexion
-                </Link>
-                <Link to="/register" className="btn btn-primary w-full" onClick={handleNavClick}>
-                  Inscription
-                </Link>
-              </>
-            )}
-          </div>
+          {user ? (
+            <>
+              <Link to="/create" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
+                + Publier
+              </Link>
+              <Link to="/dashboard" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
+                Mon Dashboard
+              </Link>
+              <button onClick={handleLogout} className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full text-left">
+                Déconnexion
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
+                Connexion
+              </Link>
+              <Link to="/register" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
+                Inscription
+              </Link>
+            </>
+          )}
         </div>
       )}
     </nav>
