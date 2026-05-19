@@ -364,11 +364,19 @@ a:hover {
   margin: 0 var(--spacing-xl);
 }
 
-.navbar-dropdown {
+.navbar-actions {
   display: flex;
   align-items: center;
-  flex: 1;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
+  flex-shrink: 0;
+}
+
+.desktop-menu {
+  display: flex;
+}
+
+.desktop-actions {
+  display: flex;
 }
 
 .navbar-link {
@@ -1287,21 +1295,25 @@ a:hover {
     display: flex;
   }
 
-  .navbar-dropdown {
+  .desktop-menu,
+  .desktop-actions {
     display: none;
   }
 
-  .navbar-dropdown.active {
-    display: block;
-    position: fixed;
-    top: 80px;
+  .navbar-mobile-drawer {
+    position: absolute;
+    top: 100%;
     left: 0;
     right: 0;
     width: 100%;
     background-color: var(--secondary);
     z-index: 9999;
-    box-shadow: var(--shadow-md);
-    border-bottom: 1px solid var(--border);
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
   }
 
   .navbar-menu {
@@ -1312,19 +1324,18 @@ a:hover {
     background-color: transparent;
     flex-direction: column;
     align-items: flex-start;
-    padding: var(--spacing-md);
+    padding: 0;
+    margin: 0;
     gap: var(--spacing-sm);
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-    border: none;
-    box-shadow: none;
     width: 100%;
   }
 
-  .navbar-dropdown.active .navbar-menu {
-    max-height: none;
-    overflow: visible;
+  .mobile-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    width: 100%;
   }
 
   .navbar-link {
@@ -1340,23 +1351,12 @@ a:hover {
     background-color: transparent;
     flex-direction: column;
     align-items: stretch;
-    padding: var(--spacing-md);
+    padding: 0;
     gap: var(--spacing-sm);
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-    border: none;
-    z-index: auto;
     width: 100%;
   }
 
-  .navbar-dropdown.active .navbar-actions {
-    max-height: none;
-    overflow: visible;
-    border-top: 1px solid var(--border);
-  }
-
-  .navbar-actions .btn {
+  .navbar-mobile-drawer .navbar-actions .btn {
     width: 100%;
   }
   

@@ -6,16 +6,16 @@ import { useState } from 'react';
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/');
-    setMenuOpen(false);
+    setIsOpen(false);
   };
 
   const handleNavClick = () => {
-    setMenuOpen(false);
+    setIsOpen(false);
   };
 
   return (
@@ -55,8 +55,8 @@ const Navbar = () => {
 
       {/* Bouton Hamburger pour Mobile */}
       <button
-        className={`navbar-toggle ${menuOpen ? 'active' : ''}`}
-        onClick={() => setMenuOpen(!menuOpen)}
+        className={`navbar-toggle ${isOpen ? 'active' : ''}`}
+        onClick={() => setIsOpen((prev) => !prev)}
         aria-label="Toggle menu"
       >
         <span></span>
@@ -64,41 +64,76 @@ const Navbar = () => {
         <span></span>
       </button>
 
-      {/* Menu Desktop et Mobile */}
-      <div className={`navbar-dropdown ${menuOpen ? 'active' : ''}`}>
-        <div className={`navbar-menu ${menuOpen ? 'active' : ''}`}>
-          <Link to="/" className="navbar-link" onClick={handleNavClick}>Accueil</Link>
-          <Link to="/announcements" className="navbar-link" onClick={handleNavClick}>Annonces</Link>
-          <Link to="/help" className="navbar-link" onClick={handleNavClick}>Aide</Link>
-          <Link to="/faq" className="navbar-link" onClick={handleNavClick}>FAQ</Link>
-          <Link to="/contact" className="navbar-link" onClick={handleNavClick}>Contact</Link>
-        </div>
-
-        <div className={`navbar-actions ${menuOpen ? 'active' : ''}`}>
-          {user ? (
-            <>
-              <Link to="/create" className="btn btn-accent" onClick={handleNavClick}>
-                + Publier
-              </Link>
-              <Link to="/dashboard" className="btn btn-ghost" onClick={handleNavClick}>
-                Mon Dashboard
-              </Link>
-              <button onClick={handleLogout} className="btn btn-outline btn-sm">
-                Déconnexion
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="btn btn-ghost" onClick={handleNavClick}>
-                Connexion
-              </Link>
-              <Link to="/register" className="btn btn-primary" onClick={handleNavClick}>
-                Inscription
-              </Link>
-            </>
-          )}
-        </div>
+      {/* Menu Desktop */}
+      <div className="navbar-menu desktop-menu">
+        <Link to="/" className="navbar-link" onClick={handleNavClick}>Accueil</Link>
+        <Link to="/announcements" className="navbar-link" onClick={handleNavClick}>Annonces</Link>
+        <Link to="/help" className="navbar-link" onClick={handleNavClick}>Aide</Link>
+        <Link to="/faq" className="navbar-link" onClick={handleNavClick}>FAQ</Link>
+        <Link to="/contact" className="navbar-link" onClick={handleNavClick}>Contact</Link>
       </div>
+
+      <div className="navbar-actions desktop-actions">
+        {user ? (
+          <>
+            <Link to="/create" className="btn btn-accent" onClick={handleNavClick}>
+              + Publier
+            </Link>
+            <Link to="/dashboard" className="btn btn-ghost" onClick={handleNavClick}>
+              Mon Dashboard
+            </Link>
+            <button onClick={handleLogout} className="btn btn-outline btn-sm">
+              Déconnexion
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className="btn btn-ghost" onClick={handleNavClick}>
+              Connexion
+            </Link>
+            <Link to="/register" className="btn btn-primary" onClick={handleNavClick}>
+              Inscription
+            </Link>
+          </>
+        )}
+      </div>
+
+      {isOpen && (
+        <div className="navbar-mobile-drawer">
+          <div className="navbar-menu mobile-menu">
+            <Link to="/" className="navbar-link" onClick={handleNavClick}>Accueil</Link>
+            <Link to="/announcements" className="navbar-link" onClick={handleNavClick}>Annonces</Link>
+            <Link to="/help" className="navbar-link" onClick={handleNavClick}>Aide</Link>
+            <Link to="/faq" className="navbar-link" onClick={handleNavClick}>FAQ</Link>
+            <Link to="/contact" className="navbar-link" onClick={handleNavClick}>Contact</Link>
+          </div>
+
+          <div className="navbar-actions mobile-actions">
+            {user ? (
+              <>
+                <Link to="/create" className="btn btn-accent" onClick={handleNavClick}>
+                  + Publier
+                </Link>
+                <Link to="/dashboard" className="btn btn-ghost" onClick={handleNavClick}>
+                  Mon Dashboard
+                </Link>
+                <button onClick={handleLogout} className="btn btn-outline btn-sm">
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="btn btn-ghost" onClick={handleNavClick}>
+                  Connexion
+                </Link>
+                <Link to="/register" className="btn btn-primary" onClick={handleNavClick}>
+                  Inscription
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
