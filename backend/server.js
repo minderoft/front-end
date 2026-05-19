@@ -37,6 +37,8 @@ app.use(helmet({
       scriptSrc: ["'self'"],
     },
   },
+  // Autoriser la ressource cross-origin pour permettre le chargement d'images depuis d'autres origines
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 
 // ============================================
@@ -155,6 +157,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Servir les fichiers statiques (images uploadées) avec CORS explicite
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   setHeaders: (res, path, stat) => {
+    // Autoriser le chargement cross-origin des ressources (CORP) et CORS simple
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.set('Access-Control-Allow-Headers', 'Content-Type');

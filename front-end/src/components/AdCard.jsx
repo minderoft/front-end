@@ -36,6 +36,7 @@ const AdCard = ({ announcement, onBoost }) => {
           alt={announcement.title} 
           className="card-image" 
           loading="lazy" 
+          crossOrigin="anonymous"
           onError={(e) => {
             e.target.onerror = null;
             e.target.src = 'https://placehold.co/600x400?text=Image+non+disponible';
