@@ -11,6 +11,7 @@ const Dashboard = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -18,6 +19,7 @@ const Dashboard = () => {
 
   const fetchData = async () => {
     setLoading(true);
+    setError('');
     try {
         if (activeTab === 'announcements') {
         const response = await announcementService.getMyAnnouncements();
@@ -27,7 +29,8 @@ const Dashboard = () => {
         setPayments(response.data.payments);
       }
     } catch (error) {
-      console.error('Erreur:', error);
+      console.error('Erreur fetchData:', error);
+      setError('Impossible de charger vos données. Réessayez.');
     } finally {
       setLoading(false);
     }
@@ -116,7 +119,14 @@ const Dashboard = () => {
         <>
           {activeTab === 'announcements' && (
             <>
-              {announcements.length > 0 ? (
+              {error ? (
+                <div className="alert alert-error">
+                  <p>{error}</p>
+                  <button type="button" className="btn btn-primary" onClick={fetchData}>
+                    Réessayer
+                  </button>
+                </div>
+              ) : announcements.length > 0 ? (
                 <div className="announcements-grid">
                   {announcements.map(announcement => {
                     const parsedImages = parseImages(announcement.images);

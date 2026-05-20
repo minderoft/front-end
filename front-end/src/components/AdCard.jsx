@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Home as HomeIcon, MapPin } from 'lucide-react';
 import '../styles/AdCard.css';
 import { resolveImageUrl, parseImages, handleImageError } from '../utils/imageUtils';
 
@@ -43,7 +44,9 @@ const AdCard = ({ announcement, onBoost }) => {
           }}
         />
       ) : (
-        <div className="card-image card-image-fallback">🏠</div>
+        <div className="card-image card-image-fallback" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <HomeIcon size={42} color="#64748B" />
+        </div>
       )}
 
       <div className="card-body">
@@ -57,7 +60,10 @@ const AdCard = ({ announcement, onBoost }) => {
         <h3 className="card-title">{announcement.title}</h3>
         <p className="card-text">{announcement.description?.substring(0, 120)}...</p>
         <div className="card-price">{announcement.price?.toLocaleString() || 0} FCFA</div>
-        <div className="card-meta"><span>📍 {location}</span></div>
+        <div className="card-meta" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <MapPin size={14} />
+          <span>{location}</span>
+        </div>
 
         <div className="card-actions">
           <button type="button" onClick={handleView} className="btn btn-outline btn-sm">Voir</button>

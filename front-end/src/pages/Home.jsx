@@ -4,12 +4,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { announcementService } from '../services/api';
 import AdCard from '../components/AdCard';
 import CategoryCarousel from '../components/CategoryCarousel';
+import { Home as HomeIcon, Car, HardHat, Wrench, Shield, CheckCircle, CreditCard, MapPin } from 'lucide-react';
 
 const categories = [
   {
     id: 'immobilier',
     name: 'Immobilier',
-    icon: '🏠',
+    icon: <HomeIcon size={28} />,
     description: 'Maisons, appartements, terrains',
     theme: 'immobilier',
     image: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1050&q=80',
@@ -17,7 +18,7 @@ const categories = [
   {
     id: 'vehicule',
     name: 'Véhicules',
-    icon: '🚗',
+    icon: <Car size={28} />,
     description: 'Voitures, motos et utilitaires',
     theme: 'vehicule',
     image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1050&q=80',
@@ -25,7 +26,7 @@ const categories = [
   {
     id: 'materiaux',
     name: 'BTP',
-    icon: '🧱',
+    icon: <HardHat size={28} />,
     description: 'Matériaux et équipements de construction',
     theme: 'materiaux',
     image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1050&q=80',
@@ -33,7 +34,7 @@ const categories = [
   {
     id: 'technicien',
     name: 'Techniciens',
-    icon: '🔧',
+    icon: <Wrench size={28} />,
     description: 'Artisans, serruriers, électriciens, plombiers',
     theme: 'technicien',
     image: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1050&q=80',
@@ -44,7 +45,7 @@ const professionalPricing = [
   {
     id: 'immobilier',
     name: 'Immobilier',
-    icon: '🏠',
+    icon: <HomeIcon size={24} />,
     price: 5000,
     details: 'Annonce 30 jours · Visibilité standard',
     buttonLabel: 'Publier dans Immobilier',
@@ -52,7 +53,7 @@ const professionalPricing = [
   {
     id: 'materiaux',
     name: 'Matériaux',
-    icon: '🧱',
+    icon: <HardHat size={24} />,
     price: 3000,
     details: 'Annonce 30 jours · Visibilité standard',
     buttonLabel: 'Publier dans Matériaux',
@@ -60,7 +61,7 @@ const professionalPricing = [
   {
     id: 'technicien',
     name: 'Technicien',
-    icon: '🔧',
+    icon: <Wrench size={24} />,
     price: 2000,
     details: 'Annonce 30 jours',
     buttonLabel: 'Publier dans Technicien',
@@ -68,7 +69,7 @@ const professionalPricing = [
   {
     id: 'vehicule',
     name: 'Véhicule',
-    icon: '🚗',
+    icon: <Car size={24} />,
     price: 4000,
     details: 'Annonce 30 jours',
     buttonLabel: 'Publier dans Véhicule',
@@ -79,49 +80,58 @@ const securityFeatures = [
   {
     title: 'Données chiffrées',
     description: 'Toutes les conversations et les paiements sont protégés par SSL et chiffrement de bout en bout.',
-    icon: '🔒',
+    icon: <Shield size={28} />,
   },
   {
     title: 'Vérification RSI',
     description: 'Vendeurs qualifiés et vérifiés pour renforcer la confiance sur chaque transaction.',
-    icon: '✅',
+    icon: <CheckCircle size={28} />,
   },
   {
     title: 'Paiement sécurisé',
     description: 'Intégration Paystack/Djamo pour des transactions fluides et sûres.',
-    icon: '💳',
+    icon: <CreditCard size={28} />,
   },
 ];
 
 const Home = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [homeError, setHomeError] = useState('');
+  const [recentTotal, setRecentTotal] = useState(null);
   const [nearbyLoading, setNearbyLoading] = useState(false);
   const [nearbyAnnouncements, setNearbyAnnouncements] = useState(null);
+  const [nearbyError, setNearbyError] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Use getPublicAll for global announcements (no auth required)
-        const announcementsRes = await announcementService.getPublicAll({ limit: 6 });
-        const results = announcementsRes.data?.announcements ?? [];
-        console.log('DEBUG Home.jsx - Annonces chargées:', results.length, results);
-        setAnnouncements(Array.isArray(results) ? results : []);
-      } catch (error) {
-        console.error('Erreur chargement annonces Home:', error);
-        setAnnouncements([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchRecentAnnouncements = async () => {
+    setLoading(true);
+    setHomeError('');
+    try {
+      const announcementsRes = await announcementService.getPublicAll({ limit: 6, page: 1 });
+      const results = announcementsRes.data?.announcements ?? [];
+      const total = Number(announcementsRes.data?.pagination?.total);
+      console.log('DEBUG Home.jsx - Annonces chargées:', results.length, results);
+      setAnnouncements(Array.isArray(results) ? results : []);
+      setRecentTotal(Number.isFinite(total) ? total : null);
+    } catch (error) {
+      console.error('Erreur chargement annonces Home:', error);
+      setAnnouncements([]);
+      setRecentTotal(null);
+      setHomeError('Impossible de charger les annonces récentes. Vérifiez votre connexion et réessayez.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchData();
+  useEffect(() => {
+    fetchRecentAnnouncements();
   }, []);
 
   const handleNearbySearch = () => {
+    setNearbyError('');
     if (!navigator.geolocation) {
-      alert('Géolocalisation non supportée par votre navigateur');
+      setNearbyError('Géolocalisation non supportée par votre navigateur.');
       return;
     }
 
@@ -136,13 +146,14 @@ const Home = () => {
           setNearbyAnnouncements(Array.isArray(nearbyResults) ? nearbyResults : []);
         } catch (error) {
           console.error('Erreur recherche nearby:', error);
-          alert('Erreur lors de la recherche des annonces proches');
+          setNearbyError('Impossible de charger les annonces proches. Réessayez.');
+          setNearbyAnnouncements([]);
         } finally {
           setNearbyLoading(false);
         }
       },
       () => {
-        alert('Impossible d\'accéder à votre position. Veuillez vérifier vos paramètres.');
+        setNearbyError('Impossible d\'accéder à votre position. Veuillez vérifier vos paramètres.');
         setNearbyLoading(false);
       }
     );
@@ -176,7 +187,7 @@ const Home = () => {
             <div className="hero-panel-card">
               <div className="hero-panel-head">
                 <span>Performance</span>
-                <strong>+ 1,200 annonces actives</strong>
+                <strong>{recentTotal !== null ? `${recentTotal.toLocaleString()} annonces actives` : 'Annonces en cours...'}</strong>
               </div>
               <div className="hero-metrics">
                 <div>
@@ -225,11 +236,21 @@ const Home = () => {
             disabled={nearbyLoading}
             className="btn btn-primary"
           >
-            {nearbyLoading ? 'Localisation en cours...' : '📍 Autour de moi (10km)'}
+            {nearbyLoading ? 'Localisation en cours...' : (<><MapPin size={16} style={{ marginRight: 6 }} />Autour de moi (10km)</>)}
           </button>
         </div>
 
-        {nearbyAnnouncements && (
+        {nearbyError && (
+          <div className="alert alert-error" style={{ marginBottom: '1rem' }}>
+            <p>{nearbyError}</p>
+          </div>
+        )}
+
+        {nearbyLoading ? (
+          <div className="loading">
+            <div className="spinner"></div>
+          </div>
+        ) : nearbyAnnouncements ? (
           <>
             {nearbyAnnouncements.length > 0 ? (
               <>
@@ -248,7 +269,7 @@ const Home = () => {
               </div>
             )}
           </>
-        )}
+        ) : null}
       </section>
 
       <section className="announcements-section">
@@ -299,8 +320,22 @@ const Home = () => {
         </div>
 
         {loading ? (
-          <div className="loading">
-            <div className="spinner"></div>
+          <div className="skeleton-grid">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className="skeleton-card">
+                <div className="skeleton-line title" />
+                <div className="skeleton-line short" />
+                <div className="skeleton-line bar" />
+                <div className="skeleton-line bar" />
+              </div>
+            ))}
+          </div>
+        ) : homeError ? (
+          <div className="alert alert-error">
+            <p>{homeError}</p>
+            <button onClick={fetchRecentAnnouncements} className="btn btn-primary" type="button">
+              Réessayer
+            </button>
           </div>
         ) : announcements.length > 0 ? (
           <div className="announcements-grid">

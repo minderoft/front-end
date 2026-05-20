@@ -11,6 +11,7 @@ const Announcements = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [pagination, setPagination] = useState({ page: 1, limit: 12, total: 0, pages: 0 });
   
   // Filtres
@@ -30,6 +31,7 @@ const Announcements = () => {
 
   const fetchAnnouncements = async () => {
     setLoading(true);
+    setError('');
     try {
       const params = Object.fromEntries(searchParams);
       const response = await announcementService.getAll(params);
@@ -44,7 +46,9 @@ const Announcements = () => {
         pages: Number(response.data?.pagination?.pages) || 0,
       }));
     } catch (error) {
-      console.error('Erreur:', error);
+      console.error('Erreur fetchAnnouncements:', error);
+      setAnnouncements([]);
+      setError('Impossible de charger les annonces. Vérifiez votre connexion et réessayez.');
     } finally {
       setLoading(false);
     }
@@ -200,8 +204,22 @@ const Announcements = () => {
 
       {/* Résultats */}
       {loading ? (
-        <div className="loading">
-          <div className="spinner"></div>
+        <div className="skeleton-grid">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="skeleton-card">
+              <div className="skeleton-line title" />
+              <div className="skeleton-line short" />
+              <div className="skeleton-line bar" />
+              <div className="skeleton-line bar" />
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="alert alert-error">
+          <p>{error}</p>
+          <button onClick={fetchAnnouncements} className="btn btn-primary" type="button">
+            Réessayer
+          </button>
         </div>
       ) : announcements.length > 0 ? (
         <>
@@ -303,7 +321,7 @@ const Announcements = () => {
                         ? 'Prix à négocier' 
                         : `${announcement.price?.toLocaleString()} FCFA`}
                     </div>
-                    <div className="card-meta">
+                    <div className="card-meta" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <span>📍 {location}</span>
                       {sellerPhone ? <span>📞 {sellerPhone}</span> : null}
                     </div>
