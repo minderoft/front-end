@@ -4,7 +4,18 @@ import { Link, useNavigate } from 'react-router-dom';
 import { announcementService } from '../services/api';
 import AdCard from '../components/AdCard';
 import CategoryCarousel from '../components/CategoryCarousel';
-import { Home as HomeIcon, Car, HardHat, Wrench, Shield, CheckCircle, CreditCard, MapPin } from 'lucide-react';
+import { Home as HomeIcon, Car, HardHat, Wrench, Shield, CheckCircle, CreditCard, MapPin, Sparkles } from 'lucide-react';
+
+const setPageMeta = (title, description) => {
+  document.title = title;
+  let meta = document.querySelector('meta[name="description"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.name = 'description';
+    document.head.appendChild(meta);
+  }
+  meta.content = description;
+};
 
 const categories = [
   {
@@ -49,6 +60,7 @@ const professionalPricing = [
     price: 5000,
     details: 'Annonce 30 jours · Visibilité standard',
     buttonLabel: 'Publier dans Immobilier',
+    popular: true,
   },
   {
     id: 'materiaux',
@@ -125,6 +137,7 @@ const Home = () => {
   };
 
   useEffect(() => {
+    setPageMeta('LocaPlus - Annonces immobilières, BTP, véhicules et techniciens', 'Découvrez les annonces professionnelles en immobilier, véhicules, matériaux et services techniques sur LocaPlus.');
     fetchRecentAnnouncements();
   }, []);
 
@@ -286,6 +299,7 @@ const Home = () => {
         <div className="pricing-grid">
           {professionalPricing.map((plan) => (
             <article key={plan.id} className="card pricing-card">
+              {plan.popular && <span className="pricing-badge">Populaire</span>}
               <div className="pricing-header">
                 <span className="pricing-icon">{plan.icon}</span>
                 <h3>{plan.name}</h3>
@@ -340,7 +354,7 @@ const Home = () => {
         ) : announcements.length > 0 ? (
           <div className="announcements-grid">
             {announcements.map((announcement) => (
-              <AdCard key={announcement.id} announcement={announcement} onBoost={() => navigate(`/announcements/${announcement.id}`)} />
+                <AdCard key={announcement._id || announcement.id || announcement.title} announcement={announcement} onBoost={() => navigate(`/announcements/${announcement._id || announcement.id}`)} />
             ))}
           </div>
         ) : (

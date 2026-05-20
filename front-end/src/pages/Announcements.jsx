@@ -1,9 +1,36 @@
 // filepath: front-end/src/pages/Announcements.jsx
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { MapPin, Phone, Flag, Rocket, Search, Eye } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { announcementService, reportService } from '../services/api';
 import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
+
+const setPageMeta = (title, description) => {
+  document.title = title;
+  let meta = document.querySelector('meta[name="description"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.name = 'description';
+    document.head.appendChild(meta);
+  }
+  meta.content = description;
+};
+
+const categoryIcon = (category) => {
+  switch (category?.toLowerCase()) {
+    case 'immobilier':
+      return <Flag size={18} />;
+    case 'vehicule':
+      return <Rocket size={18} />;
+    case 'materiaux':
+      return <MapPin size={18} />;
+    case 'technicien':
+      return <Phone size={18} />;
+    default:
+      return <Search size={18} />;
+  }
+};
 
 const Announcements = () => {
   const { user } = useAuth();
@@ -26,6 +53,7 @@ const Announcements = () => {
 
 
   useEffect(() => {
+    setPageMeta('Annonces - LocaPlus', 'Découvrez toutes les annonces immobilières, véhicules, matériaux et techniciens sur LocaPlus. Filtrez, explorez et contactez rapidement.');
     fetchAnnouncements();
   }, [searchParams]);
 
@@ -34,6 +62,7 @@ const Announcements = () => {
     setError('');
     try {
       const params = Object.fromEntries(searchParams);
+      if (!params.page) params.page = 1;
       const response = await announcementService.getAll(params);
       const results = response.data?.announcements ?? [];
       console.log('DEBUG Announcements.jsx - Annonces chargées:', results.length, results);
@@ -229,16 +258,17 @@ const Announcements = () => {
           
           <div className="announcements-grid">
             {announcements.map((announcement) => {
+              const announcementId = announcement._id || announcement.id;
               const parsedImages = parseImages(announcement.images);
               const rawImage = announcement.image_url || parsedImages[0];
               const imageUrl = resolveImageUrl(rawImage);
               const sellerPhone = announcement.user_phone || announcement.phone || announcement.phone_number || announcement.user_phone_number;
-              const location = announcement.location || announcement.geolocalisation || '';
+              const location = announcement.location || announcement.geolocalisation || 'Localisation non spécifiée';
               const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
 
               if (import.meta.env.DEV) {
                 console.log('DEBUG Announcements image', {
-                  announcementId: announcement.id,
+                  announcementId,
                   rawImages: announcement.images,
                   parsedImages,
                   imageUrl,
@@ -247,8 +277,8 @@ const Announcements = () => {
 
               return (
                 <Link 
-                  to={`/announcements/${announcement.id}`} 
-                  key={announcement.id}
+                  to={`/announcements/${announcementId}`} 
+                  key={announcementId || announcement.title}
                   className="card announcement-card"
                 >
                   {imageUrl ? (
@@ -260,14 +290,14 @@ const Announcements = () => {
                       onError={handleImageError}
                     />
                   ) : (
-                    <div className="card-image" style={{ 
+                    <div className="card-image card-image-fallback" style={{ 
                       backgroundColor: '#E2E8F0', 
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center',
-                      fontSize: '3rem'
+                      minHeight: '180px'
                     }}>
-                      🏠
+                      {categoryIcon(announcement.category)}
                     </div>
                   )}
                   <div className="card-body">
@@ -276,9 +306,12 @@ const Announcements = () => {
                         fontSize: '0.75rem', 
                         color: 'var(--accent)',
                         textTransform: 'uppercase',
-                        fontWeight: '600'
+                        fontWeight: '600',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
                       }}>
-                        {announcement.category}
+                        {categoryIcon(announcement.category)} {announcement.category || 'Annonce'}
                       </span>
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         {isBoosted && (
@@ -289,7 +322,7 @@ const Announcements = () => {
                             padding: '2px 8px',
                             borderRadius: '4px'
                           }}>
-                            🚀 Boosté
+                            Boosté
                           </span>
                         )}
                         {announcement.is_favorite && (
@@ -298,7 +331,7 @@ const Announcements = () => {
                             color: '#E53E3E',
                             fontWeight: '700'
                           }}>
-                            ♥ Favori
+                            Favori
                           </span>
                         )}
                         {announcement.type && (
@@ -322,8 +355,14 @@ const Announcements = () => {
                         : `${announcement.price?.toLocaleString()} FCFA`}
                     </div>
                     <div className="card-meta" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <span>📍 {location}</span>
-                      {sellerPhone ? <span>📞 {sellerPhone}</span> : null}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <MapPin size={14} /> {location}
+                      </span>
+                      {sellerPhone ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <Phone size={14} /> {sellerPhone}
+                        </span>
+                      ) : null}
                     </div>
                     <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
                       <button
@@ -331,12 +370,12 @@ const Announcements = () => {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          navigate(`/announcements/${announcement.id}`);
+                          navigate(`/announcements/${announcementId}`);
                         }}
                         className="btn btn-outline"
                         style={{ flex: 1, minWidth: '80px' }}
                       >
-                        Voir
+                        <Eye size={14} style={{ marginRight: '6px' }} /> Voir
                       </button>
                       {(announcement.user_phone || announcement.phone) ? (
                         <a
@@ -346,7 +385,7 @@ const Announcements = () => {
                           className="btn btn-whatsapp"
                           style={{ flex: 1, minWidth: '100px', textDecoration: 'none', textAlign: 'center' }}
                         >
-                          💬 WhatsApp
+                          <Phone size={14} style={{ marginRight: '6px' }} /> Contact
                         </a>
                       ) : (
                         <button type="button" className="btn btn-outline" disabled style={{ flex: 1, minWidth: '100px' }}>
@@ -357,12 +396,12 @@ const Announcements = () => {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          handleReport(announcement.id);
+                          handleReport(announcementId);
                         }}
                         className="btn btn-ghost"
                         style={{ minWidth: '80px', fontSize: '0.875rem' }}
                       >
-                        🚩 Signaler
+                        <Flag size={14} style={{ marginRight: '6px' }} /> Signaler
                       </button>
                     </div>
                   </div>

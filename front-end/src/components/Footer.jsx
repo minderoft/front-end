@@ -30,6 +30,8 @@ const Footer = () => {
           <Link to="/help">Centre d'aide</Link>
           <Link to="/faq">FAQ</Link>
           <Link to="/contact">Contacter l'administration</Link>
+          <Link to="/about">À propos</Link>
+          <Link to="/legal">Mentions légales</Link>
         </div>
       </div>
       

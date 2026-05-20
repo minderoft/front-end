@@ -1,11 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home as HomeIcon, MapPin } from 'lucide-react';
+import { Home as HomeIcon, MapPin, Phone, MessageSquare, Sparkles } from 'lucide-react';
 import '../styles/AdCard.css';
 import { resolveImageUrl, parseImages, handleImageError } from '../utils/imageUtils';
 
 const AdCard = ({ announcement, onBoost }) => {
   const navigate = useNavigate();
+  const announcementId = announcement._id || announcement.id;
   const parsedImages = parseImages(announcement.images);
   const rawImage = announcement.image_url || parsedImages[0];
   const imageUrl = resolveImageUrl(rawImage);
@@ -53,8 +54,10 @@ const AdCard = ({ announcement, onBoost }) => {
         <div className="d-flex justify-between align-center" style={{ gap: '8px' }}>
           <span className="card-tag">{announcement.category}</span>
           {isBoosted && (
-            <span className="card-tag boosted">🚀 Boosté</span>
-          )}
+              <span className="card-tag boosted">
+                <Sparkles size={14} style={{ marginRight: '6px' }} /> Boosté
+              </span>
+            )}
         </div>
 
         <h3 className="card-title">{announcement.title}</h3>
@@ -70,16 +73,20 @@ const AdCard = ({ announcement, onBoost }) => {
 
           {sellerPhone ? (
             <>
-              <button type="button" onClick={handleCall} className="btn btn-call btn-sm">📞 Appeler</button>
-              <button type="button" onClick={handleWhatsApp} className="btn btn-whatsapp btn-sm">💬 WhatsApp</button>
+              <button type="button" onClick={handleCall} className="btn btn-call btn-sm">
+                <Phone size={14} style={{ marginRight: '6px' }} /> Appeler
+              </button>
+              <button type="button" onClick={handleWhatsApp} className="btn btn-whatsapp btn-sm">
+                <MessageSquare size={14} style={{ marginRight: '6px' }} /> WhatsApp
+              </button>
             </>
           ) : (
             <button type="button" className="btn btn-outline btn-sm" disabled>Pas de contact</button>
           )}
 
           {!isBoosted && onBoost && (
-            <button type="button" className="btn btn-boost btn-sm" onClick={() => onBoost(announcement.id)}>
-              🚀 Booster (1000 FCFA)
+            <button type="button" className="btn btn-boost btn-sm" onClick={() => onBoost(announcementId)}>
+              <Sparkles size={14} style={{ marginRight: '6px' }} /> Booster (1000 FCFA)
             </button>
           )}
         </div>

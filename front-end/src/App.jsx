@@ -13,6 +13,8 @@ import Register from './pages/Register';
 import Help from './pages/Help';
 import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
+import About from './pages/About';
+import Legal from './pages/Legal';
 import Chat from './pages/Chat';
 import Success from './pages/Success';
 import PaymentError from './pages/PaymentError';
@@ -32,6 +34,8 @@ function App() {
           <Route path="/help" element={<Help />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/legal" element={<Legal />} />
           <Route path="/chat" element={
             <ProtectedRoute>
               <Chat />
