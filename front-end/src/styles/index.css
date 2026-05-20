@@ -1444,6 +1444,19 @@ a:hover {
 
   .navbar-toggle {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    gap: 6px;
+    padding: 0;
+    z-index: 1001;
+  }
+
+  .navbar-toggle svg {
+    color: var(--primary);
   }
 
   .desktop-menu,
@@ -1452,19 +1465,78 @@ a:hover {
   }
 
   .navbar-mobile-drawer {
-    position: absolute;
-    top: 100%;
+    position: fixed;
+    top: 64px;
     left: 0;
     right: 0;
     width: 100%;
-    background-color: var(--secondary);
-    z-index: 9999;
-    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
-    padding: var(--spacing-md);
-    border-top: 1px solid var(--border);
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+    background-color: #ffffff;
+    z-index: 50;
+    box-shadow: 0 28px 60px rgba(15, 23, 42, 0.16);
+    transform: translateY(-100%);
+    opacity: 0;
+    transition: transform 300ms ease, opacity 300ms ease;
+    pointer-events: none;
+  }
+
+  .navbar-mobile-drawer.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .navbar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 300ms ease, visibility 300ms ease;
+    pointer-events: none;
+  }
+
+  .navbar-overlay.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .navbar-mobile-link {
+    display: block;
+    width: 100%;
+    padding: 16px 24px;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    text-decoration: none;
+    transition: background 200ms ease, color 200ms ease;
+  }
+
+  .navbar-mobile-link:hover,
+  .navbar-mobile-link:focus {
+    background-color: rgba(37, 99, 235, 0.06);
+    color: var(--primary);
+  }
+
+  .navbar-mobile-link.active {
+    background-color: rgba(37, 99, 235, 0.12);
+    color: var(--primary);
+  }
+
+  .navbar-mobile-actions {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 12px;
+    padding: 16px 24px 24px;
+  }
+
+  .navbar-mobile-actions .btn {
+    width: 100%;
+    justify-content: center;
   }
 
   .navbar-menu {

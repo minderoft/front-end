@@ -1,22 +1,73 @@
 // filepath: front-end/src/components/Navbar.jsx
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const navLinks = [
+    { to: '/', label: 'Accueil' },
+    { to: '/announcements', label: 'Annonces' },
+    { to: '/help', label: 'Aide' },
+    { to: '/faq', label: 'FAQ' },
+    { to: '/contact', label: 'Contact' },
+  ];
+
+  const handleNavClick = () => {
+    setIsMenuOpen(false);
+  };
+
+  const handleMenuLink = (path, event) => {
+    event.preventDefault();
+    navigate(path);
+    setIsMenuOpen(false);
+  };
 
   const handleLogout = () => {
     logout();
     navigate('/');
-    setIsOpen(false);
+    setIsMenuOpen(false);
   };
 
-  const handleNavClick = () => {
-    setIsOpen(false);
-  };
+  const isActive = (path) => location.pathname === path;
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleKey = (event) => {
+      if (event.key === 'Escape') {
+        setIsMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = isMenuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
 
   return (
     <nav className="navbar relative">
@@ -55,13 +106,17 @@ const Navbar = () => {
 
       {/* Bouton Hamburger pour Mobile */}
       <button
-        className={`navbar-toggle ${isOpen ? 'active' : ''}`}
-        onClick={() => setIsOpen((prev) => !prev)}
-        aria-label="Toggle menu"
+        className={`navbar-toggle ${isMenuOpen ? 'active' : ''}`}
+        onClick={() => setIsMenuOpen((prev) => !prev)}
+        aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+        aria-expanded={isMenuOpen}
+        aria-controls="navbar-mobile-drawer"
       >
-        <span></span>
-        <span></span>
-        <span></span>
+        {isMenuOpen ? (
+          <X size={24} className="transition-all duration-200" />
+        ) : (
+          <Menu size={24} className="transition-all duration-200" />
+        )}
       </button>
 
       {/* Menu Desktop */}
@@ -98,48 +153,52 @@ const Navbar = () => {
         )}
       </div>
 
-      {isOpen && (
-        <div className="absolute top-full left-0 w-full bg-white shadow-xl z-[9999] flex flex-col p-6 space-y-4 md:hidden">
-          <Link to="/" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
-            Accueil
-          </Link>
-          <Link to="/announcements" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
-            Annonces
-          </Link>
-          <Link to="/help" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
-            Aide
-          </Link>
-          <Link to="/faq" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
-            FAQ
-          </Link>
-          <Link to="/contact" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
-            Contact
-          </Link>
+      <div className={`navbar-overlay md:hidden ${isMenuOpen ? 'open' : ''}`} onClick={handleNavClick} />
 
+      <div
+        id="navbar-mobile-drawer"
+        className={`navbar-mobile-drawer md:hidden ${isMenuOpen ? 'open' : ''}`}
+        role="navigation"
+        aria-label="Menu mobile"
+        aria-hidden={!isMenuOpen}
+      >
+        {navLinks.map((link) => (
+          <Link
+            key={link.to}
+            to={link.to}
+            onClick={(event) => handleMenuLink(link.to, event)}
+            className={`navbar-mobile-link ${isActive(link.to) ? 'active' : ''}`}
+            aria-current={isActive(link.to) ? 'page' : undefined}
+          >
+            {link.label}
+          </Link>
+        ))}
+
+        <div className="navbar-mobile-actions">
           {user ? (
             <>
-              <Link to="/create" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
-                + Publier
-              </Link>
-              <Link to="/dashboard" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
+              <button type="button" className="btn btn-ghost" onClick={(event) => handleMenuLink('/dashboard', event)}>
                 Mon Dashboard
-              </Link>
-              <button onClick={handleLogout} className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full text-left">
+              </button>
+              <button type="button" className="btn btn-accent" onClick={(event) => handleMenuLink('/create', event)}>
+                + Publier
+              </button>
+              <button type="button" className="btn btn-outline" onClick={handleLogout}>
                 Déconnexion
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
+              <button type="button" className="btn btn-ghost" onClick={(event) => handleMenuLink('/login', event)}>
                 Connexion
-              </Link>
-              <Link to="/register" className="text-gray-950 font-semibold text-lg hover:text-blue-600 py-2 border-b w-full active:text-blue-600" onClick={() => setIsOpen(false)}>
+              </button>
+              <button type="button" className="btn btn-primary" onClick={(event) => handleMenuLink('/register', event)}>
                 Inscription
-              </Link>
+              </button>
             </>
           )}
         </div>
-      )}
+      </div>
     </nav>
   );
 };
