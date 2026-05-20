@@ -114,6 +114,9 @@ const Home = () => {
   const [nearbyLoading, setNearbyLoading] = useState(false);
   const [nearbyAnnouncements, setNearbyAnnouncements] = useState(null);
   const [nearbyError, setNearbyError] = useState('');
+  const [recommendedAds, setRecommendedAds] = useState([]);
+  const [recommendedLoading, setRecommendedLoading] = useState(true);
+  const [recommendedError, setRecommendedError] = useState('');
   const navigate = useNavigate();
 
   const fetchRecentAnnouncements = async () => {
@@ -139,7 +142,28 @@ const Home = () => {
   useEffect(() => {
     setPageMeta('LocaPlus - Annonces immobilières, BTP, véhicules et techniciens', 'Découvrez les annonces professionnelles en immobilier, véhicules, matériaux et services techniques sur LocaPlus.');
     fetchRecentAnnouncements();
+    // Fetch recommended sponsored ads
+    fetchRecommended();
   }, []);
+
+  const fetchRecommended = async () => {
+    setRecommendedLoading(true);
+    setRecommendedError('');
+    try {
+      const recentCategory = localStorage.getItem('recentCategory') || '';
+      const params = {};
+      if (recentCategory) params.targetCategory = recentCategory;
+      const res = await announcementService.getSponsored(params);
+      const rows = res.data?.announcements ?? [];
+      setRecommendedAds(Array.isArray(rows) ? rows : []);
+    } catch (err) {
+      console.error('Erreur fetch recommended:', err);
+      setRecommendedError('Impossible de charger les recommandations pour vous.');
+      setRecommendedAds([]);
+    } finally {
+      setRecommendedLoading(false);
+    }
+  };
 
   const handleNearbySearch = () => {
     setNearbyError('');
@@ -219,6 +243,34 @@ const Home = () => {
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="announcements-section">
+        <div className="announcements-header">
+          <h2>🚀 Recommandé pour vous</h2>
+          <button onClick={fetchRecommended} className="btn btn-outline">Actualiser</button>
+        </div>
+
+        {recommendedLoading ? (
+          <div className="skeleton-grid">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="skeleton-card" style={{ width: 300, marginRight: 12 }} />
+            ))}
+          </div>
+        ) : recommendedAds.length > 0 ? (
+          <div className="recommended-slider" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 12 }}>
+            {recommendedAds.map((announcement) => (
+              <div key={announcement.id} style={{ minWidth: 300 }}>
+                <AdCard announcement={announcement} onBoost={() => navigate(`/announcements/${announcement.id}`)} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">
+            <p className="text-muted">Aucune recommandation pour le moment.</p>
+          </div>
+        )}
+
       </section>
 
       <CategoryCarousel categories={categories} onCategoryClick={handleCategoryClick} />

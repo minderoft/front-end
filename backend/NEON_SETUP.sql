@@ -35,9 +35,18 @@ CREATE TABLE IF NOT EXISTS announcements (
   longitude DECIMAL(11,8),
   phone VARCHAR(60),
   images TEXT,
+  image_url TEXT,
   metadata TEXT,
   status VARCHAR(50) DEFAULT 'pending',
   payment_status SMALLINT DEFAULT 0,
+  -- Smart advertising / tracking fields
+  is_sponsored BOOLEAN DEFAULT FALSE,
+  ad_pack_type VARCHAR(50),
+  ad_target_category VARCHAR(100),
+  views_count INTEGER DEFAULT 0,
+  clicks_count INTEGER DEFAULT 0,
+  whatsapp_clicks_count INTEGER DEFAULT 0,
+  call_clicks_count INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -48,6 +57,8 @@ CREATE INDEX IF NOT EXISTS idx_announcements_user_id ON announcements(user_id);
 CREATE INDEX IF NOT EXISTS idx_announcements_category ON announcements(category);
 CREATE INDEX IF NOT EXISTS idx_announcements_status ON announcements(status);
 CREATE INDEX IF NOT EXISTS idx_announcements_created_at ON announcements(created_at);
+CREATE INDEX IF NOT EXISTS idx_announcements_is_sponsored ON announcements(is_sponsored);
+CREATE INDEX IF NOT EXISTS idx_announcements_ad_target_category ON announcements(ad_target_category);
 
 -- ============================================
 

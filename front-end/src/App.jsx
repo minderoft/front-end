@@ -7,6 +7,7 @@ import Announcements from './pages/Announcements';
 import AnnouncementDetail from './pages/AnnouncementDetail';
 import CreateAnnouncement from './pages/CreateAnnouncement';
 import Dashboard from './pages/Dashboard';
+import AdvertiserDashboard from './pages/AdvertiserDashboard';
 import AdminPricing from './pages/AdminPricing';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -53,6 +54,11 @@ function App() {
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard/ads" element={
+            <ProtectedRoute>
+              <AdvertiserDashboard />
             </ProtectedRoute>
           } />
           

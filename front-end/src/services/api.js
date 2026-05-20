@@ -142,6 +142,9 @@ export const announcementService = {
   delete: (id) => api.delete(`/announcements/${id}`),
   getMyAnnouncements: () => api.get('/announcements/user/my-announcements'),
   getPrices: () => api.get('/announcements/prices'),
+  getSponsored: (params) => api.get('/announcements/sponsored', { params }),
+  trackClick: (id, action) => api.post(`/announcements/${id}/track-click`, { action }),
+  getAdvertiserDashboard: () => api.get('/announcements/advertiser/dashboard'),
   // Public endpoints (no auth headers / credentials)
   getPublicAll: (params) => axios.get(`${BASE_URL}/announcements`, { params }),
   getPublicNearby: (lat, lng) => axios.get(`${BASE_URL}/announcements/nearby`, { params: { lat, lng } }),

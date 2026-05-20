@@ -17,6 +17,16 @@
   border-radius: 8px 8px 0 0;
 }
 
+.adcard .sponsored-badge span {
+  background: #fef3c7; /* amber-50 */
+  color: #b45309; /* amber-700 */
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
 .adcard .card-body {
   padding: 16px;
   display: flex;

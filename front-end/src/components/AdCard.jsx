@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Home as HomeIcon, MapPin, Phone, MessageSquare, Sparkles } from 'lucide-react';
 import '../styles/AdCard.css';
 import { resolveImageUrl, parseImages, handleImageError } from '../utils/imageUtils';
+import { announcementService } from '../services/api';
 
 const AdCard = ({ announcement, onBoost }) => {
   const navigate = useNavigate();
@@ -30,8 +31,40 @@ const AdCard = ({ announcement, onBoost }) => {
     }
   };
 
+  // Fire-and-forget tracking
+  const fireTracking = (action) => {
+    try {
+      announcementService.trackClick(announcementId, action).catch((err) => {
+        if (import.meta.env.DEV) console.warn('Tracking failed', action, err?.message || err);
+      });
+    } catch (err) {
+      if (import.meta.env.DEV) console.warn('Tracking error', err);
+    }
+  };
+
+  const handleViewWithTrack = () => {
+    fireTracking('click');
+    handleView();
+  };
+
+  const handleWhatsAppWithTrack = (e) => {
+    fireTracking('whatsapp');
+    handleWhatsApp(e);
+  };
+
+  const handleCallWithTrack = (e) => {
+    fireTracking('call');
+    handleCall(e);
+  };
+
   return (
-    <article className="card announcement-card adcard">
+    <article className="card announcement-card adcard" style={{ position: 'relative' }}>
+      {announcement.is_sponsored && (
+        <div className="sponsored-badge" style={{ position: 'absolute', left: 12, top: 12, zIndex: 20 }}>
+          <span className="bg-amber-50 text-amber-700 text-xs font-semibold px-2 py-1 rounded">⭐ Sponsorisé</span>
+        </div>
+      )}
+
       {imageUrl ? (
         <img 
           src={imageUrl} 
@@ -69,14 +102,14 @@ const AdCard = ({ announcement, onBoost }) => {
         </div>
 
         <div className="card-actions">
-          <button type="button" onClick={handleView} className="btn btn-outline btn-sm">Voir</button>
+          <button type="button" onClick={handleViewWithTrack} className="btn btn-outline btn-sm">Voir</button>
 
           {sellerPhone ? (
             <>
-              <button type="button" onClick={handleCall} className="btn btn-call btn-sm">
+              <button type="button" onClick={handleCallWithTrack} className="btn btn-call btn-sm">
                 <Phone size={14} style={{ marginRight: '6px' }} /> Appeler
               </button>
-              <button type="button" onClick={handleWhatsApp} className="btn btn-whatsapp btn-sm">
+              <button type="button" onClick={handleWhatsAppWithTrack} className="btn btn-whatsapp btn-sm">
                 <MessageSquare size={14} style={{ marginRight: '6px' }} /> WhatsApp
               </button>
             </>

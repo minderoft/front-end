@@ -355,9 +355,14 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     const id = uuidv4();
     console.log('Création annonce - Avant INSERT:', { id, userId: req.user.id });
 
+    // Allow optional ad-related fields for sponsored listings
+    const isSponsored = req.body.is_sponsored === 'true' || req.body.is_sponsored === true ? true : false;
+    const adPackType = req.body.ad_pack_type || null;
+    const adTargetCategory = req.body.ad_target_category || null;
+
     await pool.query(
-      `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, latitude, longitude, phone, images, image_url, metadata, status, payment_status, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'active', 1, CURRENT_TIMESTAMP)`,
+      `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, latitude, longitude, phone, images, image_url, metadata, status, payment_status, is_sponsored, ad_pack_type, ad_target_category, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'active', 1, $15, $16, $17, CURRENT_TIMESTAMP)`,
       [
         id,
         req.user.id,
@@ -373,6 +378,9 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
         JSON.stringify(images),
         firstImage,
         JSON.stringify(metadataValue),
+        isSponsored,
+        adPackType,
+        adTargetCategory,
       ]
     );
 
@@ -401,6 +409,106 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Supprimé' });
   } catch (error) {
     res.status(500).json({ error: 'Erreur suppression' });
+  }
+});
+
+// GET SPONSORED / targeted
+router.get('/sponsored', async (req, res) => {
+  try {
+    const target = req.query.targetCategory || req.query.category || null;
+    const limitParam = parseInt(req.query.limit, 10);
+    const limit = Number.isNaN(limitParam) || limitParam < 1 ? 5 : Math.min(limitParam, 50);
+
+    let result;
+    if (target) {
+      const sql = `SELECT a.*, u.name as user_name, u.phone as user_phone
+        FROM announcements a
+        LEFT JOIN users u ON a.user_id = u.id
+        WHERE a.status = 'active' AND a.payment_status = 1 AND a.is_sponsored = true
+          AND (a.ad_target_category = $1 OR a.category = $1)
+        ORDER BY a.created_at DESC
+        LIMIT $2`;
+      result = await pool.query(sql, [target, limit]);
+    }
+
+    // Fallback to global sponsored ads when no targeted match
+    if (!result || result.rows.length === 0) {
+      const sql2 = `SELECT a.*, u.name as user_name, u.phone as user_phone
+        FROM announcements a
+        LEFT JOIN users u ON a.user_id = u.id
+        WHERE a.status = 'active' AND a.payment_status = 1 AND a.is_sponsored = true
+        ORDER BY a.created_at DESC
+        LIMIT $1`;
+      result = await pool.query(sql2, [limit]);
+    }
+
+    const announcements = normalizeAnnouncements(result.rows);
+    res.json({ announcements });
+  } catch (error) {
+    console.error('Erreur sponsored:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// TRACK CLICKS / VIEWS
+router.post('/:id/track-click', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { action } = req.body;
+    if (!action) return res.status(400).json({ error: 'Action requise' });
+
+    const mapping = {
+      view: 'views_count',
+      click: 'clicks_count',
+      whatsapp: 'whatsapp_clicks_count',
+      call: 'call_clicks_count',
+    };
+
+    const column = mapping[action];
+    if (!column) return res.status(400).json({ error: 'Action inconnue' });
+
+    const updateSql = `UPDATE announcements SET ${column} = COALESCE(${column}, 0) + 1 WHERE id = $1 RETURNING id, views_count, clicks_count, whatsapp_clicks_count, call_clicks_count`;
+    const result = await pool.query(updateSql, [id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Annonce non trouvée' });
+
+    res.json({ announcement: result.rows[0] });
+  } catch (error) {
+    console.error('Erreur track-click:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// ADVERTISER DASHBOARD
+router.get('/advertiser/dashboard', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const aggSql = `SELECT
+      COUNT(*)::int as total_sponsored,
+      COALESCE(SUM(views_count),0)::int as total_views,
+      COALESCE(SUM(clicks_count),0)::int as total_clicks,
+      COALESCE(SUM(whatsapp_clicks_count),0)::int as total_whatsapp_clicks,
+      COALESCE(SUM(call_clicks_count),0)::int as total_call_clicks
+      FROM announcements
+      WHERE user_id = $1 AND is_sponsored = true`;
+
+    const aggResult = await pool.query(aggSql, [userId]);
+    const stats = aggResult.rows[0] || {
+      total_sponsored: 0,
+      total_views: 0,
+      total_clicks: 0,
+      total_whatsapp_clicks: 0,
+      total_call_clicks: 0,
+    };
+
+    const listSql = `SELECT id, title, category, ad_pack_type, ad_target_category, views_count, clicks_count, whatsapp_clicks_count, call_clicks_count, created_at
+      FROM announcements WHERE user_id = $1 AND is_sponsored = true ORDER BY created_at DESC`;
+    const listResult = await pool.query(listSql, [userId]);
+
+    res.json({ stats, listings: normalizeAnnouncements(listResult.rows) });
+  } catch (error) {
+    console.error('Erreur advertiser dashboard:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
