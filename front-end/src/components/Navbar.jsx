@@ -120,7 +120,7 @@ const Navbar = () => {
       </button>
 
       {/* Menu Desktop */}
-      <div className="navbar-menu desktop-menu">
+      <div className="navbar-menu desktop-menu hidden md:flex">
         <Link to="/" className="navbar-link" onClick={handleNavClick}>Accueil</Link>
         <Link to="/announcements" className="navbar-link" onClick={handleNavClick}>Annonces</Link>
         <Link to="/help" className="navbar-link" onClick={handleNavClick}>Aide</Link>
@@ -128,7 +128,7 @@ const Navbar = () => {
         <Link to="/contact" className="navbar-link" onClick={handleNavClick}>Contact</Link>
       </div>
 
-      <div className="navbar-actions desktop-actions">
+      <div className="navbar-actions desktop-actions hidden md:flex">
         {user ? (
           <>
             <Link to="/create" className="btn btn-accent" onClick={handleNavClick}>
@@ -157,7 +157,7 @@ const Navbar = () => {
 
       <div
         id="navbar-mobile-drawer"
-        className={`navbar-mobile-drawer md:hidden ${isMenuOpen ? 'open' : ''}`}
+        className={`navbar-mobile-drawer flex flex-col md:hidden ${isMenuOpen ? 'open' : ''}`}
         role="navigation"
         aria-label="Menu mobile"
         aria-hidden={!isMenuOpen}

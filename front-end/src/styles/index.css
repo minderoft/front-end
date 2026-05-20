@@ -446,13 +446,25 @@ a:hover {
     color: #2563eb;
   }
 
+  .hidden {
+    display: none !important;
+  }
+
   .md\:hidden {
     display: flex;
+  }
+
+  .md\:flex {
+    display: none !important;
   }
 
   @media (min-width: 768px) {
     .md\:hidden {
       display: none !important;
+    }
+
+    .md\:flex {
+      display: flex !important;
     }
   }
 
@@ -1465,6 +1477,8 @@ a:hover {
   }
 
   .navbar-mobile-drawer {
+    display: flex;
+    flex-direction: column;
     position: fixed;
     top: 64px;
     left: 0;
