@@ -1527,6 +1527,67 @@ a:hover {
     color: var(--primary);
   }
 
+  /* ============================================
+     Dropdown / Submenu fixes
+     Ensure dropdowns render vertically, positioned under parent
+     ============================================ */
+  .dropdown,
+  .dropdown-menu,
+  .nav-dropdown,
+  .submenu,
+  .navbar-dropdown,
+  ul.dropdown-items {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    background: #ffffff;
+    box-shadow: 0 12px 30px rgba(2,6,23,0.12);
+    z-index: 9999;
+    padding: 0.25rem 0;
+    border-radius: 8px;
+    gap: 0;
+  }
+
+  .dropdown-item,
+  .dropdown-menu a,
+  .dropdown-menu button,
+  ul.dropdown-items li {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: var(--text);
+    text-decoration: none;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  .dropdown-item:hover,
+  .dropdown-menu a:hover,
+  ul.dropdown-items li:hover {
+    background: rgba(37,99,235,0.06);
+    color: var(--primary);
+  }
+
+  /* On mobile, dropdowns inside the mobile drawer should be static and full-width */
+  @media (max-width: 767px) {
+    .dropdown,
+    .dropdown-menu,
+    .nav-dropdown,
+    .submenu,
+    .navbar-dropdown,
+    ul.dropdown-items {
+      position: static;
+      box-shadow: none;
+      min-width: auto;
+      width: 100%;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+    }
+  }
+
   .navbar-mobile-actions {
     display: flex;
     flex-direction: column;
