@@ -658,12 +658,36 @@ a:hover {
   gap: var(--spacing-lg);
 }
 
+.h-fit {
+  height: fit-content;
+}
+
 .hero-panel-card {
   padding: var(--spacing-xl);
   border-radius: var(--radius-xl);
   background: var(--secondary);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
+}
+
+.hero-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.hero-stats-grid > div {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 1rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.hero-stats-grid strong {
+  display: block;
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
 }
 
 .hero-panel-card-secondary {
@@ -972,6 +996,19 @@ a:hover {
   box-shadow: var(--glass-shadow);
   padding: var(--spacing-xl);
   border-radius: 24px;
+}
+
+.pricing-badge {
+  position: absolute;
+  top: -0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fb923c;
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
 }
 
 .pricing-header {

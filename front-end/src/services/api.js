@@ -20,14 +20,18 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    log(`📤 [${config.method.toUpperCase()}] ${config.url}`, {
-      headers: config.headers,
-    });
+    if (import.meta.env.DEV) {
+      console.log(`📤 [${config.method?.toUpperCase()}] ${config.url}`, {
+        headers: config.headers,
+      });
+    }
     
     return config;
   },
   (error) => {
-    logError('Erreur requête:', error);
+    if (import.meta.env.DEV) {
+      console.error('Erreur requête:', error);
+    }
     return Promise.reject(error);
   }
 );
@@ -35,27 +39,33 @@ api.interceptors.request.use(
 // Intercepteur pour gérer les erreurs de réponse
 api.interceptors.response.use(
   (response) => {
-    log(`📥 [${response.status}] ${response.config.url}`, response.data);
+    if (import.meta.env.DEV) {
+      console.log(`📥 [${response.status}] ${response.config.url}`, response.data);
+    }
     return response;
   },
   (error) => {
     // Gérer les erreurs CORS et autres
     if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
-      logError('❌ ERREUR RÉSEAU / CORS:', {
-        message: error.message,
-        config: error.config,
-        code: error.code,
-      });
+      if (import.meta.env.DEV) {
+        console.error('❌ ERREUR RÉSEAU / CORS:', {
+          message: error.message,
+          config: error.config,
+          code: error.code,
+        });
+      }
     }
 
     // Timeout error
     if (error.code === 'ECONNABORTED') {
-      logError('⏱️ TIMEOUT (60s dépassé):', {
-        message: 'La requête a dépassé le délai de 60 secondes',
-        url: error.config?.url,
-        method: error.config?.method?.toUpperCase(),
-        timestamp: new Date().toISOString(),
-      });
+      if (import.meta.env.DEV) {
+        console.error('⏱️ TIMEOUT (60s dépassé):', {
+          message: 'La requête a dépassé le délai de 60 secondes',
+          url: error.config?.url,
+          method: error.config?.method?.toUpperCase(),
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
 
     if (error.response) {
@@ -67,20 +77,24 @@ api.interceptors.response.use(
         window.location.href = '/login';
       }
 
-      logError(`❌ Erreur API [${error.response.status}]`, {
-        status: error.response.status,
-        data: error.response.data,
-        headers: error.response.headers,
-        url: error.config?.url,
-      });
+      if (import.meta.env.DEV) {
+        console.error(`❌ Erreur API [${error.response.status}]`, {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers,
+          url: error.config?.url,
+        });
+      }
     } else if (error.request) {
       // La requête a été faite mais pas de réponse reçue
-      logError('❌ Pas de réponse du serveur:', {
-        message: error.message,
-        request: error.request,
-        code: error.code,
-        timeout: '60000ms',
-      });
+      if (import.meta.env.DEV) {
+        console.error('❌ Pas de réponse du serveur:', {
+          message: error.message,
+          request: error.request,
+          code: error.code,
+          timeout: '60000ms',
+        });
+      }
     }
 
     return Promise.reject(error);

@@ -112,8 +112,9 @@ const Home = () => {
   const [homeError, setHomeError] = useState('');
   const [recentTotal, setRecentTotal] = useState(null);
   const [nearbyLoading, setNearbyLoading] = useState(false);
-  const [nearbyAnnouncements, setNearbyAnnouncements] = useState(null);
+  const [nearbyAnnouncements, setNearbyAnnouncements] = useState([]);
   const [nearbyError, setNearbyError] = useState('');
+  const [nearbySearched, setNearbySearched] = useState(false);
   const [recommendedAds, setRecommendedAds] = useState([]);
   const [recommendedLoading, setRecommendedLoading] = useState(true);
   const [recommendedError, setRecommendedError] = useState('');
@@ -126,7 +127,9 @@ const Home = () => {
       const announcementsRes = await announcementService.getPublicAll({ limit: 6, page: 1 });
       const results = announcementsRes.data?.announcements ?? [];
       const total = Number(announcementsRes.data?.pagination?.total);
-      console.log('DEBUG Home.jsx - Annonces chargées:', results.length, results);
+      if (import.meta.env.DEV) {
+        console.log('DEBUG Home.jsx - Annonces chargées:', results.length, results);
+      }
       setAnnouncements(Array.isArray(results) ? results : []);
       setRecentTotal(Number.isFinite(total) ? total : null);
     } catch (error) {
@@ -172,6 +175,7 @@ const Home = () => {
 
   const handleNearbySearch = () => {
     setNearbyError('');
+    setNearbySearched(true);
     if (!navigator.geolocation) {
       setNearbyError('Géolocalisation non supportée par votre navigateur.');
       return;
@@ -184,7 +188,9 @@ const Home = () => {
           const { latitude, longitude } = position.coords;
           const response = await announcementService.getNearby(latitude, longitude);
           const nearbyResults = response.data?.announcements ?? [];
-          console.log('DEBUG Annonces proches chargées:', nearbyResults.length, nearbyResults);
+          if (import.meta.env.DEV) {
+            console.log('DEBUG Annonces proches chargées:', nearbyResults.length, nearbyResults);
+          }
           setNearbyAnnouncements(Array.isArray(nearbyResults) ? nearbyResults : []);
         } catch (error) {
           console.error('Erreur recherche nearby:', error);
@@ -237,6 +243,20 @@ const Home = () => {
                 <div>
                   <strong>100% sécurisé</strong>
                   <p>Paiement Paystack/Djamo</p>
+                </div>
+              </div>
+              <div className="hero-stats-grid">
+                <div>
+                  <strong>12 annonces</strong>
+                  <p>actives ce mois</p>
+                </div>
+                <div>
+                  <strong>1 200+</strong>
+                  <p>utilisateurs actifs</p>
+                </div>
+                <div>
+                  <strong>8 pays</strong>
+                  <p>couvert par la plateforme</p>
                 </div>
               </div>
             </div>
@@ -318,7 +338,7 @@ const Home = () => {
           <div className="loading">
             <div className="spinner"></div>
           </div>
-        ) : nearbyAnnouncements ? (
+        ) : nearbySearched ? (
           <>
             {nearbyAnnouncements.length > 0 ? (
               <>
@@ -337,7 +357,11 @@ const Home = () => {
               </div>
             )}
           </>
-        ) : null}
+        ) : (
+          <div className="empty-state">
+            <p>Appuyez sur « Autour de moi » pour découvrir les annonces proches de votre position.</p>
+          </div>
+        )}
       </section>
 
       <section className="announcements-section">
@@ -353,8 +377,12 @@ const Home = () => {
 
         <div className="pricing-grid">
           {professionalPricing.map((plan) => (
-            <article key={plan.id} className={`card pricing-card ${plan.id === 'immobilier' ? 'border-2 border-orange-500 scale-105' : ''}`}>
-              {plan.popular && <span className="pricing-badge">Populaire</span>}
+            <article key={plan.id} className={`card pricing-card relative ${plan.id === 'immobilier' ? 'border-2 border-orange-500 scale-105 shadow-xl' : 'border'}`}>
+              {plan.popular && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs px-3 py-1 rounded-full">
+                  Populaire
+                </span>
+              )}
               <div className="pricing-header">
                 <span className="pricing-icon">{plan.icon}</span>
                 <h3>{plan.name}</h3>
