@@ -118,6 +118,7 @@ const Home = () => {
   const [recommendedAds, setRecommendedAds] = useState([]);
   const [recommendedLoading, setRecommendedLoading] = useState(true);
   const [recommendedError, setRecommendedError] = useState('');
+  const [recommendedHasError, setRecommendedHasError] = useState(false);
   const navigate = useNavigate();
 
   const fetchRecentAnnouncements = async () => {
@@ -157,6 +158,7 @@ const Home = () => {
   const fetchRecommended = async () => {
     setRecommendedLoading(true);
     setRecommendedError('');
+    setRecommendedHasError(false);
     try {
       const recentCategory = localStorage.getItem('recentCategory') || '';
       const params = {};
@@ -167,6 +169,7 @@ const Home = () => {
     } catch (err) {
       console.error('Erreur fetch recommended:', err);
       setRecommendedError('Impossible de charger les recommandations pour vous.');
+      setRecommendedHasError(true);
       setRecommendedAds([]);
     } finally {
       setRecommendedLoading(false);
@@ -276,21 +279,21 @@ const Home = () => {
               <div key={i} className="skeleton-card" style={{ width: 300, marginRight: 12 }} />
             ))}
           </div>
-        ) : recommendedAds.length > 0 ? (
-          <div className="recommended-slider" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 12 }}>
-            {recommendedAds.map((announcement) => (
-              <div key={announcement.id} style={{ minWidth: 300 }}>
-                <AdCard announcement={announcement} onBoost={() => navigate(`/announcements/${announcement.id}`)} />
-              </div>
-            ))}
-          </div>
-        ) : (
+        ) : (recommendedHasError || recommendedAds.filter((a) => a && (a.id || a._id || a.title)).length === 0) ? (
           <div className="empty-state" style={{ textAlign: 'center', padding: '2rem' }}>
             <div style={{ fontSize: 40, color: 'var(--muted)', marginBottom: 12 }} aria-hidden>
               <Sparkles />
             </div>
             <p className="text-muted">Aucune recommandation pour le moment.</p>
             <Link to="/announcements" className="btn btn-primary mt-3">Explorer les annonces</Link>
+          </div>
+        ) : (
+          <div className="recommended-slider" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 12 }}>
+            {recommendedAds.filter((a) => a && (a.id || a._id || a.title)).map((announcement) => (
+              <div key={announcement.id || announcement._id || announcement.title} style={{ minWidth: 300 }}>
+                <AdCard announcement={announcement} onBoost={() => navigate(`/announcements/${announcement.id || announcement._id}`)} />
+              </div>
+            ))}
           </div>
         )}
 
@@ -377,9 +380,9 @@ const Home = () => {
 
         <div className="pricing-grid">
           {professionalPricing.map((plan) => (
-            <article key={plan.id} className={`card pricing-card relative ${plan.id === 'immobilier' ? 'border-2 border-orange-500 scale-105 shadow-xl' : 'border'}`}>
+            <article key={plan.id} className={`card pricing-card relative ${plan.id === 'immobilier' ? 'pricing-highlight' : 'border'}`}>
               {plan.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs px-3 py-1 rounded-full">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs px-3 py-1 rounded-full">
                   Populaire
                 </span>
               )}
@@ -453,7 +456,7 @@ const Home = () => {
       <section className="cta-banner">
         <div className="cta-copy">
           <h2>Vous êtes professionnel ?</h2>
-          <p className="text-white/90">Rejoignez LocaPlus et atteignez des milliers de clients potentiels avec une publication sécurisée.</p>
+          <p style={{ color: 'rgba(255,255,255,0.95)', fontSize: '1.05rem', margin: 0 }}>Rejoignez LocaPlus et atteignez des milliers de clients potentiels avec une publication sécurisée.</p>
         </div>
         <Link to="/register" className="btn btn-primary btn-lg">
           Créer un compte gratuitement
