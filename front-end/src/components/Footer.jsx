@@ -12,9 +12,11 @@ const Footer = () => {
         
         <div className="footer-section">
           <h4>Liens Rapides</h4>
-          <Link to="/">Accueil</Link>
-          <Link to="/announcements">Annonces</Link>
-          <Link to="/create">Publier une annonce</Link>
+          <ul className="flex flex-col gap-2">
+            <li><Link to="/">Accueil</Link></li>
+            <li><Link to="/announcements">Annonces</Link></li>
+            <li><Link to="/create">Publier une annonce</Link></li>
+          </ul>
         </div>
         
         <div className="footer-section">

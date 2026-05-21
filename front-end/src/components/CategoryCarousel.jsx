@@ -20,8 +20,8 @@ const CategoryCarousel = ({ categories, onCategoryClick }) => (
           }}
         >
           <div className="ecosystem-card-overlay" />
-          <div className="ecosystem-card-inner">
-            <div className="ecosystem-card-icon-ring">
+            <div className="ecosystem-card-inner">
+            <div className="ecosystem-card-icon-ring bg-black/40 backdrop-blur-sm"> 
               <span className="ecosystem-icon">{category.icon}</span>
             </div>
             <div className="ecosystem-card-footer">

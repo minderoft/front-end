@@ -141,7 +141,12 @@ const Home = () => {
 
   useEffect(() => {
     setPageMeta('LocaPlus - Annonces immobilières, BTP, véhicules et techniciens', 'Découvrez les annonces professionnelles en immobilier, véhicules, matériaux et services techniques sur LocaPlus.');
-    fetchRecentAnnouncements();
+    // Ensure any unexpected rejection doesn't keep the UI loading forever
+    fetchRecentAnnouncements().catch((err) => {
+      console.error('Unhandled error in fetchRecentAnnouncements:', err);
+      setLoading(false);
+      setHomeError('Impossible de charger les annonces récentes.');
+    });
     // Fetch recommended sponsored ads
     fetchRecommended();
   }, []);
@@ -219,7 +224,7 @@ const Home = () => {
           </div>
 
           <div className="hero-panel">
-            <div className="hero-panel-card">
+            <div className="hero-panel-card h-fit">
               <div className="hero-panel-head">
                 <span>Performance</span>
                 <strong>{recentTotal !== null ? `${recentTotal.toLocaleString()} annonces actives` : 'Annonces en cours...'}</strong>
@@ -260,8 +265,12 @@ const Home = () => {
             ))}
           </div>
         ) : (
-          <div className="empty-state">
+          <div className="empty-state" style={{ textAlign: 'center', padding: '2rem' }}>
+            <div style={{ fontSize: 40, color: 'var(--muted)', marginBottom: 12 }} aria-hidden>
+              <Sparkles />
+            </div>
             <p className="text-muted">Aucune recommandation pour le moment.</p>
+            <Link to="/announcements" className="btn btn-primary mt-3">Explorer les annonces</Link>
           </div>
         )}
 
@@ -344,7 +353,7 @@ const Home = () => {
 
         <div className="pricing-grid">
           {professionalPricing.map((plan) => (
-            <article key={plan.id} className="card pricing-card">
+            <article key={plan.id} className={`card pricing-card ${plan.id === 'immobilier' ? 'border-2 border-orange-500 scale-105' : ''}`}>
               {plan.popular && <span className="pricing-badge">Populaire</span>}
               <div className="pricing-header">
                 <span className="pricing-icon">{plan.icon}</span>
@@ -416,7 +425,7 @@ const Home = () => {
       <section className="cta-banner">
         <div className="cta-copy">
           <h2>Vous êtes professionnel ?</h2>
-          <p>Rejoignez LocaPlus et atteignez des milliers de clients potentiels avec une publication sécurisée.</p>
+          <p className="text-white/90">Rejoignez LocaPlus et atteignez des milliers de clients potentiels avec une publication sécurisée.</p>
         </div>
         <Link to="/register" className="btn btn-primary btn-lg">
           Créer un compte gratuitement
