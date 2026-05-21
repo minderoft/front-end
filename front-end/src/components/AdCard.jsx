@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home as HomeIcon, MapPin, Phone, MessageSquare, Sparkles } from 'lucide-react';
+import { Home as HomeIcon, MapPin, Phone, MessageSquare, Sparkles, ChevronDown } from 'lucide-react';
 import '../styles/AdCard.css';
-import { resolveImageUrl, parseImages, handleImageError } from '../utils/imageUtils';
+import { useAuth } from '../context/AuthContext';
+import { resolveImageUrl, parseImages } from '../utils/imageUtils';
+import { formatPrice } from '../utils/formatPrice';
 import { announcementService } from '../services/api';
 
 const AdCard = ({ announcement, onBoost }) => {
+  const { user: currentUser } = useAuth();
+  const [isContactOpen, setIsContactOpen] = useState(false);
   const navigate = useNavigate();
   const announcementId = announcement._id || announcement.id;
   const parsedImages = parseImages(announcement.images);
@@ -14,6 +18,7 @@ const AdCard = ({ announcement, onBoost }) => {
   const sellerPhone = announcement.user_phone || announcement.phone || announcement.phone_number || announcement.user_phone_number || '';
   const location = announcement.location || announcement.geolocalisation || '';
   const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
+  const isOwner = currentUser?.id && announcement.user_id ? currentUser.id === announcement.user_id : false;
 
   const handleView = () => navigate(`/announcements/${announcement._id || announcement.id}`);
   const handleWhatsApp = (e) => {
@@ -48,11 +53,13 @@ const AdCard = ({ announcement, onBoost }) => {
   };
 
   const handleWhatsAppWithTrack = (e) => {
+    setIsContactOpen(false);
     fireTracking('whatsapp');
     handleWhatsApp(e);
   };
 
   const handleCallWithTrack = (e) => {
+    setIsContactOpen(false);
     fireTracking('call');
     handleCall(e);
   };
@@ -95,30 +102,58 @@ const AdCard = ({ announcement, onBoost }) => {
 
         <h3 className="card-title">{announcement.title}</h3>
         <p className="card-text">{announcement.description?.substring(0, 120)}...</p>
-        <div className="card-price">{announcement.price?.toLocaleString() || 0} FCFA</div>
+        <div className="card-price">{formatPrice(announcement.price)}</div>
         <div className="card-meta" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <MapPin size={14} />
           <span>{location}</span>
         </div>
 
         <div className="card-actions">
-          <button type="button" onClick={handleViewWithTrack} className="btn btn-outline btn-sm">Voir</button>
+          <button type="button" onClick={handleViewWithTrack} className="btn btn-outline btn-sm" aria-label="Voir l'annonce">
+            Voir
+          </button>
 
           {sellerPhone ? (
-            <>
-              <button type="button" onClick={handleCallWithTrack} className="btn btn-call btn-sm">
-                <Phone size={14} style={{ marginRight: '6px' }} /> Appeler
+            <div className="contact-dropdown">
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={() => setIsContactOpen((open) => !open)}
+                aria-haspopup="menu"
+                aria-expanded={isContactOpen}
+                aria-label="Contacter le vendeur"
+              >
+                Contacter <ChevronDown size={14} style={{ marginLeft: '6px' }} />
               </button>
-              <button type="button" onClick={handleWhatsAppWithTrack} className="btn btn-whatsapp btn-sm">
-                <MessageSquare size={14} style={{ marginRight: '6px' }} /> WhatsApp
-              </button>
-            </>
+              {isContactOpen && (
+                <div className="contact-menu" role="menu">
+                  <button
+                    type="button"
+                    onClick={handleCallWithTrack}
+                    className="btn btn-call btn-sm"
+                    role="menuitem"
+                    aria-label={`Appeler ${announcement.title}`}
+                  >
+                    <Phone size={14} style={{ marginRight: '6px' }} /> Appeler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleWhatsAppWithTrack}
+                    className="btn btn-whatsapp btn-sm"
+                    role="menuitem"
+                    aria-label={`Envoyer un message WhatsApp à ${announcement.title}`}
+                  >
+                    <MessageSquare size={14} style={{ marginRight: '6px' }} /> WhatsApp
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
-            <button type="button" className="btn btn-outline btn-sm" disabled>Pas de contact</button>
+            <button type="button" className="btn btn-outline btn-sm" disabled aria-label="Pas de contact disponible">Pas de contact</button>
           )}
 
-          {!isBoosted && onBoost && (
-            <button type="button" className="btn btn-boost btn-sm" onClick={() => onBoost(announcementId)}>
+          {isOwner && !isBoosted && onBoost && (
+            <button type="button" className="btn btn-boost btn-sm" onClick={() => onBoost(announcementId)} aria-label="Booster l'annonce">
               <Sparkles size={14} style={{ marginRight: '6px' }} /> Booster (1000 FCFA)
             </button>
           )}

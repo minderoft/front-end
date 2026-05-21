@@ -1,6 +1,9 @@
 // filepath: front-end/src/services/api.js
 import axios from 'axios';
 
+const log = (...args) => import.meta.env.DEV && console.log(...args);
+const logError = (...args) => import.meta.env.DEV && console.error(...args);
+
 const BASE_URL = import.meta.env.VITE_BACKEND_URL ? `${import.meta.env.VITE_BACKEND_URL}/api` : 'https://backend-ovbc.onrender.com/api';
 
 const api = axios.create({
@@ -17,17 +20,14 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Logger en développement
-    if (import.meta.env.DEV) {
-      console.log(`📤 [${config.method.toUpperCase()}] ${config.url}`, {
-        headers: config.headers,
-      });
-    }
+    log(`📤 [${config.method.toUpperCase()}] ${config.url}`, {
+      headers: config.headers,
+    });
     
     return config;
   },
   (error) => {
-    console.error('Erreur requête:', error);
+    logError('Erreur requête:', error);
     return Promise.reject(error);
   }
 );
@@ -35,16 +35,13 @@ api.interceptors.request.use(
 // Intercepteur pour gérer les erreurs de réponse
 api.interceptors.response.use(
   (response) => {
-    // Logger en développement
-    if (import.meta.env.DEV) {
-      console.log(`📥 [${response.status}] ${response.config.url}`, response.data);
-    }
+    log(`📥 [${response.status}] ${response.config.url}`, response.data);
     return response;
   },
   (error) => {
     // Gérer les erreurs CORS et autres
     if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
-      console.error('❌ ERREUR RÉSEAU / CORS:', {
+      logError('❌ ERREUR RÉSEAU / CORS:', {
         message: error.message,
         config: error.config,
         code: error.code,
@@ -53,7 +50,7 @@ api.interceptors.response.use(
 
     // Timeout error
     if (error.code === 'ECONNABORTED') {
-      console.error('⏱️ TIMEOUT (60s dépassé):', {
+      logError('⏱️ TIMEOUT (60s dépassé):', {
         message: 'La requête a dépassé le délai de 60 secondes',
         url: error.config?.url,
         method: error.config?.method?.toUpperCase(),
@@ -70,17 +67,15 @@ api.interceptors.response.use(
         window.location.href = '/login';
       }
 
-      if (import.meta.env.DEV) {
-        console.error(`❌ Erreur API [${error.response.status}]`, {
-          status: error.response.status,
-          data: error.response.data,
-          headers: error.response.headers,
-          url: error.config?.url,
-        });
-      }
+      logError(`❌ Erreur API [${error.response.status}]`, {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers,
+        url: error.config?.url,
+      });
     } else if (error.request) {
       // La requête a été faite mais pas de réponse reçue
-      console.error('❌ Pas de réponse du serveur:', {
+      logError('❌ Pas de réponse du serveur:', {
         message: error.message,
         request: error.request,
         code: error.code,

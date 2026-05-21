@@ -205,11 +205,9 @@ const Home = () => {
       <section className="hero">
         <div className="hero-grid">
           <div className="hero-copy">
-            <span className="hero-eyebrow">Fintech + Sécurité </span>
-            <h1>LocaPlus, l'application multiservices de mise en relation sécurisée pour l'immobilier, véhicules, BTP et techniciens.</h1>
-            <p>
-              Une expérience professionnelle, visuelle et ultra-fiable pour chercher des annonces. Données chiffrées, vendeurs vérifiés.
-            </p>
+            <span className="hero-eyebrow">Fintech + Sécurité</span>
+            <h1>LocaPlus, la marketplace sécurisée pour vos services.</h1>
+            <p>Immobilier, véhicules, BTP, techniciens — vendeurs vérifiés, paiement Paystack/Djamo.</p>
             <div className="hero-buttons">
               <Link to="/announcements" className="btn btn-primary btn-lg">
                 Explorer les annonces
@@ -236,10 +234,6 @@ const Home = () => {
                   <p>Paiement Paystack/Djamo</p>
                 </div>
               </div>
-            </div>
-            <div className="hero-panel-card hero-panel-card-secondary">
-              <h3>Décollage instantané</h3>
-              <p>Publiez votre première annonce en moins de 5 minutes et atteignez rapidement vos clients.</p>
             </div>
           </div>
         </div>

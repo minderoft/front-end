@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { announcementService, paymentService, reportService, favoriteService } from '../services/api';
 import AnnouncementMap from '../components/AnnouncementMap';
 import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
+import { formatPrice } from '../utils/formatPrice';
 
 const AnnouncementDetail = () => {
   const { id } = useParams();
@@ -324,7 +325,7 @@ const AnnouncementDetail = () => {
         <div className="announcement-price">
           {announcement.category === 'technicien' || announcement.price === 0 
             ? 'Prix à négocier' 
-            : `${announcement.price?.toLocaleString()} FCFA`}
+            : formatPrice(announcement.price)}
         </div>
 
         <div className="announcement-meta">

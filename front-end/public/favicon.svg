@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="iconTitle iconDesc">
+  <title id="iconTitle">LocaPlus</title>
+  <desc id="iconDesc">Icône de LocaPlus avec L blanc sur fond orange</desc>
+  <rect width="64" height="64" rx="16" fill="#FF6B35" />
+  <path d="M20 18h8a4 4 0 014 4v20a4 4 0 01-4 4h-8a4 4 0 01-4-4V22a4 4 0 014-4z" fill="#fff" />
+  <path d="M34 18h10a4 4 0 014 4v20a4 4 0 01-4 4H34a4 4 0 01-4-4V22a4 4 0 014-4zm2 4v20h6V22h-6z" fill="#fff" opacity="0.9" />
+</svg>

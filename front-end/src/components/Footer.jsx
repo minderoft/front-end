@@ -19,19 +19,23 @@ const Footer = () => {
         
         <div className="footer-section">
           <h4>Catégories</h4>
-          <Link to="/announcements?category=immobilier">Immobilier</Link>
-          <Link to="/announcements?category=vehicule">Véhicules</Link>
-          <Link to="/announcements?category=materiaux">Matériaux</Link>
-          <Link to="/announcements?category=technicien">Techniciens</Link>
+          <ul className="footer-links">
+            <li><Link to="/announcements?category=immobilier">Immobilier</Link></li>
+            <li><Link to="/announcements?category=vehicule">Véhicules</Link></li>
+            <li><Link to="/announcements?category=materiaux">Matériaux</Link></li>
+            <li><Link to="/announcements?category=technicien">Techniciens</Link></li>
+          </ul>
         </div>
         
         <div className="footer-section">
           <h4>Support</h4>
-          <Link to="/help">Centre d'aide</Link>
-          <Link to="/faq">FAQ</Link>
-          <Link to="/contact">Contacter l'administration</Link>
-          <Link to="/about">À propos</Link>
-          <Link to="/legal">Mentions légales</Link>
+          <ul className="footer-links">
+            <li><Link to="/help">Centre d'aide</Link></li>
+            <li><Link to="/faq">FAQ</Link></li>
+            <li><Link to="/contact">Contacter l'administration</Link></li>
+            <li><Link to="/about">À propos</Link></li>
+            <li><Link to="/legal">Mentions légales</Link></li>
+          </ul>
         </div>
       </div>
       

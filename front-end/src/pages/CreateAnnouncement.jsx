@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { announcementService, paymentService, pricingService } from '../services/api';
 import LocationPicker from '../components/LocationPicker';
+import { formatPrice } from '../utils/formatPrice';
 
 const categories = {
   immobilier: {
@@ -369,7 +370,7 @@ const CreateAnnouncement = () => {
                   min={pricing[formData.category] || 0}
                 />
                 <span className="form-help">
-                  Prix minimum: {pricing[formData.category]?.toLocaleString() || '0'} FCFA pour cette catégorie
+                  Prix minimum: {pricing[formData.category] != null ? formatPrice(pricing[formData.category]) : '0 FCFA'} pour cette catégorie
                 </span>
               </div>
             )}
@@ -553,7 +554,7 @@ const CreateAnnouncement = () => {
           }}>
             <p style={{ marginBottom: '8px' }}>Frais de publication</p>
             <p className="text-accent" style={{ fontSize: '2rem', fontWeight: '700' }}>
-              {pricing[formData.category]?.toLocaleString() || '0'} FCFA
+              {pricing[formData.category] != null ? formatPrice(pricing[formData.category]) : '0 FCFA'}
             </p>
             <p className="text-muted" style={{ fontSize: '0.9rem' }}>
               Paiement sécurisé par PayStack

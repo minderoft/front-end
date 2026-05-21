@@ -20,10 +20,14 @@ const CategoryCarousel = ({ categories, onCategoryClick }) => (
           }}
         >
           <div className="ecosystem-card-overlay" />
-          <div className="ecosystem-card-content">
-            <span className="ecosystem-icon">{category.icon}</span>
-            <h3>{category.name}</h3>
-            <p>{category.description}</p>
+          <div className="ecosystem-card-inner">
+            <div className="ecosystem-card-icon-ring">
+              <span className="ecosystem-icon">{category.icon}</span>
+            </div>
+            <div className="ecosystem-card-footer">
+              <h3>{category.name}</h3>
+              <p>{category.description}</p>
+            </div>
           </div>
         </button>
       ))}

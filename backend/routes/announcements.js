@@ -47,6 +47,8 @@ const normalizeAnnouncement = (announcement) => {
   return normalized;
 };
 
+const debugLog = (...args) => process.env.NODE_ENV !== 'production' && console.log(...args);
+
 const normalizeAnnouncements = (rows) => rows.map(normalizeAnnouncement);
 
 // Multer config
@@ -281,6 +283,27 @@ router.get('/nearby', async (req, res) => {
   }
 });
 
+router.get('/sponsored', async (req, res) => {
+  try {
+    const limitParam = parseInt(req.query.limit, 10);
+    const limit = Number.isNaN(limitParam) || limitParam < 1 ? 5 : Math.min(limitParam, 50);
+
+    const sql = `SELECT a.*, u.name as user_name, u.phone as user_phone
+      FROM announcements a
+      LEFT JOIN users u ON a.user_id = u.id
+      WHERE a.status = 'active' AND a.payment_status = 1 AND a.is_boosted = true AND a.boost_expiry > NOW()
+      ORDER BY a.boost_expiry DESC, a.created_at DESC
+      LIMIT $1`;
+
+    const result = await pool.query(sql, [limit]);
+    const announcements = normalizeAnnouncements(result.rows);
+    res.json({ announcements });
+  } catch (error) {
+    console.error('Erreur sponsored:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // GET ONE
 router.get('/:id', async (req, res) => {
   try {
@@ -298,9 +321,7 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Annonce non trouvée' });
     }
 
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('GET /announcements/:id images:', result.rows[0].images);
-    }
+    debugLog('GET /announcements/:id images:', result.rows[0].images);
 
     res.json({ announcement: normalizeAnnouncement(result.rows[0]) });
   } catch (error) {
@@ -311,7 +332,7 @@ router.get('/:id', async (req, res) => {
 // CREATE
 router.post('/', authenticateToken, upload.array('images', 10), validate('announcement'), async (req, res) => {
   try {
-    console.log('Création annonce - Début:', { userId: req.user.id, category: req.body.category });
+    debugLog('Création annonce - Début:', { userId: req.user.id, category: req.body.category });
     const { category, type, title, description, price, location, phone, metadata, latitude, longitude } = req.body;
     const listingPrice = Number(price || 0);
 
@@ -323,9 +344,9 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     // Pour les techniciens, on définit un prix par défaut de 0
     const finalPrice = category === 'technicien' ? 0 : listingPrice;
 
-    console.log('Création annonce - Prix calculé:', { finalPrice, category });
+    debugLog('Création annonce - Prix calculé:', { finalPrice, category });
     const categoryPrice = await getCategoryPrice(category);
-    console.log('Création annonce - Prix catégorie:', categoryPrice);
+    debugLog('Création annonce - Prix catégorie:', categoryPrice);
     if (categoryPrice === null) {
       return res.status(400).json({ error: 'Tarif de publication introuvable pour cette catégorie' });
     }
@@ -353,7 +374,7 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     }
 
     const id = uuidv4();
-    console.log('Création annonce - Avant INSERT:', { id, userId: req.user.id });
+    debugLog('Création annonce - Avant INSERT:', { id, userId: req.user.id });
 
     // Allow optional ad-related fields for sponsored listings
     const isSponsored = req.body.is_sponsored === 'true' || req.body.is_sponsored === true ? true : false;
@@ -384,11 +405,9 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
       ]
     );
 
-    console.log('Création annonce - Après INSERT');
+    debugLog('Création annonce - Après INSERT');
     const result = await pool.query('SELECT * FROM announcements WHERE id = $1', [id]);
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Création annonce - Résultat SELECT:', result.rows.length, result.rows[0]?.images);
-    }
+    debugLog('Création annonce - Résultat SELECT:', result.rows.length, result.rows[0]?.images);
     const savedAnnouncement = normalizeAnnouncement(result.rows[0]);
 
     res.status(201).json(savedAnnouncement);
@@ -409,44 +428,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Supprimé' });
   } catch (error) {
     res.status(500).json({ error: 'Erreur suppression' });
-  }
-});
-
-// GET SPONSORED / targeted
-router.get('/sponsored', async (req, res) => {
-  try {
-    const target = req.query.targetCategory || req.query.category || null;
-    const limitParam = parseInt(req.query.limit, 10);
-    const limit = Number.isNaN(limitParam) || limitParam < 1 ? 5 : Math.min(limitParam, 50);
-
-    let result;
-    if (target) {
-      const sql = `SELECT a.*, u.name as user_name, u.phone as user_phone
-        FROM announcements a
-        LEFT JOIN users u ON a.user_id = u.id
-        WHERE a.status = 'active' AND a.payment_status = 1 AND a.is_sponsored = true
-          AND (a.ad_target_category = $1 OR a.category = $1)
-        ORDER BY a.created_at DESC
-        LIMIT $2`;
-      result = await pool.query(sql, [target, limit]);
-    }
-
-    // Fallback to global sponsored ads when no targeted match
-    if (!result || result.rows.length === 0) {
-      const sql2 = `SELECT a.*, u.name as user_name, u.phone as user_phone
-        FROM announcements a
-        LEFT JOIN users u ON a.user_id = u.id
-        WHERE a.status = 'active' AND a.payment_status = 1 AND a.is_sponsored = true
-        ORDER BY a.created_at DESC
-        LIMIT $1`;
-      result = await pool.query(sql2, [limit]);
-    }
-
-    const announcements = normalizeAnnouncements(result.rows);
-    res.json({ announcements });
-  } catch (error) {
-    console.error('Erreur sponsored:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 

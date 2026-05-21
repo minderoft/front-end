@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { parseImages, resolveImageUrl } from '../utils/imageUtils';
+import { formatPrice } from '../utils/formatPrice';
 import '../styles/Favorites.css';
 
 const Favorites = () => {
@@ -104,7 +105,7 @@ const Favorites = () => {
                 <div className="favorite-info">
                   <h3>{favorite.title}</h3>
                   <p className="category">📂 {favorite.category}</p>
-                  <p className="price">{favorite.price?.toLocaleString('fr-CI')} FCFA</p>
+                  <p className="price">{formatPrice(favorite.price)}</p>
                   <p className="date">
                     {new Date(favorite.created_at).toLocaleDateString('fr-CI', {
                       year: 'numeric',

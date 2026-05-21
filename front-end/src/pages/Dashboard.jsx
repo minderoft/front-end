@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { announcementService, paymentService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
+import { formatPrice } from '../utils/formatPrice';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -200,7 +201,7 @@ const Dashboard = () => {
                         </div>
                         <h3 className="card-title">{announcement.title}</h3>
                         <p className="card-text">{location}</p>
-                        <div className="card-price">{announcement.price?.toLocaleString()} FCFA</div>
+                        <div className="card-price">{formatPrice(announcement.price)}</div>
                         <div className="d-flex gap-2 mt-3">
                           <Link 
                             to={`/announcements/${announcement.id}`} 
@@ -257,7 +258,7 @@ const Dashboard = () => {
                             {payment.announcement_title || 'Annonce supprimée'}
                           </td>
                           <td style={{ padding: '12px', fontWeight: '600' }}>
-                            {payment.amount?.toLocaleString()} FCFA
+                            {formatPrice(payment.amount)}
                           </td>
                           <td style={{ padding: '12px' }}>
                             {payment.method.replace('_', ' ')}

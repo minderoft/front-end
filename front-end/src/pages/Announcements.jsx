@@ -5,6 +5,7 @@ import { MapPin, Phone, Flag, Rocket, Search, Eye } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { announcementService, reportService } from '../services/api';
 import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
+import { formatPrice } from '../utils/formatPrice';
 
 const setPageMeta = (title, description) => {
   document.title = title;
@@ -352,7 +353,7 @@ const Announcements = () => {
                     <div className="card-price">
                       {announcement.category === 'technicien' || announcement.price === 0 
                         ? 'Prix à négocier' 
-                        : `${announcement.price?.toLocaleString()} FCFA`}
+                        : formatPrice(announcement.price)}
                     </div>
                     <div className="card-meta" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
