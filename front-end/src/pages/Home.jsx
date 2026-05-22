@@ -114,6 +114,7 @@ const Home = () => {
   const [nearbyLoading, setNearbyLoading] = useState(false);
   const [nearbyAnnouncements, setNearbyAnnouncements] = useState([]);
   const [nearbyError, setNearbyError] = useState('');
+  const [nearbyMessage, setNearbyMessage] = useState('');
   const [nearbySearched, setNearbySearched] = useState(false);
   const [recommendedAds, setRecommendedAds] = useState([]);
   const [recommendedLoading, setRecommendedLoading] = useState(true);
@@ -178,9 +179,11 @@ const Home = () => {
 
   const handleNearbySearch = () => {
     setNearbyError('');
+    setNearbyMessage('Demande d\'autorisation GPS en cours...');
     setNearbySearched(true);
     if (!navigator.geolocation) {
       setNearbyError('Géolocalisation non supportée par votre navigateur.');
+      setNearbyMessage('');
       return;
     }
 
@@ -188,6 +191,7 @@ const Home = () => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
+          setNearbyMessage('Recherche des annonces proches...');
           const { latitude, longitude } = position.coords;
           const response = await announcementService.getNearby(latitude, longitude);
           const nearbyResults = response.data?.announcements ?? [];
@@ -201,10 +205,13 @@ const Home = () => {
           setNearbyAnnouncements([]);
         } finally {
           setNearbyLoading(false);
+          setNearbyMessage('');
         }
       },
-      () => {
-        setNearbyError('Impossible d\'accéder à votre position. Veuillez vérifier vos paramètres.');
+      (err) => {
+        console.error('Erreur geolocation:', err);
+        setNearbyError('Impossible d\'accéder à votre position. Vérifiez l\'autorisation GPS ou vos paramètres de localisation.');
+        setNearbyMessage('');
         setNearbyLoading(false);
       }
     );
@@ -330,6 +337,12 @@ const Home = () => {
             {nearbyLoading ? 'Localisation en cours...' : (<><MapPin size={16} style={{ marginRight: 6 }} />Autour de moi (10km)</>)}
           </button>
         </div>
+
+        {nearbyMessage && !nearbyError && (
+          <div style={{ marginBottom: '1rem', padding: '14px 18px', borderRadius: '16px', backgroundColor: '#eff6ff', color: '#0c4a6e', border: '1px solid #bfdbfe' }}>
+            {nearbyMessage}
+          </div>
+        )}
 
         {nearbyError && (
           <div className="alert alert-error" style={{ marginBottom: '1rem' }}>

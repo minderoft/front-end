@@ -59,9 +59,12 @@ const CreateAnnouncement = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [pricing, setPricing] = useState({});
   const [success, setSuccess] = useState('');
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+
+  const MIN_PRICE = 5000;
  
   const [formData, setFormData] = useState({
     category: searchParams.get('category') || '',
@@ -100,6 +103,7 @@ const CreateAnnouncement = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setFieldErrors(prev => ({ ...prev, [name]: '' }));
     setError('');
     setSuccess('');
   };
@@ -110,6 +114,7 @@ const CreateAnnouncement = () => {
       ...prev, 
       metadata: { ...prev.metadata, [name]: value } 
     }));
+    setFieldErrors(prev => ({ ...prev, [name]: '' }));
     setError('');
     setSuccess('');
   };
@@ -117,6 +122,7 @@ const CreateAnnouncement = () => {
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     setFormData(prev => ({ ...prev, images: [...prev.images, ...files] }));
+    setFieldErrors(prev => ({ ...prev, images: '' }));
     setError('');
     setSuccess('');
   };
@@ -132,54 +138,87 @@ const CreateAnnouncement = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setFieldErrors({});
+
+    const errors = {};
+    const selectedCategory = categories[formData.category];
+    const minPrice = formData.category !== 'technicien'
+      ? Math.max(MIN_PRICE, pricing[formData.category] ?? MIN_PRICE)
+      : 0;
+
+    if (!formData.category) {
+      errors.category = 'La catégorie est requise.';
+    }
+
+    if (!formData.title.trim()) {
+      errors.title = 'Le titre est requis.';
+    }
+
+    if (!formData.description.trim()) {
+      errors.description = 'La description est requise.';
+    }
+
+    if (!formData.location.trim()) {
+      errors.location = 'La localisation est requise.';
+    }
+
+    if (!formData.phone.trim()) {
+      errors.phone = 'Le numéro de téléphone est requis.';
+    }
+
+    if (formData.category !== 'technicien') {
+      const priceValue = Number(formData.price);
+      if (!formData.price.toString().trim()) {
+        errors.price = 'Le prix est requis.';
+      } else if (Number.isNaN(priceValue) || priceValue <= 0) {
+        errors.price = 'Le prix doit être un nombre valide.';
+      } else if (priceValue < minPrice) {
+        errors.price = `Le prix minimum est de ${formatPrice(minPrice)}.`;
+      }
+    }
+
+    if (formData.images.length === 0) {
+      errors.images = 'Veuillez ajouter au moins une image.';
+    }
+
+    if (!formData.latitude || !formData.longitude) {
+      errors.locationPicker = 'Cliquez sur la carte pour définir une position précise.';
+    }
+
+    if (!acceptedPrivacy) {
+      errors.acceptedPrivacy = 'Vous devez accepter la politique de confidentialité.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError('Veuillez corriger les erreurs ci-dessous et réessayer.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Validation des champs obligatoires
-      if (!formData.category || !formData.title || !formData.description || !formData.location || !formData.phone) {
-        setError('Veuillez remplir tous les champs obligatoires: catégorie, titre, description, localisation, téléphone');
-        setLoading(false);
-        return;
-      }
-
-      if (formData.images.length === 0) {
-        setError('Veuillez ajouter au moins une image');
-        setLoading(false);
-        return;
-      }
-
-      const priceValue = formData.category === 'technicien' ? 0 : Number(formData.price);
-      if (formData.category !== 'technicien' && (Number.isNaN(priceValue) || priceValue <= 0)) {
-        setError('Le prix doit être un nombre positif pour cette catégorie');
-        setLoading(false);
-        return;
-      }
-
-      // Préparer les données avec FormData pour les fichiers
       const announcementData = new FormData();
       announcementData.append('category', formData.category);
       announcementData.append('type', formData.type);
-      announcementData.append('title', formData.title);
-      announcementData.append('description', formData.description);
-      announcementData.append('price', priceValue);
-      announcementData.append('location', formData.location);
-      announcementData.append('phone', formData.phone);
+      announcementData.append('title', formData.title.trim());
+      announcementData.append('description', formData.description.trim());
+      announcementData.append('price', formData.category === 'technicien' ? 0 : Number(formData.price));
+      announcementData.append('location', formData.location.trim());
+      announcementData.append('phone', formData.phone.trim());
       announcementData.append('metadata', JSON.stringify(formData.metadata));
       if (formData.latitude) announcementData.append('latitude', formData.latitude);
       if (formData.longitude) announcementData.append('longitude', formData.longitude);
       formData.images.forEach((image) => announcementData.append('images', image));
 
-
-      // Créer l'annonce
       const response = await announcementService.create(announcementData);
       const announcement = response.data;
-      
-      // Stocker l'ID de l'annonce pour le paiement
+
       setFormData(prev => ({ ...prev, announcementId: announcement.id }));
       setSuccess('Annonce créée ! Procédons au paiement...');
       setStep(2);
     } catch (err) {
-      setError(err.response?.data?.error || err.response?.data?.details?.[0] || 'Erreur lors de la création');
+      setError(err.response?.data?.error || err.response?.data?.details?.[0] || 'Erreur lors de la création de l\'annonce.');
     } finally {
       setLoading(false);
     }
@@ -261,7 +300,7 @@ const CreateAnnouncement = () => {
       {success && <div className="alert alert-success">{success}</div>}
 
       {step === 1 && (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <div className="card" style={{ padding: 'var(--spacing-xl)' }}>
             <h3 className="mb-3">Informations de l'annonce</h3>
 
@@ -273,13 +312,13 @@ const CreateAnnouncement = () => {
                 className="form-select"
                 value={formData.category}
                 onChange={handleChange}
-                required
               >
                 <option value="">Sélectionner une catégorie</option>
                 {Object.entries(categories).map(([key, cat]) => (
                   <option key={key} value={key}>{cat.name}</option>
                 ))}
               </select>
+              {fieldErrors.category && <span className="form-error">{fieldErrors.category}</span>}
             </div>
 
             {/* Type (pour immobilier et véhicule) */}
@@ -330,9 +369,9 @@ const CreateAnnouncement = () => {
                 placeholder="Titre de l'annonce"
                 value={formData.title}
                 onChange={handleChange}
-                required
                 minLength={3}
               />
+              {fieldErrors.title && <span className="form-error">{fieldErrors.title}</span>}
             </div>
 
             {/* Description */}
@@ -344,9 +383,9 @@ const CreateAnnouncement = () => {
                 placeholder="Décrivez votre bien ou service en détail..."
                 value={formData.description}
                 onChange={handleChange}
-                required
                 rows={5}
               />
+              {fieldErrors.description && <span className="form-error">{fieldErrors.description}</span>}
             </div>
 
             {formData.category === 'technicien' && (
@@ -366,12 +405,12 @@ const CreateAnnouncement = () => {
                   placeholder="Prix en FCFA"
                   value={formData.price}
                   onChange={handleChange}
-                  required
-                  min={pricing[formData.category] || 0}
+                  min={pricing[formData.category] || MIN_PRICE}
                 />
                 <span className="form-help">
-                  Prix minimum: {pricing[formData.category] != null ? formatPrice(pricing[formData.category]) : '0 FCFA'} pour cette catégorie
+                  Prix minimum: {formatPrice(Math.max(MIN_PRICE, pricing[formData.category] ?? MIN_PRICE))} pour cette catégorie.
                 </span>
+                {fieldErrors.price && <span className="form-error">{fieldErrors.price}</span>}
               </div>
             )}
 
@@ -385,19 +424,22 @@ const CreateAnnouncement = () => {
                 placeholder="Ville, Quartier"
                 value={formData.location}
                 onChange={handleChange}
-                required
               />
+              {fieldErrors.location && <span className="form-error">{fieldErrors.location}</span>}
             </div>
 
             <div className="form-group">
               <label className="form-label">Position précise</label>
               <LocationPicker
                 position={formData.latitude && formData.longitude ? [Number(formData.latitude), Number(formData.longitude)] : null}
-                onChange={(position) => setFormData(prev => ({
-                  ...prev,
-                  latitude: position.lat.toFixed(8),
-                  longitude: position.lng.toFixed(8),
-                }))}
+                onChange={(position) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    latitude: position.lat.toFixed(8),
+                    longitude: position.lng.toFixed(8),
+                  }));
+                  setFieldErrors(prev => ({ ...prev, locationPicker: '' }));
+                }}
               />
               <div className="grid gap-3 sm:grid-cols-2 mt-3">
                 <div>
@@ -423,6 +465,7 @@ const CreateAnnouncement = () => {
                   />
                 </div>
               </div>
+              {fieldErrors.locationPicker && <span className="form-error">{fieldErrors.locationPicker}</span>}
             </div>
 
             {/* Numéro de téléphone */}
@@ -435,9 +478,9 @@ const CreateAnnouncement = () => {
                 placeholder="Ex: +225 07 12 34 56 78"
                 value={formData.phone}
                 onChange={handleChange}
-                required
               />
-              <small className="text-muted">Ce numéro sera affiché avec votre annonce pour que les interessés puissent vous contacter</small>
+              {fieldErrors.phone && <span className="form-error">{fieldErrors.phone}</span>}
+              <small className="text-muted">Ce numéro sera affiché avec votre annonce pour que les intéressés puissent vous contacter</small>
             </div>
 
             {/* Champs dynamiques selon la catégorie */}
@@ -486,6 +529,7 @@ const CreateAnnouncement = () => {
                 accept="image/*"
                 multiple
               />
+              {fieldErrors.images && <span className="form-error">{fieldErrors.images}</span>}
               {formData.images.length > 0 && (
                 <div className="d-flex gap-2 mt-2" style={{ flexWrap: 'wrap' }}>
                   {formData.images.map((img, index) => (
@@ -520,21 +564,25 @@ const CreateAnnouncement = () => {
               )}
             </div>
 
-            <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '24px' }}>
+            <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
               <input
                 type="checkbox"
                 id="acceptPrivacy"
                 checked={acceptedPrivacy}
-                onChange={(e) => setAcceptedPrivacy(e.target.checked)}
+                onChange={(e) => {
+                  setAcceptedPrivacy(e.target.checked);
+                  setFieldErrors(prev => ({ ...prev, acceptedPrivacy: '' }));
+                  setError('');
+                }}
                 style={{ width: '24px', height: '24px', minWidth: '24px', minHeight: '24px', cursor: 'pointer' }}
-                required
               />
               <label htmlFor="acceptPrivacy" style={{ fontSize: '0.95rem', lineHeight: '1.5', cursor: 'pointer' }}>
                 J'accepte la <a href="/privacy-policy.html" target="_blank" rel="noreferrer">Politique de Confidentialité</a>
               </label>
             </div>
+            {fieldErrors.acceptedPrivacy && <span className="form-error" style={{ display: 'block', marginBottom: '16px' }}>{fieldErrors.acceptedPrivacy}</span>}
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading || !acceptedPrivacy}>
+            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
               {loading ? 'Création...' : 'Créer l\'annonce'}
             </button>
           </div>
