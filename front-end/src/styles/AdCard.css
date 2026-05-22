@@ -28,11 +28,18 @@
 }
 
 .adcard .card-body {
-  padding: 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
+}
+
+@media (min-width: 768px) {
+  .adcard .card-body {
+    padding: 16px;
+    gap: 10px;
+  }
 }
 
 .adcard .card-title {
@@ -75,10 +82,19 @@
 .adcard .card-actions .btn,
 .adcard .card-actions a {
   flex: 1;
-  min-width: 100px;
-  padding: 8px 12px;
-  font-size: 0.85rem;
+  min-width: auto;
+  padding: 6px 10px;
+  font-size: 0.8rem;
   text-decoration: none;
+}
+
+@media (min-width: 768px) {
+  .adcard .card-actions .btn,
+  .adcard .card-actions a {
+    min-width: 100px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
 }
 
 .adcard .btn-call {
