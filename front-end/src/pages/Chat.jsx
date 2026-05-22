@@ -1,39 +1,104 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import { ArrowLeft, Mail, AlertCircle, Send, Users } from 'lucide-react';
 
 const BACKEND_URL = 'https://backend-ovbc.onrender.com';
-const POLL_INTERVAL = 5000; // 5 secondes
+const POLL_INTERVAL = 5000;
+const ADMIN_CONVERSATION_ID = 'admin-locaplus';
+const ADMIN_EMAIL = 'support@locaplus.fr';
+
+const adminConversationSeed = {
+  id: ADMIN_CONVERSATION_ID,
+  name: 'Administration LOCAPLUS',
+  subtitle: 'Support Officiel',
+  avatar: 'AL',
+  isAdmin: true,
+};
 
 const Chat = () => {
   const { user } = useAuth();
   const { userId: receiverId } = useParams();
-  const navigate = useNavigate();
 
   const [conversations, setConversations] = useState([]);
-  const [activeConversation, setActiveConversation] = useState(receiverId || null);
+  const [activeConversationId, setActiveConversationId] = useState(receiverId || null);
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
-  const messagesEndRef = useRef(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportType, setReportType] = useState('Bug technique');
+  const [reportText, setReportText] = useState('');
+  const [reportStatus, setReportStatus] = useState(null);
+  const [mobileChatOpen, setMobileChatOpen] = useState(Boolean(receiverId));
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Auto-scroll vers le dernier message
+  const scrollRef = useRef(null);
+
+  const displayedConversations = useMemo(() => {
+    const list = [adminConversationSeed];
+    const ids = new Set([ADMIN_CONVERSATION_ID]);
+
+    conversations.forEach((conv) => {
+      const conversationUserId = conv.provider_id === user?.id ? conv.client_id : conv.provider_id;
+      if (!conversationUserId || ids.has(conversationUserId)) return;
+
+      ids.add(conversationUserId);
+      list.push({
+        id: conversationUserId,
+        name: conv.provider_id === user?.id ? conv.client_name || 'Utilisateur' : conv.provider_name || 'Utilisateur',
+        subtitle: conv.service_title || 'Conversation en cours',
+        avatar: conv.provider_name?.charAt(0).toUpperCase() || conv.client_name?.charAt(0).toUpperCase() || 'U',
+        isAdmin: false,
+      });
+    });
+
+    return list;
+  }, [conversations, user]);
+
+  const selectedConversation = useMemo(
+    () => displayedConversations.find((conv) => conv.id === activeConversationId) || displayedConversations[0],
+    [displayedConversations, activeConversationId]
+  );
+
+  const isAdminChat = selectedConversation?.id === ADMIN_CONVERSATION_ID;
+
+  const adminIntroMessages = useMemo(
+    () => [
+      {
+        id: 'admin-welcome',
+        sender: 'admin',
+        text: 'Bienvenue sur le support LOCAPLUS. Tapez votre message et nous vous répondrons rapidement.',
+        created_at: new Date().toISOString(),
+      },
+    ],
+    []
+  );
+
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    setIsMobile(window.innerWidth < 640);
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  // Charger les conversations
+  useEffect(() => {
+    if (!user) return;
+    if (!activeConversationId && displayedConversations.length > 0) {
+      setActiveConversationId(displayedConversations[0].id);
+    }
+  }, [user, displayedConversations, activeConversationId]);
+
   const loadConversations = useCallback(async () => {
     try {
       if (!user) return;
-      
+
       const config = {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -41,67 +106,82 @@ const Chat = () => {
       };
 
       const response = await axios.get(`${BACKEND_URL}/api/conversations`, config);
-      const list = response.data.conversations || [];
-      setConversations(list);
-      
-      // Si on a un receiverId, chercher cette conversation
-      if (receiverId && (list?.length || 0) === 0) {
-        setLoading(false);
-      }
+      setConversations(response.data.conversations || []);
+      setError(null);
     } catch (err) {
       console.error('Erreur chargement conversations:', err);
       setError('Impossible de charger les conversations');
-    }
-  }, [user, receiverId]);
-
-  // Charger les messages
-  const loadMessages = useCallback(async (otherUserId) => {
-    try {
-      if (!user || !otherUserId) return;
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      };
-
-      const response = await axios.get(`${BACKEND_URL}/api/messages/${otherUserId}`, config);
-      setMessages(response.data.messages || []);
-      setError(null);
-    } catch (err) {
-      console.error('Erreur chargement messages:', err);
-      setMessages([]);
     } finally {
       setLoading(false);
     }
   }, [user]);
 
-  // Initialiser
-  useEffect(() => {
-    if (user) {
-      loadConversations();
-      if (activeConversation) {
-        loadMessages(activeConversation);
-      } else {
+  const loadMessages = useCallback(
+    async (otherUserId) => {
+      try {
+        if (!user || !otherUserId) return;
+
+        if (otherUserId === ADMIN_CONVERSATION_ID) {
+          setMessages([]);
+          return;
+        }
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        };
+
+        const response = await axios.get(`${BACKEND_URL}/api/messages/${otherUserId}`, config);
+        setMessages(response.data.messages || []);
+        setError(null);
+      } catch (err) {
+        console.error('Erreur chargement messages:', err);
+        setMessages([]);
+        setError('Impossible de charger les messages');
+      } finally {
         setLoading(false);
       }
-    }
-  }, [user, loadConversations, activeConversation, loadMessages]);
+    },
+    [user]
+  );
 
-  // Polling pour les nouveaux messages
   useEffect(() => {
-    if (!activeConversation) return;
+    if (!user) return;
+    loadConversations();
+  }, [user, loadConversations]);
+
+  useEffect(() => {
+    if (!user || !activeConversationId) return;
+    setLoading(true);
+    loadMessages(activeConversationId);
+  }, [user, activeConversationId, loadMessages]);
+
+  useEffect(() => {
+    if (!activeConversationId || activeConversationId === ADMIN_CONVERSATION_ID) return;
 
     const interval = setInterval(() => {
-      loadMessages(activeConversation);
+      loadMessages(activeConversationId);
     }, POLL_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [activeConversation, loadMessages]);
+  }, [activeConversationId, loadMessages]);
 
-  // Envoyer un message
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, selectedConversation]);
+
   const handleSendMessage = async () => {
-    if (!messageText.trim() || !activeConversation || sending) {
+    if (!messageText.trim() || sending || !selectedConversation) return;
+
+    if (selectedConversation.id === ADMIN_CONVERSATION_ID) {
+      const subject = encodeURIComponent('Demande support LOCAPLUS');
+      const body = encodeURIComponent(`${messageText.trim()}
+
+Utilisateur: ${user?.name || 'Anonyme'}
+Email: ${user?.email || 'non renseigné'}`);
+      setMessageText('');
+      window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
       return;
     }
 
@@ -117,14 +197,14 @@ const Chat = () => {
       await axios.post(
         `${BACKEND_URL}/api/messages`,
         {
-          receiver_id: activeConversation,
+          receiver_id: selectedConversation.id,
           text: messageText.trim(),
         },
         config
       );
 
       setMessageText('');
-      await loadMessages(activeConversation);
+      await loadMessages(selectedConversation.id);
     } catch (err) {
       console.error('Erreur envoi message:', err);
       setError('Impossible d\'envoyer le message');
@@ -133,7 +213,6 @@ const Chat = () => {
     }
   };
 
-  // Gérer Enter pour envoyer
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -141,200 +220,172 @@ const Chat = () => {
     }
   };
 
-  // Changer de conversation
-  const handleSelectConversation = (conversationUserId) => {
-    setActiveConversation(conversationUserId);
-    setLoading(true);
-    loadMessages(conversationUserId);
+  const handleSelectConversation = (conversationId) => {
+    setActiveConversationId(conversationId);
+    if (isMobile) {
+      setMobileChatOpen(true);
+    }
   };
 
+  const handleReportSubmit = async () => {
+    if (!reportText.trim()) {
+      setReportStatus('Décrivez votre signalement avant envoi.');
+      return;
+    }
+
+    try {
+      setReportStatus('Envoi du signalement...');
+      const config = {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      };
+
+      await axios.post(
+        `${BACKEND_URL}/api/reports`,
+        {
+          type: reportType,
+          message: reportText.trim(),
+          conversation: selectedConversation.id,
+          user_id: user?.id,
+        },
+        config
+      );
+
+      setReportStatus('Signalement envoyé. Merci.');
+      setReportText('');
+      setTimeout(() => {
+        setReportOpen(false);
+        setReportStatus(null);
+      }, 1800);
+    } catch (err) {
+      console.error('Erreur signalement:', err);
+      setReportStatus('Impossible d\'envoyer le signalement pour le moment.');
+    }
+  };
+
+  const currentMessages = isAdminChat && messages.length === 0 ? adminIntroMessages : messages;
+
   return (
-    <div style={{
-      display: 'flex',
-      height: '100vh',
-      backgroundColor: '#f5f5f5',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-    }}>
-      {/* Colonne gauche - Conversations */}
-      <div style={{
-        width: '320px',
-        backgroundColor: '#fff',
-        borderRight: '1px solid #e0e0e0',
-        display: 'flex',
-        flexDirection: 'column',
-        '@media (max-width: 768px)': {
-          width: '100%',
-          display: activeConversation ? 'none' : 'flex'
-        }
-      }}>
-        {/* Header */}
-        <div style={{
-          padding: '16px',
-          borderBottom: '1px solid #e0e0e0',
-          backgroundColor: '#fff'
-        }}>
-          <h2 style={{
-            margin: '0',
-            fontSize: '18px',
-            fontWeight: '600',
-            color: '#000'
-          }}>Messagerie</h2>
-          <p style={{
-            margin: '4px 0 0 0',
-            fontSize: '12px',
-            color: '#999'
-          }}>Vos conversations</p>
-        </div>
-
-        {/* Liste des conversations */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          backgroundColor: '#fff'
-        }}>
-          {loading && (conversations?.length || 0) === 0 ? (
-            <div style={{ padding: '16px', color: '#999', fontSize: '13px' }}>
-              Chargement...
-            </div>
-          ) : (conversations?.length || 0) === 0 ? (
-            <div style={{ padding: '16px', color: '#999', fontSize: '13px' }}>
-              Aucune conversation
-            </div>
-          ) : (
-            conversations.map((conv) => (
-              <button
-                key={conv.id}
-                onClick={() => handleSelectConversation(conv.provider_id === user.id ? conv.client_id : conv.provider_id)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: 'none',
-                  backgroundColor: activeConversation === (conv.provider_id === user.id ? conv.client_id : conv.provider_id) ? '#f0f0f0' : '#fff',
-                  borderBottom: '1px solid #f0f0f0',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#f9f9f9'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = activeConversation === (conv.provider_id === user.id ? conv.client_id : conv.provider_id) ? '#f0f0f0' : '#fff'}
-              >
-                <div style={{ fontSize: '14px', fontWeight: '500', color: '#000' }}>
-                  {conv.provider_name || conv.client_name || 'Utilisateur'}
-                </div>
-                <div style={{ fontSize: '12px', color: '#999', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {conv.service_title || 'Conversation'}
-                </div>
-              </button>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Colonne droite - Discussion active */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: '#fff',
-        '@media (max-width: 768px)': {
-          display: activeConversation ? 'flex' : 'none'
-        }
-      }}>
-        {activeConversation ? (
-          <>
-            {/* Header discussion */}
-            <div style={{
-              padding: '16px',
-              borderBottom: '1px solid #e0e0e0',
-              backgroundColor: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
+    <div className="h-[calc(100vh-4rem)] overflow-hidden bg-slate-50">
+      <div className="sm:flex h-full">
+        <aside
+          className={`relative bg-white border-r border-slate-200 h-full sm:w-1/3 ${isMobile && mobileChatOpen ? 'hidden' : 'flex'} flex-col`}
+        >
+          <div className="px-5 py-4 border-b border-slate-200">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 style={{ margin: '0', fontSize: '16px', fontWeight: '600', color: '#000' }}>
-                  Conversation
-                </h3>
-                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#999' }}>
-                  {activeConversation}
-                </p>
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Vos conversations</p>
+                <h1 className="mt-2 text-2xl font-semibold text-slate-900">Messagerie LOCAPLUS</h1>
               </div>
-              <button
-                onClick={() => setActiveConversation(null)}
-                style={{
-                  display: 'none',
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '20px',
-                  cursor: 'pointer',
-                  color: '#999',
-                  '@media (max-width: 768px)': {
-                    display: 'block'
-                  }
-                }}
-              >
-                ✕
-              </button>
+              <div className="hidden sm:flex items-center justify-center w-11 h-11 rounded-2xl bg-slate-100 text-slate-600">
+                <Users className="w-5 h-5" />
+              </div>
             </div>
 
-            {/* Messages */}
-            <div style={{
-              flex: 1,
-              overflowY: 'auto',
-              padding: '16px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              backgroundColor: '#f5f5f5'
-            }}>
-              {(messages?.length || 0) === 0 ? (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: '100%',
-                  color: '#999',
-                  fontSize: '13px',
-                  textAlign: 'center'
-                }}>
-                  Aucun message. Commencez la conversation !
+            <button
+              type="button"
+              onClick={() => handleSelectConversation(ADMIN_CONVERSATION_ID)}
+              className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700"
+            >
+              <Mail className="w-5 h-5" />
+              Contacter l'administration LOCAPLUS
+            </button>
+          </div>
+
+          <div className="px-5 py-4 border-b border-slate-200">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+              Sélectionnez un échange pour voir le fil, ou utilisez le bouton pour contacter l’administration.
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-2 py-3 space-y-2">
+            {loading && conversations.length === 0 ? (
+              <div className="rounded-2xl bg-slate-50 px-4 py-5 text-center text-sm text-slate-500">Chargement des conversations...</div>
+            ) : (
+              displayedConversations.map((conversation) => {
+                const isActive = conversation.id === selectedConversation?.id;
+                return (
+                  <button
+                    key={conversation.id}
+                    type="button"
+                    onClick={() => handleSelectConversation(conversation.id)}
+                    className={`w-full rounded-3xl border px-4 py-4 text-left transition ${
+                      isActive ? 'border-orange-300 bg-orange-50 shadow-sm' : 'border-transparent bg-white hover:border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-lg font-semibold text-slate-700">
+                        {conversation.avatar}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-900 truncate">{conversation.name}</p>
+                        <p className="mt-1 text-xs text-slate-500 truncate">{conversation.subtitle}</p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </aside>
+
+        <main className={`relative flex-1 h-full flex flex-col bg-white ${isMobile && !mobileChatOpen ? 'hidden' : 'flex'}`}>
+          <div className="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4">
+            {isMobile && (
+              <button
+                type="button"
+                onClick={() => setMobileChatOpen(false)}
+                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Retour
+              </button>
+            )}
+
+            <div className="min-w-0">
+              <span className="text-xs uppercase tracking-[0.2em] text-slate-500">Conversation</span>
+              <h2 className="mt-2 text-xl font-semibold text-slate-900 truncate">{selectedConversation?.name}</h2>
+              <p className="mt-1 text-sm text-slate-500 truncate">{selectedConversation?.subtitle}</p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {selectedConversation?.isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setReportOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700 transition hover:bg-orange-100"
+                >
+                  <AlertCircle className="w-4 h-4" />
+                  Signaler
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-hidden bg-slate-50">
+            <div className="h-full overflow-y-auto px-5 py-5 space-y-4">
+              {loading ? (
+                <div className="flex h-full items-center justify-center rounded-3xl bg-white text-sm text-slate-500">Chargement du fil de discussion...</div>
+              ) : currentMessages.length === 0 ? (
+                <div className="flex h-full min-h-[200px] items-center justify-center rounded-3xl bg-white text-center text-sm text-slate-500">
+                  Aucune discussion disponible. Lancez un message à l'administration ou sélectionnez une autre conversation.
                 </div>
               ) : (
-                messages.map((message) => {
-                  const isMine = message.sender_id === user.id;
+                currentMessages.map((message) => {
+                  const isMine = message.sender_id === user?.id || message.sender === 'me';
                   return (
                     <div
                       key={message.id}
-                      style={{
-                        display: 'flex',
-                        justifyContent: isMine ? 'flex-end' : 'flex-start',
-                        marginBottom: '4px'
-                      }}
+                      className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div
-                        style={{
-                          maxWidth: '70%',
-                          padding: '10px 14px',
-                          borderRadius: isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                          backgroundColor: isMine ? '#ff6b00' : '#e5e5ea',
-                          color: isMine ? '#fff' : '#000',
-                          fontSize: '14px',
-                          lineHeight: '1.4',
-                          wordWrap: 'break-word'
-                        }}
-                      >
-                        <p style={{ margin: '0', marginBottom: '4px' }}>
-                          {message.text}
-                        </p>
-                        <span style={{
-                          fontSize: '11px',
-                          opacity: 0.7,
-                          display: 'block',
-                          textAlign: isMine ? 'right' : 'left'
-                        }}>
+                      <div className={`max-w-[80%] rounded-3xl px-4 py-3 text-sm leading-6 ${isMine ? 'bg-orange-600 text-white' : 'bg-white text-slate-900 shadow-sm'}`}>
+                        <p className="whitespace-pre-wrap break-words">{message.text}</p>
+                        <span className={`mt-2 block text-[11px] ${isMine ? 'text-orange-100' : 'text-slate-400'}`}>
                           {new Date(message.created_at).toLocaleTimeString('fr-FR', {
                             hour: '2-digit',
-                            minute: '2-digit'
+                            minute: '2-digit',
                           })}
                         </span>
                       </div>
@@ -342,88 +393,123 @@ const Chat = () => {
                   );
                 })
               )}
-              <div ref={messagesEndRef} />
+              <div ref={scrollRef} />
             </div>
+          </div>
 
-            {/* Champ d'envoi */}
-            <div style={{
-              padding: '12px 16px',
-              borderTop: '1px solid #e0e0e0',
-              backgroundColor: '#fff',
-              display: 'flex',
-              gap: '8px',
-              alignItems: 'flex-end'
-            }}>
+          <div className="border-t border-slate-200 bg-white px-5 py-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
               <textarea
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Écrivez votre message..."
-                style={{
-                  flex: 1,
-                  padding: '10px 12px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '20px',
-                  fontSize: '14px',
-                  fontFamily: 'inherit',
-                  resize: 'none',
-                  maxHeight: '100px',
-                  outline: 'none',
-                  backgroundColor: '#f5f5f5'
-                }}
-                rows={1}
+                placeholder={isAdminChat ? 'Écrivez votre message pour l’administration LOCAPLUS...' : 'Écrivez votre réponse...'}
+                className="min-h-[54px] max-h-28 w-full resize-none rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
               />
               <button
+                type="button"
                 onClick={handleSendMessage}
                 disabled={sending || !messageText.trim()}
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  backgroundColor: messageText.trim() && !sending ? '#ff6b00' : '#ccc',
-                  border: 'none',
-                  color: '#fff',
-                  fontSize: '18px',
-                  cursor: messageText.trim() && !sending ? 'pointer' : 'not-allowed',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background-color 0.2s'
-                }}
+                className="inline-flex h-14 w-full items-center justify-center rounded-3xl bg-orange-600 px-5 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:bg-slate-300 sm:w-auto"
               >
-                ➤
+                <Send className="w-5 h-5" />
+                <span className="ml-2">Envoyer</span>
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-slate-500">
+              {isAdminChat
+                ? 'Votre message s’ouvrira dans votre client mail natif. Il sera envoyé directement à l’administration LOCAPLUS.'
+                : 'Appuyez sur Entrée pour envoyer. Messages synchronisés avec le fil de conversation.'}
+            </p>
+          </div>
+
+          {error && (
+            <div className="border-t border-red-100 bg-red-50 px-5 py-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
+        </main>
+      </div>
+
+      {reportOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4 py-6">
+          <div className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Signalement</p>
+                <h3 className="mt-2 text-2xl font-semibold text-slate-900">Signaler un problème</h3>
+                <p className="mt-2 text-sm text-slate-500">
+                  Envoyez un signalement à l’administration LOCAPLUS pour un bug, une annonce frauduleuse ou un problème technique.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReportOpen(false)}
+                className="rounded-full border border-slate-200 bg-slate-100 p-3 text-slate-600 transition hover:bg-slate-200"
+              >
+                ✕
               </button>
             </div>
 
-            {error && (
-              <div style={{
-                padding: '12px 16px',
-                backgroundColor: '#fee',
-                color: '#c33',
-                fontSize: '13px',
-                borderTop: '1px solid #fcc'
-              }}>
-                {error}
-              </div>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <label className="space-y-2 text-sm text-slate-700">
+                Type de signalement
+                <select
+                  value={reportType}
+                  onChange={(e) => setReportType(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                >
+                  <option>Bug technique</option>
+                  <option>Annonces frauduleuses</option>
+                  <option>Problème de transaction</option>
+                  <option>Autre</option>
+                </select>
+              </label>
+
+              <label className="space-y-2 text-sm text-slate-700">
+                Conversation concernée
+                <input
+                  value={selectedConversation?.name || ''}
+                  disabled
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-600 outline-none"
+                />
+              </label>
+            </div>
+
+            <label className="mt-4 block text-sm text-slate-700">
+              Description du problème
+              <textarea
+                value={reportText}
+                onChange={(e) => setReportText(e.target.value)}
+                rows={5}
+                className="mt-2 w-full resize-none rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                placeholder="Expliquez le bug, la fraude ou le problème technique..."
+              />
+            </label>
+
+            {reportStatus && (
+              <div className="mt-4 rounded-3xl bg-slate-50 px-4 py-3 text-sm text-slate-700">{reportStatus}</div>
             )}
-          </>
-        ) : (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100%',
-            color: '#999',
-            fontSize: '15px',
-            textAlign: 'center'
-          }}>
-            <div>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>💬</div>
-              <p>Sélectionnez une conversation pour commencer</p>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setReportOpen(false)}
+                className="rounded-3xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={handleReportSubmit}
+                className="rounded-3xl bg-orange-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-700"
+              >
+                Envoyer le signalement
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
