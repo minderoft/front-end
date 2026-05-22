@@ -1012,28 +1012,29 @@ a:hover {
   margin-bottom: 0;
 }
 
-.ecosystem-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(220px, 1fr));
-  gap: 1rem;
-  margin-top: var(--spacing-xl);
-}
-
-@media (max-width: 768px) {
-  .ecosystem-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
-  }
-}
+/* Ecosystem grid is now handled by Tailwind classes in CategoryCarousel.jsx */
+/* Legacy CSS removed - uses: grid grid-cols-2 gap-4 w-full px-4 sm:gap-6 sm:grid-cols-4 */
 
 .ecosystem-card {
-  height: 260px;
+  height: auto;
+  aspect-ratio: 1 / 1.1;
   display: grid;
   align-items: end;
   justify-items: start;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .ecosystem-card {
+    aspect-ratio: 1 / 1.05;
+    height: 280px;
+  }
 }
 
 .ecosystem-card-overlay {
@@ -1056,7 +1057,13 @@ a:hover {
   justify-content: space-between;
   height: 100%;
   width: 100%;
-  padding: var(--spacing-xl);
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .ecosystem-card-inner {
+    padding: 1.5rem;
+  }
 }
 
 .ecosystem-card-icon-ring {
@@ -1076,14 +1083,28 @@ a:hover {
 }
 
 .ecosystem-card-footer h3 {
-  font-size: 1.25rem;
-  margin-bottom: var(--spacing-2xs);
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
   color: white;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .ecosystem-card-footer h3 {
+    font-size: 1.25rem;
+  }
 }
 
 .ecosystem-card-footer p {
   color: rgba(255, 255, 255, 0.88);
   margin: 0;
+  font-size: 0.8rem;
+}
+
+@media (min-width: 768px) {
+  .ecosystem-card-footer p {
+    font-size: 0.95rem;
+  }
 }
 
 .ecosystem-card.immobilier,

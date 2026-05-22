@@ -274,30 +274,38 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="announcements-section">
-        <div className="announcements-header">
-          <h2>🚀 Recommandé pour vous</h2>
-          <button onClick={fetchRecommended} className="btn btn-outline">Actualiser</button>
-        </div>
+      <section className="w-full px-4 md:px-8 lg:px-12 py-8 md:py-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-8 gap-4">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">🚀 Recommandé pour vous</h2>
+            <button onClick={fetchRecommended} className="btn btn-outline">Actualiser</button>
+          </div>
 
-        {recommendedLoading ? (
-          <div className="skeleton-grid">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="skeleton-card" style={{ width: 300, marginRight: 12 }} />
-            ))}
-          </div>
-        ) : (recommendedHasError || (recommendedAds?.filter((a) => a && (a.id || a._id || a.title))?.length || 0) === 0) ? (
-          <div className="empty-state" style={{ textAlign: 'center', padding: '2rem' }}>
-            <div style={{ fontSize: 40, color: 'var(--muted)', marginBottom: 12 }} aria-hidden>
-              <Sparkles />
+          {recommendedLoading ? (
+            <div className="skeleton-grid">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="skeleton-card" style={{ width: 300, marginRight: 12 }} />
+              ))}
             </div>
-            <p className="text-muted">Aucune recommandation pour le moment.</p>
-            <Link to="/announcements" className="btn btn-primary mt-3">Explorer les annonces</Link>
-          </div>
-        ) : (
-          <div className="recommended-slider" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 12 }}>
-            {recommendedAds?.filter((a) => a && (a.id || a._id || a.title)).map((announcement) => (
-              <div key={announcement.id || announcement._id || announcement.title} style={{ minWidth: 300 }}>
+          ) : (recommendedHasError || (recommendedAds?.filter((a) => a && (a.id || a._id || a.title))?.length || 0) === 0) ? (
+            <div className="empty-state" style={{ textAlign: 'center', padding: '2rem' }}>
+              <div style={{ fontSize: 40, color: 'var(--muted)', marginBottom: 12 }} aria-hidden>
+                <Sparkles />
+              </div>
+              <p className="text-muted">Aucune recommandation pour le moment.</p>
+              <Link to="/announcements" className="btn btn-primary mt-3">Explorer les annonces</Link>
+            </div>
+          ) : (
+            <div className="recommended-slider" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 12 }}>
+              {recommendedAds?.filter((a) => a && (a.id || a._id || a.title)).map((announcement) => (
+                <div key={announcement.id || announcement._id || announcement.title} style={{ minWidth: 300 }}>
+                  <AdCard announcement={announcement} onBoost={() => navigate(`/announcements/${announcement.id || announcement._id}`)} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
                 <AdCard announcement={announcement} onBoost={() => navigate(`/announcements/${announcement.id || announcement._id}`)} />
               </div>
             ))}
@@ -308,172 +316,183 @@ const Home = () => {
 
       <CategoryCarousel categories={categories} onCategoryClick={handleCategoryClick} />
 
-      <section className="security-trust">
-        <div className="section-head">
-          <span className="section-label">Sécurité certifiée</span>
-          <h2>Notre ADN : confiance, sécurité et transparence.</h2>
-        </div>
-        <div className="trust-grid">
-          {securityFeatures.map((feature) => (
-            <article key={feature.title} className="trust-card">
-              <div className="trust-icon">{feature.icon}</div>
-              <div>
-                <h4>{feature.title}</h4>
-                <p>{feature.description}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="announcements-section">
-        <div className="announcements-header">
-          <h2>Chercher autour de vous</h2>
-          <button
-            onClick={handleNearbySearch}
-            disabled={nearbyLoading}
-            className="btn btn-primary"
-          >
-            {nearbyLoading ? 'Localisation en cours...' : (<><MapPin size={16} style={{ marginRight: 6 }} />Autour de moi (10km)</>)}
-          </button>
-        </div>
-
-        {nearbyMessage && !nearbyError && (
-          <div style={{ marginBottom: '1rem', padding: '14px 18px', borderRadius: '16px', backgroundColor: '#eff6ff', color: '#0c4a6e', border: '1px solid #bfdbfe' }}>
-            {nearbyMessage}
+      <section className="w-full px-4 md:px-8 lg:px-12 py-8 md:py-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <span className="inline-block text-xs font-semibold uppercase tracking-widest text-orange-500 mb-2">
+              Sécurité certifiée
+            </span>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">Notre ADN : confiance, sécurité et transparence.</h2>
           </div>
-        )}
-
-        {nearbyError && (
-          <div className="alert alert-error" style={{ marginBottom: '1rem' }}>
-            <p>{nearbyError}</p>
-          </div>
-        )}
-
-        {nearbyLoading ? (
-          <div className="loading">
-            <div className="spinner"></div>
-          </div>
-        ) : nearbySearched ? (
-          <>
-            {(nearbyAnnouncements?.length || 0) > 0 ? (
-              <>
-                <p className="text-muted mb-4">
-                  {nearbyAnnouncements?.length || 0} annonce{(nearbyAnnouncements?.length || 0) > 1 ? 's' : ''} trouvée{(nearbyAnnouncements?.length || 0) > 1 ? 's' : ''} autour de vous
-                </p>
-                <div className="announcements-grid">
-                  {nearbyAnnouncements.map((announcement) => (
-                    <AdCard key={announcement.id} announcement={announcement} onBoost={() => navigate(`/announcements/${announcement.id}`)} />
-                  ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {securityFeatures.map((feature) => (
+              <article key={feature.title} className="trust-card">
+                <div className="trust-icon">{feature.icon}</div>
+                <div>
+                  <h4>{feature.title}</h4>
+                  <p>{feature.description}</p>
                 </div>
-              </>
-            ) : (
-              <div className="empty-state">
-                <p>Aucune annonce à proximité. Élargissez votre recherche !</p>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="empty-state">
-            <p>Appuyez sur « Autour de moi » pour découvrir les annonces proches de votre position.</p>
-          </div>
-        )}
-      </section>
-
-      <section className="announcements-section">
-        <div className="announcements-header">
-          <div>
-            <h2>Tarifs professionnels</h2>
-            <p className="text-muted">Découvrez nos tarifs de publication simples et transparents pour chaque catégorie.</p>
-          </div>
-          <Link to="/create" className="btn btn-primary">
-            Publier maintenant
-          </Link>
-        </div>
-
-        <div className="pricing-grid">
-          {professionalPricing.map((plan) => (
-            <article key={plan.id} className={`card pricing-card relative ${plan.id === 'immobilier' ? 'pricing-highlight' : 'border'}`}>
-              {plan.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs px-3 py-1 rounded-full">
-                  Populaire
-                </span>
-              )}
-              <div className="pricing-header">
-                <span className="pricing-icon">{plan.icon}</span>
-                <h3>{plan.name}</h3>
-              </div>
-              <div className="pricing-price">
-                <span className="price-amount">{plan.price.toLocaleString()}</span>
-                <span className="price-currency">FCFA</span>
-              </div>
-              <p className="pricing-description">{plan.details}</p>
-              <ul className="pricing-features">
-                {plan.details.split(' · ').map((feature, index) => (
-                  <li key={index}>{feature}</li>
-                ))}
-              </ul>
-              <Link
-                to={`/create?category=${plan.id}`}
-                className="btn btn-outline"
-              >
-                {plan.buttonLabel}
-              </Link>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="announcements-section">
-        <div className="announcements-header">
-          <h2>Annonces Récentes</h2>
-          <Link to="/announcements" className="btn btn-outline">
-            Voir tout
-          </Link>
-        </div>
-
-        {loading ? (
-          <div className="skeleton-grid">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="skeleton-card">
-                <div className="skeleton-line title" />
-                <div className="skeleton-line short" />
-                <div className="skeleton-line bar" />
-                <div className="skeleton-line bar" />
-              </div>
+              </article>
             ))}
           </div>
-        ) : homeError ? (
-          <div className="alert alert-error">
-            <p>{homeError}</p>
-            <button onClick={fetchRecentAnnouncements} className="btn btn-primary" type="button">
-              Réessayer
+        </div>
+      </section>
+
+      <section className="w-full px-4 md:px-8 lg:px-12 py-8 md:py-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-6 gap-4 flex-wrap">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">Chercher autour de vous</h2>
+            <button
+              onClick={handleNearbySearch}
+              disabled={nearbyLoading}
+              className="btn btn-primary"
+            >
+              {nearbyLoading ? 'Localisation en cours...' : (<><MapPin size={16} style={{ marginRight: 6 }} />Autour de moi (10km)</>)}
             </button>
           </div>
-        ) : announcements.length > 0 ? (
-          <div className="announcements-grid">
-            {announcements.map((announcement) => (
-                <AdCard key={announcement._id || announcement.id || announcement.title} announcement={announcement} onBoost={() => navigate(`/announcements/${announcement._id || announcement.id}`)} />
-            ))}
-          </div>
-        ) : (
-          <div className="empty-state">
-            <p>Aucune annonce pour le moment. Soyez le premier à publier !</p>
-            <Link to="/create" className="btn btn-primary mt-3">
-              Publier une annonce
-            </Link>
-          </div>
-        )}
+
+          {nearbyMessage && !nearbyError && (
+            <div style={{ marginBottom: '1rem', padding: '14px 18px', borderRadius: '16px', backgroundColor: '#eff6ff', color: '#0c4a6e', border: '1px solid #bfdbfe' }}>
+              {nearbyMessage}
+            </div>
+          )}
+
+          {nearbyError && (
+            <div className="alert alert-error" style={{ marginBottom: '1rem' }}>
+              <p>{nearbyError}</p>
+            </div>
+          )}
+
+          {nearbyLoading ? (
+            <div className="loading">
+              <div className="spinner"></div>
+            </div>
+          ) : nearbySearched ? (
+            <>
+              {(nearbyAnnouncements?.length || 0) > 0 ? (
+                <>
+                  <p className="text-muted mb-4">
+                    {nearbyAnnouncements?.length || 0} annonce{(nearbyAnnouncements?.length || 0) > 1 ? 's' : ''} trouvée{(nearbyAnnouncements?.length || 0) > 1 ? 's' : ''} autour de vous
+                  </p>
+                  <div className="announcements-grid">
+                    {nearbyAnnouncements.map((announcement) => (
+                      <AdCard key={announcement.id} announcement={announcement} onBoost={() => navigate(`/announcements/${announcement.id}`)} />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="empty-state">
+                  <p>Aucune annonce à proximité. Élargissez votre recherche !</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="empty-state">
+              <p>Appuyez sur « Autour de moi » pour découvrir les annonces proches de votre position.</p>
+            </div>
+          )}
+        </div>
       </section>
 
-      <section className="cta-banner">
-        <div className="cta-copy">
-          <h2>Vous êtes professionnel ?</h2>
-          <p style={{ color: 'rgba(255,255,255,0.95)', fontSize: '1.05rem', margin: 0 }}>Rejoignez LocaPlus et atteignez des milliers de clients potentiels avec une publication sécurisée.</p>
+      <section className="w-full px-4 md:px-8 lg:px-12 py-8 md:py-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-8 gap-4 flex-wrap">
+            <div>
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Tarifs professionnels</h2>
+              <p className="text-gray-600">Découvrez nos tarifs de publication simples et transparents pour chaque catégorie.</p>
+            </div>
+            <Link to="/create" className="btn btn-primary">
+              Publier maintenant
+            </Link>
+          </div>
+
+          <div className="pricing-grid">
+            {professionalPricing.map((plan) => (
+              <article key={plan.id} className={`card pricing-card relative ${plan.id === 'immobilier' ? 'pricing-highlight' : 'border'}`}>
+                {plan.popular && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs px-3 py-1 rounded-full">
+                    Populaire
+                  </span>
+                )}
+                <div className="pricing-header">
+                  <span className="pricing-icon">{plan.icon}</span>
+                  <h3>{plan.name}</h3>
+                </div>
+                <div className="pricing-price">
+                  <span className="price-amount">{plan.price.toLocaleString()}</span>
+                  <span className="price-currency">FCFA</span>
+                </div>
+                <p className="pricing-description">{plan.details}</p>
+                <ul className="pricing-features">
+                  {plan.details.split(' · ').map((feature, index) => (
+                    <li key={index}>{feature}</li>
+                  ))}
+                </ul>
+                <Link
+                  to={`/create?category=${plan.id}`}
+                  className="btn btn-outline"
+                >
+                  {plan.buttonLabel}
+                </Link>
+              </article>
+            ))}
+          </div>
         </div>
-        <Link to="/register" className="btn btn-primary btn-lg">
-          Créer un compte gratuitement
-        </Link>
+      </section>
+      <section className="w-full px-4 md:px-8 lg:px-12 py-8 md:py-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-8 gap-4">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">Annonces Récentes</h2>
+            <Link to="/announcements" className="btn btn-outline">
+              Voir tout
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="skeleton-grid">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className="skeleton-card">
+                  <div className="skeleton-line title" />
+                  <div className="skeleton-line short" />
+                  <div className="skeleton-line bar" />
+                  <div className="skeleton-line bar" />
+                </div>
+              ))}
+            </div>
+          ) : homeError ? (
+            <div className="alert alert-error">
+              <p>{homeError}</p>
+              <button onClick={fetchRecentAnnouncements} className="btn btn-primary" type="button">
+                Réessayer
+              </button>
+            </div>
+          ) : announcements.length > 0 ? (
+            <div className="announcements-grid">
+              {announcements.map((announcement) => (
+                  <AdCard key={announcement._id || announcement.id || announcement.title} announcement={announcement} onBoost={() => navigate(`/announcements/${announcement._id || announcement.id}`)} />
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <p>Aucune annonce pour le moment. Soyez le premier à publier !</p>
+              <Link to="/create" className="btn btn-primary mt-3">
+                Publier une annonce
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="w-full px-4 md:px-8 lg:px-12 py-8 md:py-16">
+        <div className="max-w-7xl mx-auto bg-gradient-to-br from-blue-700 to-green-600 rounded-2xl p-8 md:p-12 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">Vous êtes professionnel ?</h2>
+            <p className="text-white/95 text-lg">Rejoignez LocaPlus et atteignez des milliers de clients potentiels avec une publication sécurisée.</p>
+          </div>
+          <Link to="/register" className="btn btn-primary btn-lg whitespace-nowrap">
+            Créer un compte gratuitement
+          </Link>
+        </div>
       </section>
     </div>
   );
