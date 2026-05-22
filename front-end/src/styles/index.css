@@ -1006,6 +1006,13 @@ a:hover {
   margin-top: var(--spacing-xl);
 }
 
+@media (max-width: 768px) {
+  .ecosystem-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-md);
+  }
+}
+
 .ecosystem-card {
   height: 260px;
   display: grid;
@@ -1523,8 +1530,16 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg);
   background: linear-gradient(135deg, var(--background) 0%, #e8ecf1 100%);
+}
+
+@media (max-width: 640px) {
+  .auth-page {
+    padding: var(--spacing-md);
+    align-items: flex-start;
+    padding-top: var(--spacing-2xl);
+  }
 }
 
 .auth-card {
@@ -1534,6 +1549,14 @@ a:hover {
   box-shadow: var(--shadow-xl);
   width: 100%;
   max-width: 450px;
+}
+
+@media (max-width: 640px) {
+  .auth-card {
+    max-width: none;
+    margin: 0 var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+  }
 }
 
 .auth-card h2 {
