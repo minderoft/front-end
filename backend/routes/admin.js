@@ -1,33 +1,111 @@
 // filepath: backend/routes/admin.js
-// Routes d'administration pour gérer les utilisateurs et les annonces
+// Routes d'administration pour gérer les statistiques et la modération des annonces
 
 const express = require('express');
 const { pool } = require('../config/db');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Middleware pour vérifier que l'utilisateur est admin
-const requireAdmin = async (req, res, next) => {
+// GET /api/admin/stats - Statistiques globales du tableau de bord
+router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({ error: 'Non authentifié' });
-    }
+    const statsResult = await pool.query(`
+      SELECT
+        (SELECT COUNT(*) FROM users) AS total_users,
+        (SELECT COUNT(*) FROM announcements WHERE status = 'active' AND payment_status = 1) AS total_active_announcements,
+        (SELECT COUNT(*) FROM announcements WHERE is_sponsored = TRUE AND status = 'active' AND payment_status = 1) AS total_sponsored_ads,
+        COALESCE((SELECT SUM(amount) FROM payments WHERE status = 'completed'), 0) AS revenue_estimation
+    `);
 
-    // Pour l'MVP, on considère admin = id en dur ou email spécifique
-    // À remplacer par une colonne `is_admin` dans la table users
-    const adminEmails = ['admin@locaplus.ci', 'contact@locaplus.ci'];
-    if (!adminEmails.includes(req.user.email)) {
-      return res.status(403).json({ error: 'Accès réservé aux administrateurs' });
-    }
-
-    next();
+    res.json({ stats: statsResult.rows[0] });
   } catch (error) {
+    console.error('Erreur récupération stats admin:', error);
     res.status(500).json({ error: 'Erreur serveur' });
   }
-};
+});
 
-// PUT /api/admin/users/:userId/verify - Marquer un utilisateur comme vérifié
+// GET /api/admin/announcements - Liste des annonces pour modération
+router.get('/announcements', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT a.id,
+             a.title,
+             a.status,
+             a.payment_status,
+             a.is_sponsored,
+             a.is_boosted,
+             a.price,
+             a.user_id,
+             u.name AS user_name,
+             u.email AS user_email,
+             a.created_at,
+             a.updated_at
+      FROM announcements a
+      LEFT JOIN users u ON a.user_id = u.id
+      ORDER BY a.created_at DESC
+      LIMIT 500
+    `);
+
+    res.json({ announcements: result.rows });
+  } catch (error) {
+    console.error('Erreur récupération annonces admin:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// PATCH /api/admin/announcements/:id/status - Approuver, suspendre ou modifier le sponsor
+router.patch('/announcements/:id/status', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { action, status, is_sponsored } = req.body;
+
+    const updates = [];
+    const values = [];
+    let paramIndex = 1;
+
+    const resolvedStatus = action === 'approve' ? 'active' : action === 'suspend' ? 'suspended' : status;
+    if (resolvedStatus) {
+      const allowedStatuses = ['active', 'suspended', 'pending'];
+      if (!allowedStatuses.includes(resolvedStatus)) {
+        return res.status(400).json({ error: 'Statut invalide' });
+      }
+      updates.push(`status = $${paramIndex}`);
+      values.push(resolvedStatus);
+      paramIndex += 1;
+    }
+
+    if (typeof is_sponsored !== 'undefined') {
+      updates.push(`is_sponsored = $${paramIndex}`);
+      values.push(is_sponsored === true || is_sponsored === 'true');
+      paramIndex += 1;
+    }
+
+    if (action === 'toggle_sponsored' && typeof is_sponsored === 'undefined') {
+      return res.status(400).json({ error: 'Valeur is_sponsored requise pour toggle_sponsored' });
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: 'Aucune modification valide fournie' });
+    }
+
+    updates.push(`updated_at = CURRENT_TIMESTAMP`);
+    const query = `UPDATE announcements SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING id, title, status, payment_status, is_sponsored, is_boosted, price, user_id, created_at, updated_at`;
+    values.push(id);
+
+    const result = await pool.query(query, values);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Annonce introuvable' });
+    }
+
+    res.json({ announcement: result.rows[0] });
+  } catch (error) {
+    console.error('Erreur mise à jour statut annonce admin:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Optional: existing admin utilities remain available
 router.put('/users/:userId/verify', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -42,10 +120,9 @@ router.put('/users/:userId/verify', authenticateToken, requireAdmin, async (req,
       return res.status(404).json({ error: 'Utilisateur introuvable' });
     }
 
-    const user = result.rows[0];
     res.json({
       message: `Utilisateur ${isVerified ? 'marqué comme vérifié' : 'révocation de la vérification'}`,
-      user
+      user: result.rows[0]
     });
   } catch (error) {
     console.error('Erreur vérification utilisateur:', error);
@@ -53,7 +130,6 @@ router.put('/users/:userId/verify', authenticateToken, requireAdmin, async (req,
   }
 });
 
-// PUT /api/admin/announcements/:announcementId/boost - Activer le boost administrateur
 router.put('/announcements/:announcementId/boost', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { announcementId } = req.params;
@@ -81,7 +157,6 @@ router.put('/announcements/:announcementId/boost', authenticateToken, requireAdm
   }
 });
 
-// GET /api/admin/announcements/boosted - Récupérer toutes les annonces boostées
 router.get('/announcements/boosted', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const result = await pool.query(

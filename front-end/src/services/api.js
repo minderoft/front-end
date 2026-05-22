@@ -182,6 +182,15 @@ export const pricingService = {
 };
 
 // ============================================
+// ADMIN
+// ============================================
+export const adminService = {
+  getStats: () => api.get('/admin/stats'),
+  getAnnouncements: () => api.get('/admin/announcements'),
+  updateAnnouncementStatus: (id, data) => api.patch(`/admin/announcements/${id}/status`, data),
+};
+
+// ============================================
 // CONTACT
 // ============================================
 export const contactService = {

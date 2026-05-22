@@ -8,6 +8,7 @@ import AnnouncementDetail from './pages/AnnouncementDetail';
 import CreateAnnouncement from './pages/CreateAnnouncement';
 import Dashboard from './pages/Dashboard';
 import AdvertiserDashboard from './pages/AdvertiserDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import AdminPricing from './pages/AdminPricing';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -63,6 +64,11 @@ function App() {
           } />
           
           {/* Routes admin */}
+          <Route path="/admin/dashboard" element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } />
           <Route path="/admin/pricing" element={
             <ProtectedRoute>
               <AdminPricing />
