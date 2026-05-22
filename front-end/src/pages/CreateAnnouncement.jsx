@@ -64,6 +64,7 @@ const CreateAnnouncement = () => {
   const [success, setSuccess] = useState('');
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
 
+  const [previewUrls, setPreviewUrls] = useState([]);
   const MIN_PRICE = 5000;
  
   const [formData, setFormData] = useState({
@@ -100,9 +101,23 @@ const CreateAnnouncement = () => {
     fetchPricing();
   }, []);
 
+  // Générer et nettoyer les URLs de prévisualisation pour éviter les fuites mémoire
+  useEffect(() => {
+    const urls = formData.images.map(img => URL.createObjectURL(img));
+    setPreviewUrls(urls);
+    return () => {
+      urls.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [formData.images]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'category') {
+      // Réinitialiser les champs dépendant de la catégorie pour éviter les données périmées
+      setFormData(prev => ({ ...prev, [name]: value, metadata: {}, type: '', subcategory: '' }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
     setFieldErrors(prev => ({ ...prev, [name]: '' }));
     setError('');
     setSuccess('');
@@ -121,7 +136,13 @@ const CreateAnnouncement = () => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    setFormData(prev => ({ ...prev, images: [...prev.images, ...files] }));
+    const remaining = 10 - formData.images.length;
+    if (remaining <= 0) {
+      setFieldErrors(prev => ({ ...prev, images: 'Limite de 10 images atteinte.' }));
+      return;
+    }
+    const newFiles = files.slice(0, remaining);
+    setFormData(prev => ({ ...prev, images: [...prev.images, ...newFiles] }));
     setFieldErrors(prev => ({ ...prev, images: '' }));
     setError('');
     setSuccess('');
@@ -535,7 +556,7 @@ const CreateAnnouncement = () => {
                   {formData.images.map((img, index) => (
                     <div key={index} style={{ position: 'relative' }}>
                       <img 
-                        src={URL.createObjectURL(img)} 
+                        src={previewUrls[index]} 
                         alt={`Preview ${index + 1}`}
                         style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }}
                         onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder.svg'; }}

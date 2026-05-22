@@ -66,7 +66,7 @@ const Announcements = () => {
       if (!params.page) params.page = 1;
       const response = await announcementService.getAll(params);
       const results = response.data?.announcements ?? [];
-      console.log('DEBUG Announcements.jsx - Annonces chargées:', (results?.length || 0), results);
+      if (import.meta.env.DEV) console.log('DEBUG Announcements.jsx - Annonces chargées:', (results?.length || 0), results);
       setAnnouncements(Array.isArray(results) ? results : []);
       setPagination(prev => ({
         ...prev,

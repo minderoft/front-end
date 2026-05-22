@@ -18,6 +18,7 @@ const AnnouncementDetail = () => {
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
   const [boostLoading, setBoostLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchAnnouncement = async () => {
@@ -26,6 +27,7 @@ const AnnouncementDetail = () => {
         setAnnouncement(response.data.announcement);
       } catch (error) {
         console.error('Erreur:', error);
+        setError('Impossible de charger cette annonce. Vérifiez votre connexion et réessayez.');
       } finally {
         setLoading(false);
       }
@@ -52,6 +54,18 @@ const AnnouncementDetail = () => {
     return (
       <div className="loading">
         <div className="spinner"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="announcement-detail text-center">
+        <h2>Erreur de chargement</h2>
+        <p style={{ color: 'var(--text-light)', marginBottom: 'var(--spacing-md)' }}>{error}</p>
+        <Link to="/announcements" className="btn btn-primary mt-3">
+          Retour aux annonces
+        </Link>
       </div>
     );
   }
@@ -192,7 +206,7 @@ const AnnouncementDetail = () => {
       </Link>
 
       {/* Galerie d'images - Améliorée */}
-      {(images?.length || 0) > 0 ? (
+      {allImages.length > 0 ? (
         <div className="announcement-gallery">
           {/* Image principale */}
           <div>
@@ -222,9 +236,9 @@ const AnnouncementDetail = () => {
           </div>
 
           {/* Miniatures - Visible seulement s'il y a plusieurs images */}
-          {Array.isArray(images) && (images?.length || 0) > 1 && (
+          {allImages.length > 1 && (
             <div className="announcement-thumbnails">
-              {images.map((img, index) => {
+              {allImages.map((img, index) => {
                 const thumbUrl = resolveImageUrl(img);
                 return (
                   <img

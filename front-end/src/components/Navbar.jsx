@@ -9,8 +9,9 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [unreadMessages, setUnreadMessages] = useState(2); // Mock data
-  const [notificationCount, setNotificationCount] = useState(3); // Mock data
+  const [isHelpMenuOpen, setIsHelpMenuOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const handleLogout = () => {
     logout();
@@ -24,6 +25,7 @@ const Navbar = () => {
     const handleKey = (event) => {
       if (event.key === 'Escape') {
         setIsUserMenuOpen(false);
+        setIsHelpMenuOpen(false);
       }
     };
 
@@ -110,12 +112,13 @@ const Navbar = () => {
               )}
             </Link>
             <button
-              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              onClick={() => setIsHelpMenuOpen(!isHelpMenuOpen)}
               className={`relative flex items-center gap-1 pb-1 border-b-2 transition-colors ${
-                isUserMenuOpen ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+                isHelpMenuOpen ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
               title="Menu"
-              aria-expanded={isUserMenuOpen}
+              aria-expanded={isHelpMenuOpen}
+              aria-haspopup="true"
             >
               <HelpCircle className="w-6 h-6 flex-shrink-0" />
             </button>
@@ -129,6 +132,7 @@ const Navbar = () => {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-sm font-medium"
                   aria-expanded={isUserMenuOpen}
+                  aria-haspopup="true"
                   aria-label="Menu utilisateur"
                 >
                   <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
@@ -185,35 +189,29 @@ const Navbar = () => {
       </nav>
 
       {/* More Options Dropdown (Desktop) */}
-      {isUserMenuOpen && location.pathname !== '/help' && location.pathname !== '/faq' && location.pathname !== '/contact' && (
-        <div className="hidden md:block fixed top-16 right-6 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+      {isHelpMenuOpen && location.pathname !== '/help' && location.pathname !== '/faq' && location.pathname !== '/contact' && (
+        <div className="hidden md:block fixed top-16 right-6 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50" role="menu">
           <Link
             to="/help"
-            onClick={() => {
-              setIsUserMenuOpen(false);
-              navigate('/help');
-            }}
+            onClick={() => setIsHelpMenuOpen(false)}
             className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-t-lg transition-colors"
+            role="menuitem"
           >
             Aide
           </Link>
           <Link
             to="/faq"
-            onClick={() => {
-              setIsUserMenuOpen(false);
-              navigate('/faq');
-            }}
+            onClick={() => setIsHelpMenuOpen(false)}
             className="block px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+            role="menuitem"
           >
             FAQ
           </Link>
           <Link
             to="/contact"
-            onClick={() => {
-              setIsUserMenuOpen(false);
-              navigate('/contact');
-            }}
+            onClick={() => setIsHelpMenuOpen(false)}
             className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-b-lg transition-colors"
+            role="menuitem"
           >
             Contact
           </Link>
