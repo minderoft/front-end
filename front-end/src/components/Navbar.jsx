@@ -1,50 +1,28 @@
 // filepath: front-end/src/components/Navbar.jsx
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Home, MessageCircle, Bell, HelpCircle, LogOut, LogIn, UserPlus } from 'lucide-react';
+import { Home, ShoppingBag, MessageCircle, Bell, HelpCircle, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(2); // Mock data
   const [notificationCount, setNotificationCount] = useState(3); // Mock data
 
-  const handleNavClick = () => {
-    setIsMenuOpen(false);
-  };
-
   const handleLogout = () => {
     logout();
     navigate('/');
-    setIsMenuOpen(false);
     setIsUserMenuOpen(false);
   };
 
   const isActive = (path) => location.pathname === path;
 
   useEffect(() => {
-    setIsMenuOpen(false);
-  }, [location.pathname]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
     const handleKey = (event) => {
       if (event.key === 'Escape') {
-        setIsMenuOpen(false);
         setIsUserMenuOpen(false);
       }
     };
@@ -53,17 +31,10 @@ const Navbar = () => {
     return () => window.removeEventListener('keydown', handleKey);
   }, []);
 
-  useEffect(() => {
-    document.body.style.overflow = isMenuOpen ? 'hidden' : '';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isMenuOpen]);
-
   return (
     <>
       {/* Top Header Bar */}
-      <nav className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-4 md:px-6 h-16 w-full max-w-screen-xl mx-auto">
           {/* Logo */}
           <Link to="/" className="navbar-brand flex items-center gap-2 font-bold text-lg md:text-xl">
@@ -90,8 +61,17 @@ const Navbar = () => {
             <span className="hidden md:inline">LocaPlus</span>
           </Link>
 
-          {/* Desktop Navigation Icons */}
-          <div className="hidden md:flex items-center gap-6 text-gray-500">
+          {/* Primary Navigation Icons (centered + horizontal scroll on small screens) */}
+          <div className="flex-1 flex items-center justify-center gap-4 sm:gap-6 text-gray-500 overflow-x-auto whitespace-nowrap px-2">
+            <Link
+              to="/"
+              className={`flex items-center gap-1 pb-1 border-b-2 transition-colors ${
+                isActive('/') ? 'border-blue-600 text-blue-600' : 'border-transparent hover:text-gray-700'
+              }`}
+              title="Accueil"
+            >
+              <Home className="w-6 h-6 flex-shrink-0" />
+            </Link>
             <Link
               to="/announcements"
               className={`flex items-center gap-1 pb-1 border-b-2 transition-colors ${
@@ -99,7 +79,7 @@ const Navbar = () => {
               }`}
               title="Annonces"
             >
-              <Home className="w-6 h-6 flex-shrink-0" />
+              <ShoppingBag className="w-6 h-6 flex-shrink-0" />
             </Link>
             <Link
               to="/messages"
@@ -202,146 +182,8 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Hamburger */}
-          <button
-            className="md:hidden flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-            aria-expanded={isMenuOpen}
-            aria-controls="navbar-mobile-menu"
-          >
-            {isMenuOpen ? (
-              <X size={24} className="text-gray-700" />
-            ) : (
-              <Menu size={24} className="text-gray-700" />
-            )}
-          </button>
-        </div>
-
-        {/* Mobile Dropdown Menu */}
-        {isMenuOpen && (
-          <div id="navbar-mobile-menu" className="md:hidden border-t border-gray-200 bg-white">
-            <div className="px-4 py-3 space-y-2">
-              <Link
-                to="/announcements"
-                onClick={handleNavClick}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  isActive('/announcements') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <Home size={20} />
-                <span>Annonces</span>
-              </Link>
-              <Link
-                to="/messages"
-                onClick={handleNavClick}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors relative ${
-                  isActive('/messages') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <MessageCircle size={20} />
-                <span>Messages</span>
-                {unreadMessages > 0 && (
-                  <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {unreadMessages}
-                  </span>
-                )}
-              </Link>
-              <Link
-                to="/notifications"
-                onClick={handleNavClick}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors relative ${
-                  isActive('/notifications') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <Bell size={20} />
-                <span>Notifications</span>
-                {notificationCount > 0 && (
-                  <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {notificationCount}
-                  </span>
-                )}
-              </Link>
-              <Link
-                to="/help"
-                onClick={handleNavClick}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  isActive('/help') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <HelpCircle size={20} />
-                <span>Aide</span>
-              </Link>
-              <Link
-                to="/faq"
-                onClick={handleNavClick}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  isActive('/faq') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <HelpCircle size={20} />
-                <span>FAQ</span>
-              </Link>
-              <Link
-                to="/contact"
-                onClick={handleNavClick}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  isActive('/contact') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <MessageCircle size={20} />
-                <span>Contact</span>
-              </Link>
-
-              <div className="border-t border-gray-200 pt-3 mt-3 space-y-2">
-                {user ? (
-                  <>
-                    <Link
-                      to="/dashboard"
-                      onClick={handleNavClick}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      Mon Dashboard
-                    </Link>
-                    <Link
-                      to="/create"
-                      onClick={handleNavClick}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-semibold"
-                    >
-                      + Publier une annonce
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      <LogOut size={20} />
-                      Déconnexion
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to="/login"
-                      onClick={handleNavClick}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      <LogIn size={20} />
-                      Connexion
-                    </Link>
-                    <Link
-                      to="/register"
-                      onClick={handleNavClick}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-semibold"
-                    >
-                      <UserPlus size={20} />
-                      Inscription
-                    </Link>
-                  </>
-                )}
-              </div>
-            </div>
           </div>
-        )}
+        </div>
       </nav>
 
       {/* More Options Dropdown (Desktop) */}
