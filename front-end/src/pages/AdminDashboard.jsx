@@ -92,7 +92,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const sponsoredAnnouncements = announcements.filter((item) => item.is_sponsored && item.status === 'active');
+  const sponsoredAnnouncements = Array.isArray(announcements) ? announcements.filter((item) => item.is_sponsored && item.status === 'active') : [];
 
   if (!user || loading || user.role !== 'admin') {
     return null;
@@ -196,7 +196,7 @@ const AdminDashboard = () => {
                       <tr>
                         <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: '#6b7280' }}>Chargement des annonces...</td>
                       </tr>
-                    ) : announcements.length === 0 ? (
+                    ) : (announcements?.length || 0) === 0 ? (
                       <tr>
                         <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: '#6b7280' }}>Aucune annonce trouvée</td>
                       </tr>
@@ -263,7 +263,7 @@ const AdminDashboard = () => {
               <div style={{ display: 'grid', gap: '14px' }}>
                 {loadingAnnouncements ? (
                   <div style={{ padding: '22px', backgroundColor: '#ffffff', borderRadius: '20px', border: '1px solid #e5e7eb' }}>Chargement...</div>
-                ) : sponsoredAnnouncements.length === 0 ? (
+                ) : (sponsoredAnnouncements?.length || 0) === 0 ? (
                   <div style={{ padding: '22px', backgroundColor: '#ffffff', borderRadius: '20px', border: '1px solid #e5e7eb' }}>Aucune annonce sponsorisée actuellement.</div>
                 ) : (
                   sponsoredAnnouncements.map((announcement) => (

@@ -66,7 +66,7 @@ const Announcements = () => {
       if (!params.page) params.page = 1;
       const response = await announcementService.getAll(params);
       const results = response.data?.announcements ?? [];
-      console.log('DEBUG Announcements.jsx - Annonces chargées:', results.length, results);
+      console.log('DEBUG Announcements.jsx - Annonces chargées:', (results?.length || 0), results);
       setAnnouncements(Array.isArray(results) ? results : []);
       setPagination(prev => ({
         ...prev,
@@ -251,7 +251,7 @@ const Announcements = () => {
             Réessayer
           </button>
         </div>
-      ) : announcements.length > 0 ? (
+      ) : (announcements?.length || 0) > 0 ? (
         <>
           <p className="text-muted mb-3">
             {pagination.total} annonce{pagination.total !== 1 ? 's' : ''} trouvée{pagination.total !== 1 ? 's' : ''}

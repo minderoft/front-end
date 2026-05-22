@@ -67,9 +67,11 @@ const AnnouncementDetail = () => {
     );
   }
 
-  const images = parseImages(announcement.images);
-  const allImages = announcement.image_url ? [announcement.image_url, ...images.filter(i => i !== announcement.image_url)] : images;
-  const safeIndex = Math.max(0, Math.min(selectedImage, allImages.length - 1));
+  const images = Array.isArray(parseImages(announcement.images)) ? parseImages(announcement.images) : [];
+  const allImages = Array.isArray(images)
+    ? (announcement.image_url ? [announcement.image_url, ...images.filter(i => i !== announcement.image_url)] : images)
+    : (announcement.image_url ? [announcement.image_url] : []);
+  const safeIndex = Math.max(0, Math.min(selectedImage, Math.max(0, (allImages?.length || 0) - 1)));
   const selectedImageUrl = resolveImageUrl(allImages[safeIndex]);
 
   if (import.meta.env.DEV) {
@@ -190,7 +192,7 @@ const AnnouncementDetail = () => {
       </Link>
 
       {/* Galerie d'images - Améliorée */}
-      {images.length > 0 ? (
+      {(images?.length || 0) > 0 ? (
         <div className="announcement-gallery">
           {/* Image principale */}
           <div>
@@ -220,7 +222,7 @@ const AnnouncementDetail = () => {
           </div>
 
           {/* Miniatures - Visible seulement s'il y a plusieurs images */}
-          {images && Array.isArray(images) && images.length > 1 && (
+          {Array.isArray(images) && (images?.length || 0) > 1 && (
             <div className="announcement-thumbnails">
               {images.map((img, index) => {
                 const thumbUrl = resolveImageUrl(img);
@@ -394,7 +396,7 @@ const AnnouncementDetail = () => {
         </p>
 
         {/* Métadonnées spécifiques selon la catégorie */}
-        {detailsEntries.length > 0 && (
+        {(detailsEntries?.length || 0) > 0 && (
           <>
             <hr style={{ margin: 'var(--spacing-lg) 0', border: 'none', borderTop: '1px solid var(--border)' }} />
             <h3 className="mb-2">Détails</h3>

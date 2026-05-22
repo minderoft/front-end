@@ -58,7 +58,7 @@ const AdvertiserDashboard = () => {
 
           <section style={{ marginTop: 20 }}>
             <h3>Vos annonces sponsorisées</h3>
-            {listings.length === 0 ? (
+            {(listings?.length || 0) === 0 ? (
               <div className="empty-state">Aucune annonce sponsorisée pour le moment.</div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12, marginTop: 12 }}>

@@ -45,7 +45,7 @@ const Chat = () => {
       setConversations(list);
       
       // Si on a un receiverId, chercher cette conversation
-      if (receiverId && list.length === 0) {
+      if (receiverId && (list?.length || 0) === 0) {
         setLoading(false);
       }
     } catch (err) {
@@ -192,11 +192,11 @@ const Chat = () => {
           overflowY: 'auto',
           backgroundColor: '#fff'
         }}>
-          {loading && conversations.length === 0 ? (
+          {loading && (conversations?.length || 0) === 0 ? (
             <div style={{ padding: '16px', color: '#999', fontSize: '13px' }}>
               Chargement...
             </div>
-          ) : conversations.length === 0 ? (
+          ) : (conversations?.length || 0) === 0 ? (
             <div style={{ padding: '16px', color: '#999', fontSize: '13px' }}>
               Aucune conversation
             </div>
@@ -287,7 +287,7 @@ const Chat = () => {
               gap: '8px',
               backgroundColor: '#f5f5f5'
             }}>
-              {messages.length === 0 ? (
+              {(messages?.length || 0) === 0 ? (
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',

@@ -177,7 +177,7 @@ const CreateAnnouncement = () => {
       }
     }
 
-    if (formData.images.length === 0) {
+    if ((formData.images?.length || 0) === 0) {
       errors.images = 'Veuillez ajouter au moins une image.';
     }
 
@@ -322,7 +322,7 @@ const CreateAnnouncement = () => {
             </div>
 
             {/* Type (pour immobilier et véhicule) */}
-            {selectedCategory?.types.length > 0 && (
+            {(selectedCategory?.types?.length || 0) > 0 && (
               <div className="form-group">
                 <label className="form-label">Type *</label>
                 <select
@@ -530,7 +530,7 @@ const CreateAnnouncement = () => {
                 multiple
               />
               {fieldErrors.images && <span className="form-error">{fieldErrors.images}</span>}
-              {formData.images.length > 0 && (
+              {(formData.images?.length || 0) > 0 && (
                 <div className="d-flex gap-2 mt-2" style={{ flexWrap: 'wrap' }}>
                   {formData.images.map((img, index) => (
                     <div key={index} style={{ position: 'relative' }}>
@@ -538,6 +538,7 @@ const CreateAnnouncement = () => {
                         src={URL.createObjectURL(img)} 
                         alt={`Preview ${index + 1}`}
                         style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }}
+                        onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder.svg'; }}
                       />
                       <button
                         type="button"

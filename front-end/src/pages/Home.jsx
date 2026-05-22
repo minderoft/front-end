@@ -130,7 +130,7 @@ const Home = () => {
       const results = announcementsRes.data?.announcements ?? [];
       const total = Number(announcementsRes.data?.pagination?.total);
       if (import.meta.env.DEV) {
-        console.log('DEBUG Home.jsx - Annonces chargées:', results.length, results);
+        console.log('DEBUG Home.jsx - Annonces chargées:', (results?.length || 0), results);
       }
       setAnnouncements(Array.isArray(results) ? results : []);
       setRecentTotal(Number.isFinite(total) ? total : null);
@@ -196,7 +196,7 @@ const Home = () => {
           const response = await announcementService.getNearby(latitude, longitude);
           const nearbyResults = response.data?.announcements ?? [];
           if (import.meta.env.DEV) {
-            console.log('DEBUG Annonces proches chargées:', nearbyResults.length, nearbyResults);
+            console.log('DEBUG Annonces proches chargées:', (nearbyResults?.length || 0), nearbyResults);
           }
           setNearbyAnnouncements(Array.isArray(nearbyResults) ? nearbyResults : []);
         } catch (error) {
@@ -286,7 +286,7 @@ const Home = () => {
               <div key={i} className="skeleton-card" style={{ width: 300, marginRight: 12 }} />
             ))}
           </div>
-        ) : (recommendedHasError || recommendedAds.filter((a) => a && (a.id || a._id || a.title)).length === 0) ? (
+        ) : (recommendedHasError || (recommendedAds?.filter((a) => a && (a.id || a._id || a.title))?.length || 0) === 0) ? (
           <div className="empty-state" style={{ textAlign: 'center', padding: '2rem' }}>
             <div style={{ fontSize: 40, color: 'var(--muted)', marginBottom: 12 }} aria-hidden>
               <Sparkles />
@@ -296,7 +296,7 @@ const Home = () => {
           </div>
         ) : (
           <div className="recommended-slider" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 12 }}>
-            {recommendedAds.filter((a) => a && (a.id || a._id || a.title)).map((announcement) => (
+            {recommendedAds?.filter((a) => a && (a.id || a._id || a.title)).map((announcement) => (
               <div key={announcement.id || announcement._id || announcement.title} style={{ minWidth: 300 }}>
                 <AdCard announcement={announcement} onBoost={() => navigate(`/announcements/${announcement.id || announcement._id}`)} />
               </div>
@@ -356,10 +356,10 @@ const Home = () => {
           </div>
         ) : nearbySearched ? (
           <>
-            {nearbyAnnouncements.length > 0 ? (
+            {(nearbyAnnouncements?.length || 0) > 0 ? (
               <>
                 <p className="text-muted mb-4">
-                  {nearbyAnnouncements.length} annonce{nearbyAnnouncements.length > 1 ? 's' : ''} trouvée{nearbyAnnouncements.length > 1 ? 's' : ''} autour de vous
+                  {nearbyAnnouncements?.length || 0} annonce{(nearbyAnnouncements?.length || 0) > 1 ? 's' : ''} trouvée{(nearbyAnnouncements?.length || 0) > 1 ? 's' : ''} autour de vous
                 </p>
                 <div className="announcements-grid">
                   {nearbyAnnouncements.map((announcement) => (

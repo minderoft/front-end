@@ -40,7 +40,8 @@ const Messages = () => {
 
   const handleSend = () => {
     if (newMessage.trim()) {
-      setMessages([...messages, { id: messages.length + 1, sender: 'me', text: newMessage, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+      const nextId = (messages?.length || 0) + 1;
+    setMessages([...(messages || []), { id: nextId, sender: 'me', text: newMessage, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
       setNewMessage('');
     }
   };

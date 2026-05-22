@@ -69,12 +69,12 @@ const Favorites = () => {
     <div className="favorites-container">
       <div className="favorites-header">
         <h1>♥ Mes Favoris</h1>
-        <p>{favorites.length} annonce{favorites.length !== 1 ? 's' : ''} sauvegardée{favorites.length !== 1 ? 's' : ''}</p>
+        <p>{(favorites?.length || 0)} annonce{(favorites?.length || 0) !== 1 ? 's' : ''} sauvegardée{(favorites?.length || 0) !== 1 ? 's' : ''}</p>
       </div>
 
       {error && <div className="error-message">{error}</div>}
 
-      {favorites.length === 0 ? (
+      {(favorites?.length || 0) === 0 ? (
         <div className="empty-state">
           <p>Vous n'avez pas encore de favoris</p>
           <button onClick={() => navigate('/announcements')} className="btn-primary">
@@ -84,7 +84,7 @@ const Favorites = () => {
       ) : (
         <div className="favorites-grid">
           {favorites.map((favorite) => {
-            const parsedImages = parseImages(favorite.images);
+            const parsedImages = Array.isArray(parseImages(favorite.images)) ? parseImages(favorite.images) : [];
             const displayImage = parsedImages[0] || '/placeholder.svg';
 
             return (

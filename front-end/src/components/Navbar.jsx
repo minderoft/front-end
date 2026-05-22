@@ -63,8 +63,8 @@ const Navbar = () => {
   return (
     <>
       {/* Top Header Bar */}
-      <nav className="navbar relative bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="flex items-center justify-between px-4 md:px-6 h-16">
+      <nav className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div className="flex items-center justify-between px-4 md:px-6 h-16 w-full max-w-screen-xl mx-auto">
           {/* Logo */}
           <Link to="/" className="navbar-brand flex items-center gap-2 font-bold text-lg md:text-xl">
             <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -91,15 +91,15 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation Icons */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6 text-gray-500">
             <Link
               to="/announcements"
               className={`flex items-center gap-1 pb-1 border-b-2 transition-colors ${
-                isActive('/announcements') ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+                isActive('/announcements') ? 'border-blue-600 text-blue-600' : 'border-transparent hover:text-gray-700'
               }`}
               title="Annonces"
             >
-              <Home size={24} />
+              <Home className="w-6 h-6 flex-shrink-0" />
             </Link>
             <Link
               to="/messages"
@@ -108,7 +108,7 @@ const Navbar = () => {
               }`}
               title="Messages"
             >
-              <MessageCircle size={24} />
+              <MessageCircle className="w-6 h-6 flex-shrink-0" />
               {unreadMessages > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {unreadMessages}
@@ -122,7 +122,7 @@ const Navbar = () => {
               }`}
               title="Notifications"
             >
-              <Bell size={24} />
+              <Bell className="w-6 h-6 flex-shrink-0" />
               {notificationCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {notificationCount}
@@ -137,7 +137,7 @@ const Navbar = () => {
               title="Menu"
               aria-expanded={isUserMenuOpen}
             >
-              <HelpCircle size={24} />
+              <HelpCircle className="w-6 h-6 flex-shrink-0" />
             </button>
           </div>
 
@@ -154,7 +154,7 @@ const Navbar = () => {
                   <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
                     {user.name?.charAt(0).toUpperCase() || 'U'}
                   </div>
-                  {user.name}
+                  <span className="max-w-[120px] truncate">{user.name}</span>
                 </button>
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">

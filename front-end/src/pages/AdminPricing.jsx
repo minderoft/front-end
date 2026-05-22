@@ -109,7 +109,7 @@ const AdminPricing = () => {
           <div className="spinner"></div>
           <p>Chargement des tarifs...</p>
         </div>
-      ) : pricing.length === 0 ? (
+      ) : (pricing?.length || 0) === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px' }}>
           <p style={{ color: 'var(--text-light)' }}>Aucun tarif disponible</p>
         </div>

@@ -48,7 +48,7 @@ const Register = () => {
 
     if (!formData.password) {
       errors.password = 'Le mot de passe est requis.';
-    } else if (formData.password.length < 6) {
+    } else if ((formData.password?.length || 0) < 6) {
       errors.password = 'Le mot de passe doit contenir au moins 6 caractères.';
     }
 

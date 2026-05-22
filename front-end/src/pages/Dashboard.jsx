@@ -27,7 +27,7 @@ const Dashboard = () => {
         setAnnouncements(Array.isArray(response.data.announcements) ? response.data.announcements : []);
       } else if (activeTab === 'payments') {
         const response = await paymentService.getHistory();
-        setPayments(response.data.payments);
+        setPayments(Array.isArray(response.data.payments) ? response.data.payments : []);
       }
     } catch (error) {
       console.error('Erreur fetchData:', error);
@@ -49,9 +49,9 @@ const Dashboard = () => {
   };
 
   const stats = {
-    total: announcements.length,
-    active: announcements.filter(a => a.status === 'active').length,
-    pending: announcements.filter(a => a.status === 'pending').length,
+    total: (announcements?.length || 0),
+    active: Array.isArray(announcements) ? announcements.filter(a => a.status === 'active').length : 0,
+    pending: Array.isArray(announcements) ? announcements.filter(a => a.status === 'pending').length : 0,
   };
 
   const statusLabels = {
@@ -127,7 +127,7 @@ const Dashboard = () => {
                     Réessayer
                   </button>
                 </div>
-              ) : announcements.length > 0 ? (
+              ) : (announcements?.length || 0) > 0 ? (
                 <div className="announcements-grid">
                   {announcements.map(announcement => {
                     const parsedImages = parseImages(announcement.images);
@@ -236,7 +236,7 @@ const Dashboard = () => {
 
           {activeTab === 'payments' && (
             <>
-              {payments.length > 0 ? (
+              {(payments?.length || 0) > 0 ? (
                 <div className="card" style={{ padding: 0 }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>

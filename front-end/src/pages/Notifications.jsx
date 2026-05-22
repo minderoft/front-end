@@ -74,7 +74,7 @@ const Notifications = () => {
     );
   };
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = (notifications?.filter((n) => !n.read)?.length || 0);
 
   const getIcon = (type) => {
     switch (type) {
@@ -115,7 +115,7 @@ const Notifications = () => {
         </div>
 
         {/* Notifications List */}
-        {notifications.length === 0 ? (
+        {(notifications?.length || 0) === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
             <Bell size={48} className="mx-auto text-gray-300 mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune notification</h3>
