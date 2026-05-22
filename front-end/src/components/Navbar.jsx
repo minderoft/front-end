@@ -28,18 +28,17 @@ const Navbar = () => {
         setIsHelpMenuOpen(false);
       }
     };
-
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, []);
 
   return (
     <>
-      {/* Top Header Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
-        <div className="flex items-center justify-between px-4 md:px-6 h-16 w-full max-w-screen-xl mx-auto">
+      <nav className="navbar">
+        <div className="navbar-container">
+
           {/* Logo */}
-          <Link to="/" className="navbar-brand flex items-center gap-2 font-bold text-lg md:text-xl">
+          <Link to="/" className="navbar-brand">
             <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect width="40" height="40" rx="8" fill="#1E3A5F"/>
               <rect x="4" y="4" width="15" height="15" rx="2" fill="#FF6B35" opacity="0.9"/>
@@ -60,105 +59,94 @@ const Navbar = () => {
               <rect x="28" y="28" width="3" height="3" fill="white" rx="0.3"/>
               <rect x="33" y="28" width="3" height="3" fill="white" rx="0.3"/>
             </svg>
-            <span className="hidden md:inline">LocaPlus</span>
+            <span className="navbar-brand-text">LocaPlus</span>
           </Link>
 
-          {/* Primary Navigation Icons (centered + horizontal scroll on small screens) */}
-          <div className="flex-1 flex items-center justify-center gap-4 sm:gap-6 text-gray-500 overflow-x-auto whitespace-nowrap px-2">
+          {/* Navigation Icons */}
+          <div className="navbar-nav">
             <Link
               to="/"
-              className={`flex items-center gap-1 pb-1 border-b-2 transition-colors ${
-                isActive('/') ? 'border-blue-600 text-blue-600' : 'border-transparent hover:text-gray-700'
-              }`}
+              className={`navbar-nav-link${isActive('/') ? ' active' : ''}`}
               title="Accueil"
             >
-              <Home className="w-6 h-6 flex-shrink-0" />
+              <Home size={24} />
             </Link>
             <Link
               to="/announcements"
-              className={`flex items-center gap-1 pb-1 border-b-2 transition-colors ${
-                isActive('/announcements') ? 'border-blue-600 text-blue-600' : 'border-transparent hover:text-gray-700'
-              }`}
+              className={`navbar-nav-link${isActive('/announcements') ? ' active' : ''}`}
               title="Annonces"
             >
-              <ShoppingBag className="w-6 h-6 flex-shrink-0" />
+              <ShoppingBag size={24} />
             </Link>
             <Link
               to="/messages"
-              className={`relative flex items-center gap-1 pb-1 border-b-2 transition-colors ${
-                isActive('/messages') ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+              className={`navbar-nav-link${isActive('/messages') ? ' active' : ''}`}
               title="Messages"
             >
-              <MessageCircle className="w-6 h-6 flex-shrink-0" />
+              <MessageCircle size={24} />
               {unreadMessages > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                  {unreadMessages}
-                </span>
+                <span className="navbar-badge">{unreadMessages}</span>
               )}
             </Link>
             <Link
               to="/notifications"
-              className={`relative flex items-center gap-1 pb-1 border-b-2 transition-colors ${
-                isActive('/notifications') ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+              className={`navbar-nav-link${isActive('/notifications') ? ' active' : ''}`}
               title="Notifications"
             >
-              <Bell className="w-6 h-6 flex-shrink-0" />
+              <Bell size={24} />
               {notificationCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                  {notificationCount}
-                </span>
+                <span className="navbar-badge">{notificationCount}</span>
               )}
             </Link>
             <button
               onClick={() => setIsHelpMenuOpen(!isHelpMenuOpen)}
-              className={`relative flex items-center gap-1 pb-1 border-b-2 transition-colors ${
-                isHelpMenuOpen ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-              title="Menu"
+              className={`navbar-nav-link${isHelpMenuOpen ? ' active' : ''}`}
+              title="Aide"
               aria-expanded={isHelpMenuOpen}
               aria-haspopup="true"
             >
-              <HelpCircle className="w-6 h-6 flex-shrink-0" />
+              <HelpCircle size={24} />
             </button>
           </div>
 
           {/* Desktop Auth Actions */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="navbar-auth">
             {user ? (
-              <div className="relative">
+              <div className="navbar-user-menu">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-sm font-medium"
+                  className="navbar-user-btn"
                   aria-expanded={isUserMenuOpen}
                   aria-haspopup="true"
                   aria-label="Menu utilisateur"
                 >
-                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
+                  <div className="navbar-avatar">
                     {user.name?.charAt(0).toUpperCase() || 'U'}
                   </div>
-                  <span className="max-w-[120px] truncate">{user.name}</span>
+                  <span className="navbar-username">{user.name}</span>
                 </button>
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div className="navbar-dropdown" role="menu">
                     <Link
                       to="/dashboard"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-t-lg transition-colors"
+                      className="navbar-dropdown-item"
+                      role="menuitem"
                     >
                       Mon Dashboard
                     </Link>
                     <Link
                       to="/create"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors font-semibold text-blue-600"
+                      className="navbar-dropdown-item navbar-dropdown-item--highlight"
+                      role="menuitem"
                     >
                       + Publier une annonce
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-b-lg transition-colors flex items-center gap-2 border-t border-gray-200"
+                      className="navbar-dropdown-item navbar-dropdown-item--separator"
+                      role="menuitem"
                     >
                       <LogOut size={16} />
                       Déconnexion
@@ -168,33 +156,26 @@ const Navbar = () => {
               </div>
             ) : (
               <>
-                <Link
-                  to="/login"
-                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors text-sm font-medium"
-                  onClick={() => setIsUserMenuOpen(false)}
-                >
+                <Link to="/login" className="btn btn-ghost btn-sm">
                   Connexion
                 </Link>
-                <Link
-                  to="/register"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                  onClick={() => setIsUserMenuOpen(false)}
-                >
+                <Link to="/register" className="btn btn-primary btn-sm">
                   Inscription
                 </Link>
               </>
             )}
           </div>
+
         </div>
       </nav>
 
-      {/* More Options Dropdown (Desktop) */}
-      {isHelpMenuOpen && location.pathname !== '/help' && location.pathname !== '/faq' && location.pathname !== '/contact' && (
-        <div className="hidden md:block fixed top-16 right-6 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50" role="menu">
+      {/* Help Dropdown */}
+      {isHelpMenuOpen && !['/help', '/faq', '/contact'].includes(location.pathname) && (
+        <div className="navbar-help-dropdown" role="menu">
           <Link
             to="/help"
             onClick={() => setIsHelpMenuOpen(false)}
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-t-lg transition-colors"
+            className="navbar-dropdown-item"
             role="menuitem"
           >
             Aide
@@ -202,7 +183,7 @@ const Navbar = () => {
           <Link
             to="/faq"
             onClick={() => setIsHelpMenuOpen(false)}
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+            className="navbar-dropdown-item"
             role="menuitem"
           >
             FAQ
@@ -210,7 +191,7 @@ const Navbar = () => {
           <Link
             to="/contact"
             onClick={() => setIsHelpMenuOpen(false)}
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-b-lg transition-colors"
+            className="navbar-dropdown-item"
             role="menuitem"
           >
             Contact

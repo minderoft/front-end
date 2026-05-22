@@ -323,19 +323,21 @@ a:hover {
    Navigation
    ============================================ */
 .navbar {
-  position: sticky;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
+  width: 100%;
   height: 64px;
-  background: var(--secondary);
-  border-bottom: 1px solid rgba(26, 86, 219, 0.08);
-  box-shadow: 0 8px 20px rgba(26, 86, 219, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(26, 86, 219, 0.06);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
   z-index: 1000;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 var(--spacing-lg);
+  padding: 0;
 }
 
 .navbar-brand {
@@ -516,6 +518,211 @@ a:hover {
   align-items: center;
   gap: var(--spacing-md);
   flex-shrink: 0;
+}
+
+/* Navbar sub-components */
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-xl);
+  height: 100%;
+  gap: var(--spacing-md);
+}
+
+.navbar-brand-text {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .navbar-brand-text {
+    display: inline;
+  }
+}
+
+.navbar-nav {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xl);
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 0 var(--spacing-sm);
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.navbar-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.navbar-nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  background: none;
+  color: var(--text-light);
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.navbar-nav-link:hover {
+  color: #374151;
+  text-decoration: none;
+}
+
+.navbar-nav-link.active {
+  border-bottom-color: var(--primary);
+  color: var(--primary);
+}
+
+.navbar-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.navbar-auth {
+  display: none;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .navbar-auth {
+    display: flex;
+  }
+}
+
+.navbar-user-menu {
+  position: relative;
+}
+
+.navbar-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  background: #f3f4f6;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.navbar-user-btn:hover {
+  background: #e5e7eb;
+}
+
+.navbar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.navbar-username {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navbar-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 192px;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  z-index: 1001;
+  overflow: hidden;
+}
+
+.navbar-help-dropdown {
+  position: fixed;
+  top: 72px;
+  right: 24px;
+  min-width: 192px;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  z-index: 1001;
+  overflow: hidden;
+}
+
+.navbar-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px var(--spacing-md);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  transition: var(--transition);
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.navbar-dropdown-item:hover {
+  background: #f9fafb;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.navbar-dropdown-item--highlight {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.navbar-dropdown-item--separator {
+  border-top: 1px solid #f1f5f9;
 }
 
 /* ============================================
