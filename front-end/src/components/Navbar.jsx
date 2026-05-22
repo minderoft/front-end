@@ -1,7 +1,7 @@
 // filepath: front-end/src/components/Navbar.jsx
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Home, MessageCircle, Bell, HelpCircle, LogOut, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
@@ -9,22 +9,11 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const navLinks = [
-    { to: '/', label: 'Accueil' },
-    { to: '/announcements', label: 'Annonces' },
-    { to: '/help', label: 'Aide' },
-    { to: '/faq', label: 'FAQ' },
-    { to: '/contact', label: 'Contact' },
-  ];
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(2); // Mock data
+  const [notificationCount, setNotificationCount] = useState(3); // Mock data
 
   const handleNavClick = () => {
-    setIsMenuOpen(false);
-  };
-
-  const handleMenuLink = (path, event) => {
-    event.preventDefault();
-    navigate(path);
     setIsMenuOpen(false);
   };
 
@@ -32,6 +21,7 @@ const Navbar = () => {
     logout();
     navigate('/');
     setIsMenuOpen(false);
+    setIsUserMenuOpen(false);
   };
 
   const isActive = (path) => location.pathname === path;
@@ -55,6 +45,7 @@ const Navbar = () => {
     const handleKey = (event) => {
       if (event.key === 'Escape') {
         setIsMenuOpen(false);
+        setIsUserMenuOpen(false);
       }
     };
 
@@ -70,136 +61,325 @@ const Navbar = () => {
   }, [isMenuOpen]);
 
   return (
-    <nav className="navbar relative">
-      <Link to="/" className="navbar-brand">
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Background */}
-          <rect width="40" height="40" rx="8" fill="#1E3A5F"/>
-          
-          {/* Grid 2x2 - Top Left: Maison (Immobilier) */}
-          <rect x="4" y="4" width="15" height="15" rx="2" fill="#FF6B35" opacity="0.9"/>
-          <path d="M11.5 9L8 12V16H15V12L11.5 9Z" stroke="white" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="12" cy="14" r="0.8" fill="white"/>
-          
-          {/* Top Right: Voiture (Véhicules) */}
-          <rect x="21" y="4" width="15" height="15" rx="2" fill="#FF6B35" opacity="0.75"/>
-          <path d="M24 11H32V13H24V11Z" stroke="white" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
-          <circle cx="26" cy="14.5" r="1.2" fill="white"/>
-          <circle cx="30" cy="14.5" r="1.2" fill="white"/>
-          
-          {/* Bottom Left: Outils (Techniciens) */}
-          <rect x="4" y="21" width="15" height="15" rx="2" fill="#FF6B35" opacity="0.85"/>
-          <path d="M8 28L12 24M12 24L14 26M14 26L10 30" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="8" cy="28" r="1.2" fill="white"/>
-          
-          {/* Bottom Right: Briques (Matériaux) */}
-          <rect x="21" y="21" width="15" height="15" rx="2" fill="#FF6B35" opacity="0.8"/>
-          <rect x="23" y="23" width="3" height="3" fill="white" rx="0.3"/>
-          <rect x="28" y="23" width="3" height="3" fill="white" rx="0.3"/>
-          <rect x="33" y="23" width="3" height="3" fill="white" rx="0.3"/>
-          <rect x="23" y="28" width="3" height="3" fill="white" rx="0.3"/>
-          <rect x="28" y="28" width="3" height="3" fill="white" rx="0.3"/>
-          <rect x="33" y="28" width="3" height="3" fill="white" rx="0.3"/>
-        </svg>
-        LocaPlus
-      </Link>
-
-      {/* Bouton Hamburger pour Mobile */}
-      <button
-        className={`navbar-toggle ${isMenuOpen ? 'active' : ''}`}
-        onClick={() => setIsMenuOpen((prev) => !prev)}
-        aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-        aria-expanded={isMenuOpen}
-        aria-controls="navbar-mobile-drawer"
-      >
-        {isMenuOpen ? (
-          <X size={24} className="transition-all duration-200" />
-        ) : (
-          <Menu size={24} className="transition-all duration-200" />
-        )}
-      </button>
-
-      {/* Menu Desktop */}
-      <div className="navbar-menu desktop-menu hidden md:flex">
-        <Link to="/" className="navbar-link" onClick={handleNavClick}>Accueil</Link>
-        <Link to="/announcements" className="navbar-link" onClick={handleNavClick}>Annonces</Link>
-        <Link to="/help" className="navbar-link" onClick={handleNavClick}>Aide</Link>
-        <Link to="/faq" className="navbar-link" onClick={handleNavClick}>FAQ</Link>
-        <Link to="/contact" className="navbar-link" onClick={handleNavClick}>Contact</Link>
-      </div>
-
-      <div className="navbar-actions desktop-actions hidden md:flex">
-        {user ? (
-          <>
-            <Link to="/create" className="btn btn-accent" onClick={handleNavClick}>
-              + Publier
-            </Link>
-            <Link to="/dashboard" className="btn btn-ghost" onClick={handleNavClick}>
-              Mon Dashboard
-            </Link>
-            <button onClick={handleLogout} className="btn btn-outline btn-sm">
-              Déconnexion
-            </button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" className="btn btn-ghost" onClick={handleNavClick}>
-              Connexion
-            </Link>
-            <Link to="/register" className="btn btn-primary" onClick={handleNavClick}>
-              Inscription
-            </Link>
-          </>
-        )}
-      </div>
-
-      <div className={`navbar-overlay md:hidden ${isMenuOpen ? 'open' : ''}`} onClick={handleNavClick} />
-
-      <div
-        id="navbar-mobile-drawer"
-        className={`navbar-mobile-drawer flex flex-col md:hidden ${isMenuOpen ? 'open' : ''}`}
-        role="navigation"
-        aria-label="Menu mobile"
-        aria-hidden={!isMenuOpen}
-      >
-        {navLinks.map((link) => (
-          <Link
-            key={link.to}
-            to={link.to}
-            onClick={(event) => handleMenuLink(link.to, event)}
-            className={`navbar-mobile-link ${isActive(link.to) ? 'active' : ''}`}
-            aria-current={isActive(link.to) ? 'page' : undefined}
-          >
-            {link.label}
+    <>
+      {/* Top Header Bar */}
+      <nav className="navbar relative bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="flex items-center justify-between px-4 md:px-6 h-16">
+          {/* Logo */}
+          <Link to="/" className="navbar-brand flex items-center gap-2 font-bold text-lg md:text-xl">
+            <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="40" height="40" rx="8" fill="#1E3A5F"/>
+              <rect x="4" y="4" width="15" height="15" rx="2" fill="#FF6B35" opacity="0.9"/>
+              <path d="M11.5 9L8 12V16H15V12L11.5 9Z" stroke="white" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="12" cy="14" r="0.8" fill="white"/>
+              <rect x="21" y="4" width="15" height="15" rx="2" fill="#FF6B35" opacity="0.75"/>
+              <path d="M24 11H32V13H24V11Z" stroke="white" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
+              <circle cx="26" cy="14.5" r="1.2" fill="white"/>
+              <circle cx="30" cy="14.5" r="1.2" fill="white"/>
+              <rect x="4" y="21" width="15" height="15" rx="2" fill="#FF6B35" opacity="0.85"/>
+              <path d="M8 28L12 24M12 24L14 26M14 26L10 30" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="8" cy="28" r="1.2" fill="white"/>
+              <rect x="21" y="21" width="15" height="15" rx="2" fill="#FF6B35" opacity="0.8"/>
+              <rect x="23" y="23" width="3" height="3" fill="white" rx="0.3"/>
+              <rect x="28" y="23" width="3" height="3" fill="white" rx="0.3"/>
+              <rect x="33" y="23" width="3" height="3" fill="white" rx="0.3"/>
+              <rect x="23" y="28" width="3" height="3" fill="white" rx="0.3"/>
+              <rect x="28" y="28" width="3" height="3" fill="white" rx="0.3"/>
+              <rect x="33" y="28" width="3" height="3" fill="white" rx="0.3"/>
+            </svg>
+            <span className="hidden md:inline">LocaPlus</span>
           </Link>
-        ))}
 
-        <div className="navbar-mobile-actions">
-          {user ? (
-            <>
-              <button type="button" className="btn btn-ghost" onClick={(event) => handleMenuLink('/dashboard', event)}>
-                Mon Dashboard
-              </button>
-              <button type="button" className="btn btn-accent" onClick={(event) => handleMenuLink('/create', event)}>
-                + Publier
-              </button>
-              <button type="button" className="btn btn-outline" onClick={handleLogout}>
-                Déconnexion
-              </button>
-            </>
-          ) : (
-            <>
-              <button type="button" className="btn btn-ghost" onClick={(event) => handleMenuLink('/login', event)}>
-                Connexion
-              </button>
-              <button type="button" className="btn btn-primary" onClick={(event) => handleMenuLink('/register', event)}>
-                Inscription
-              </button>
-            </>
-          )}
+          {/* Desktop Navigation Icons */}
+          <div className="hidden md:flex items-center gap-8">
+            <Link
+              to="/announcements"
+              className={`flex items-center gap-1 pb-1 border-b-2 transition-colors ${
+                isActive('/announcements') ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+              title="Annonces"
+            >
+              <Home size={24} />
+            </Link>
+            <Link
+              to="/messages"
+              className={`relative flex items-center gap-1 pb-1 border-b-2 transition-colors ${
+                isActive('/messages') ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+              title="Messages"
+            >
+              <MessageCircle size={24} />
+              {unreadMessages > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {unreadMessages}
+                </span>
+              )}
+            </Link>
+            <Link
+              to="/notifications"
+              className={`relative flex items-center gap-1 pb-1 border-b-2 transition-colors ${
+                isActive('/notifications') ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+              title="Notifications"
+            >
+              <Bell size={24} />
+              {notificationCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {notificationCount}
+                </span>
+              )}
+            </Link>
+            <button
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className={`relative flex items-center gap-1 pb-1 border-b-2 transition-colors ${
+                isUserMenuOpen ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+              title="Menu"
+              aria-expanded={isUserMenuOpen}
+            >
+              <HelpCircle size={24} />
+            </button>
+          </div>
+
+          {/* Desktop Auth Actions */}
+          <div className="hidden md:flex items-center gap-3">
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-sm font-medium"
+                  aria-expanded={isUserMenuOpen}
+                  aria-label="Menu utilisateur"
+                >
+                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
+                    {user.name?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                  {user.name}
+                </button>
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-t-lg transition-colors"
+                    >
+                      Mon Dashboard
+                    </Link>
+                    <Link
+                      to="/create"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors font-semibold text-blue-600"
+                    >
+                      + Publier une annonce
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-b-lg transition-colors flex items-center gap-2 border-t border-gray-200"
+                    >
+                      <LogOut size={16} />
+                      Déconnexion
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors text-sm font-medium"
+                  onClick={() => setIsUserMenuOpen(false)}
+                >
+                  Connexion
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                  onClick={() => setIsUserMenuOpen(false)}
+                >
+                  Inscription
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Mobile Hamburger */}
+          <button
+            className="md:hidden flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+            aria-expanded={isMenuOpen}
+            aria-controls="navbar-mobile-menu"
+          >
+            {isMenuOpen ? (
+              <X size={24} className="text-gray-700" />
+            ) : (
+              <Menu size={24} className="text-gray-700" />
+            )}
+          </button>
         </div>
-      </div>
-    </nav>
+
+        {/* Mobile Dropdown Menu */}
+        {isMenuOpen && (
+          <div id="navbar-mobile-menu" className="md:hidden border-t border-gray-200 bg-white">
+            <div className="px-4 py-3 space-y-2">
+              <Link
+                to="/announcements"
+                onClick={handleNavClick}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  isActive('/announcements') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <Home size={20} />
+                <span>Annonces</span>
+              </Link>
+              <Link
+                to="/messages"
+                onClick={handleNavClick}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors relative ${
+                  isActive('/messages') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <MessageCircle size={20} />
+                <span>Messages</span>
+                {unreadMessages > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {unreadMessages}
+                  </span>
+                )}
+              </Link>
+              <Link
+                to="/notifications"
+                onClick={handleNavClick}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors relative ${
+                  isActive('/notifications') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <Bell size={20} />
+                <span>Notifications</span>
+                {notificationCount > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {notificationCount}
+                  </span>
+                )}
+              </Link>
+              <Link
+                to="/help"
+                onClick={handleNavClick}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  isActive('/help') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <HelpCircle size={20} />
+                <span>Aide</span>
+              </Link>
+              <Link
+                to="/faq"
+                onClick={handleNavClick}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  isActive('/faq') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <HelpCircle size={20} />
+                <span>FAQ</span>
+              </Link>
+              <Link
+                to="/contact"
+                onClick={handleNavClick}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  isActive('/contact') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <MessageCircle size={20} />
+                <span>Contact</span>
+              </Link>
+
+              <div className="border-t border-gray-200 pt-3 mt-3 space-y-2">
+                {user ? (
+                  <>
+                    <Link
+                      to="/dashboard"
+                      onClick={handleNavClick}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Mon Dashboard
+                    </Link>
+                    <Link
+                      to="/create"
+                      onClick={handleNavClick}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-semibold"
+                    >
+                      + Publier une annonce
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <LogOut size={20} />
+                      Déconnexion
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      onClick={handleNavClick}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <LogIn size={20} />
+                      Connexion
+                    </Link>
+                    <Link
+                      to="/register"
+                      onClick={handleNavClick}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-semibold"
+                    >
+                      <UserPlus size={20} />
+                      Inscription
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </nav>
+
+      {/* More Options Dropdown (Desktop) */}
+      {isUserMenuOpen && location.pathname !== '/help' && location.pathname !== '/faq' && location.pathname !== '/contact' && (
+        <div className="hidden md:block fixed top-16 right-6 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+          <Link
+            to="/help"
+            onClick={() => {
+              setIsUserMenuOpen(false);
+              navigate('/help');
+            }}
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-t-lg transition-colors"
+          >
+            Aide
+          </Link>
+          <Link
+            to="/faq"
+            onClick={() => {
+              setIsUserMenuOpen(false);
+              navigate('/faq');
+            }}
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            FAQ
+          </Link>
+          <Link
+            to="/contact"
+            onClick={() => {
+              setIsUserMenuOpen(false);
+              navigate('/contact');
+            }}
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-b-lg transition-colors"
+          >
+            Contact
+          </Link>
+        </div>
+      )}
+    </>
   );
 };
 

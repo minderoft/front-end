@@ -18,6 +18,8 @@ import Contact from './pages/Contact';
 import About from './pages/About';
 import Legal from './pages/Legal';
 import Chat from './pages/Chat';
+import Messages from './pages/Messages';
+import Notifications from './pages/Notifications';
 import Success from './pages/Success';
 import PaymentError from './pages/PaymentError';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -38,6 +40,16 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
           <Route path="/legal" element={<Legal />} />
+          <Route path="/messages" element={
+            <ProtectedRoute>
+              <Messages />
+            </ProtectedRoute>
+          } />
+          <Route path="/notifications" element={
+            <ProtectedRoute>
+              <Notifications />
+            </ProtectedRoute>
+          } />
           <Route path="/chat" element={
             <ProtectedRoute>
               <Chat />
