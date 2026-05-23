@@ -137,7 +137,7 @@ const Announcements = () => {
   };
 
   return (
-    <div className="announcements-section">
+    <div className="announcements-section px-4 md:px-8 lg:px-12 py-8 md:py-12">
       <h1 className="mb-4">Annonces</h1>
 
       {/* Filtres */}
@@ -222,11 +222,11 @@ const Announcements = () => {
           </div>
         </div>
 
-        <div className="filters-actions">
-          <button onClick={applyFilters} className="btn btn-primary">
+        <div className="filters-actions flex flex-col sm:flex-row gap-2">
+          <button onClick={applyFilters} className="btn btn-primary text-xs md:text-sm px-3 py-1.5">
             Appliquer les filtres
           </button>
-          <button onClick={clearFilters} className="btn btn-outline">
+          <button onClick={clearFilters} className="btn btn-outline text-xs md:text-sm px-3 py-1.5">
             Réinitialiser
           </button>
         </div>
@@ -257,7 +257,7 @@ const Announcements = () => {
             {pagination.total} annonce{pagination.total !== 1 ? 's' : ''} trouvée{pagination.total !== 1 ? 's' : ''}
           </p>
           
-          <div className="announcements-grid">
+          <div className="announcements-grid" style={{ gap: 12 }}>
             {announcements.map((announcement) => {
               const announcementId = announcement._id || announcement.id;
               const parsedImages = parseImages(announcement.images);
@@ -365,7 +365,7 @@ const Announcements = () => {
                         </span>
                       ) : null}
                     </div>
-                    <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+                    <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }} data-aos="fade-up">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -373,7 +373,7 @@ const Announcements = () => {
                           e.stopPropagation();
                           navigate(`/announcements/${announcementId}`);
                         }}
-                        className="btn btn-outline"
+                        className="btn btn-outline text-xs md:text-sm px-3 py-1.5"
                         style={{ flex: 1, minWidth: '80px' }}
                       >
                         <Eye size={14} style={{ marginRight: '6px' }} /> Voir
@@ -383,13 +383,13 @@ const Announcements = () => {
                           href={`https://wa.me/${(announcement.user_phone || announcement.phone).replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="btn btn-whatsapp"
+                          className="btn btn-whatsapp text-xs md:text-sm px-3 py-1.5"
                           style={{ flex: 1, minWidth: '100px', textDecoration: 'none', textAlign: 'center' }}
                         >
                           <Phone size={14} style={{ marginRight: '6px' }} /> Contact
                         </a>
                       ) : (
-                        <button type="button" className="btn btn-outline" disabled style={{ flex: 1, minWidth: '100px' }}>
+                        <button type="button" className="btn btn-outline text-xs md:text-sm px-3 py-1.5" disabled style={{ flex: 1, minWidth: '100px' }}>
                           Pas de contact
                         </button>
                       )}
@@ -399,8 +399,8 @@ const Announcements = () => {
                           e.stopPropagation();
                           handleReport(announcementId);
                         }}
-                        className="btn btn-ghost"
-                        style={{ minWidth: '80px', fontSize: '0.875rem' }}
+                        className="btn btn-ghost text-xs md:text-sm px-3 py-1.5"
+                        style={{ minWidth: '80px' }}
                       >
                         <Flag size={14} style={{ marginRight: '6px' }} /> Signaler
                       </button>

@@ -10,7 +10,7 @@ import {
 
 export default function HeroSection() {
   return (
-    <section className="w-full px-4 md:px-8 lg:px-12 pt-28 md:pt-32 pb-8 md:pb-16">
+    <section className="w-full px-4 md:px-8 lg:px-12 pt-28 md:pt-32 pb-8 md:pb-12">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           {/* Left: Copy */}
@@ -41,7 +41,7 @@ export default function HeroSection() {
           </div>
           {/* Right: Metrics Panel */}
           <div className="order-2">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-8">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6">
               {/* Header */}
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
                 <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -82,7 +82,7 @@ export default function HeroSection() {
               </div>
               {/* Stats Grid */}
               <div className="grid grid-cols-3 gap-2 md:gap-3">
-                <div className="bg-gray-50 rounded-xl p-4 text-center">
+                <div className="bg-gray-50 rounded-xl p-2.5 md:p-4 text-center">
                   <div className="flex items-center justify-center mb-1">
                     <BarChart3 className="w-4 h-4 text-primary-600 mr-1" />
                     <strong className="text-lg font-bold text-gray-900">12</strong>
@@ -91,7 +91,7 @@ export default function HeroSection() {
                     annonces actives ce mois
                   </p>
                 </div>
-                <div className="bg-gray-50 rounded-xl p-4 text-center">
+                <div className="bg-gray-50 rounded-xl p-2.5 md:p-4 text-center">
                   <div className="flex items-center justify-center mb-1">
                     <Users className="w-4 h-4 text-primary-600 mr-1" />
                     <strong className="text-lg font-bold text-gray-900">1,200+</strong>
@@ -100,7 +100,7 @@ export default function HeroSection() {
                     utilisateurs actifs
                   </p>
                 </div>
-                <div className="bg-gray-50 rounded-xl p-4 text-center">
+                <div className="bg-gray-50 rounded-xl p-2.5 md:p-4 text-center">
                   <div className="flex items-center justify-center mb-1">
                     <Globe className="w-4 h-4 text-primary-600 mr-1" />
                     <strong className="text-lg font-bold text-gray-900">8</strong>

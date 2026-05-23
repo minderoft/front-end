@@ -276,7 +276,7 @@ const Home = () => {
 
       <section className="w-full px-4 md:px-8 lg:px-12 py-8 md:py-12">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8 gap-4">
+          <div className="flex justify-between items-center mb-6 gap-4">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">🚀 Recommandé pour vous</h2>
             <button onClick={fetchRecommended} className="btn btn-outline">Actualiser</button>
           </div>
@@ -296,7 +296,7 @@ const Home = () => {
               <Link to="/announcements" className="btn btn-primary mt-3">Explorer les annonces</Link>
             </div>
           ) : (
-            <div className="recommended-slider" style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 12 }}>
+            <div className="recommended-slider" style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8 }}>
               {recommendedAds?.filter((a) => a && (a.id || a._id || a.title)).map((announcement) => (
                 <div key={announcement.id || announcement._id || announcement.title} style={{ minWidth: 300 }}>
                   <AdCard announcement={announcement} onBoost={() => navigate(`/announcements/${announcement.id || announcement._id}`)} />
@@ -306,28 +306,21 @@ const Home = () => {
           )}
         </div>
       </section>
-                <AdCard announcement={announcement} onBoost={() => navigate(`/announcements/${announcement.id || announcement._id}`)} />
-              </div>
-            ))}
-          </div>
-        )}
-
-      </section>
 
       <CategoryCarousel categories={categories} onCategoryClick={handleCategoryClick} />
 
       <section className="w-full px-4 md:px-8 lg:px-12 py-8 md:py-12">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-8">
+          <div className="mb-6">
             <span className="inline-block text-xs font-semibold uppercase tracking-widest text-orange-500 mb-2">
               Sécurité certifiée
             </span>
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">Notre ADN : confiance, sécurité et transparence.</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
             {securityFeatures.map((feature) => (
               <article key={feature.title} className="trust-card">
-                <div className="trust-icon">{feature.icon}</div>
+                <div className="trust-icon" style={{ width: 40, height: 40 }}>{feature.icon}</div>
                 <div>
                   <h4>{feature.title}</h4>
                   <p>{feature.description}</p>
@@ -340,7 +333,7 @@ const Home = () => {
 
       <section className="w-full px-4 md:px-8 lg:px-12 py-8 md:py-12">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-6 gap-4 flex-wrap">
+          <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">Chercher autour de vous</h2>
             <button
               onClick={handleNearbySearch}
@@ -352,13 +345,13 @@ const Home = () => {
           </div>
 
           {nearbyMessage && !nearbyError && (
-            <div style={{ marginBottom: '1rem', padding: '14px 18px', borderRadius: '16px', backgroundColor: '#eff6ff', color: '#0c4a6e', border: '1px solid #bfdbfe' }}>
+            <div style={{ marginBottom: '0.75rem', padding: '10px 14px', borderRadius: '12px', backgroundColor: '#eff6ff', color: '#0c4a6e', border: '1px solid #bfdbfe' }}>
               {nearbyMessage}
             </div>
           )}
 
           {nearbyError && (
-            <div className="alert alert-error" style={{ marginBottom: '1rem' }}>
+            <div className="alert alert-error" style={{ marginBottom: '0.75rem' }}>
               <p>{nearbyError}</p>
             </div>
           )}
@@ -371,10 +364,10 @@ const Home = () => {
             <>
               {(nearbyAnnouncements?.length || 0) > 0 ? (
                 <>
-                  <p className="text-muted mb-4">
+                  <p className="text-muted mb-3">
                     {nearbyAnnouncements?.length || 0} annonce{(nearbyAnnouncements?.length || 0) > 1 ? 's' : ''} trouvée{(nearbyAnnouncements?.length || 0) > 1 ? 's' : ''} autour de vous
                   </p>
-                  <div className="announcements-grid">
+                  <div className="announcements-grid" style={{ gap: 12 }}>
                     {nearbyAnnouncements.map((announcement) => (
                       <AdCard key={announcement.id} announcement={announcement} onBoost={() => navigate(`/announcements/${announcement.id}`)} />
                     ))}
@@ -396,17 +389,17 @@ const Home = () => {
 
       <section className="w-full px-4 md:px-8 lg:px-12 py-8 md:py-12">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8 gap-4 flex-wrap">
+          <div className="flex justify-between items-center mb-6 gap-4 flex-wrap">
             <div>
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Tarifs professionnels</h2>
-              <p className="text-gray-600">Découvrez nos tarifs de publication simples et transparents pour chaque catégorie.</p>
+              <p className="text-gray-600 text-sm md:text-base">Découvrez nos tarifs de publication simples et transparents pour chaque catégorie.</p>
             </div>
-            <Link to="/create" className="btn btn-primary">
+            <Link to="/create" className="btn btn-primary text-xs md:text-sm px-3 py-1.5">
               Publier maintenant
             </Link>
           </div>
 
-          <div className="pricing-grid">
+          <div className="pricing-grid" style={{ gap: 12 }}>
             {professionalPricing.map((plan) => (
               <article key={plan.id} className={`card pricing-card relative ${plan.id === 'immobilier' ? 'pricing-highlight' : 'border'}`}>
                 {plan.popular && (
@@ -423,14 +416,14 @@ const Home = () => {
                   <span className="price-currency">FCFA</span>
                 </div>
                 <p className="pricing-description">{plan.details}</p>
-                <ul className="pricing-features">
+                <ul className="pricing-features" style={{ gap: 6 }}>
                   {plan.details.split(' · ').map((feature, index) => (
-                    <li key={index}>{feature}</li>
+                    <li key={index} className="text-xs md:text-sm">{feature}</li>
                   ))}
                 </ul>
                 <Link
                   to={`/create?category=${plan.id}`}
-                  className="btn btn-outline"
+                  className="btn btn-outline text-xs md:text-sm px-3 py-1.5"
                 >
                   {plan.buttonLabel}
                 </Link>
@@ -441,9 +434,9 @@ const Home = () => {
       </section>
       <section className="w-full px-4 md:px-8 lg:px-12 py-8 md:py-12">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8 gap-4">
+          <div className="flex justify-between items-center mb-6 gap-4 flex-wrap">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">Annonces Récentes</h2>
-            <Link to="/announcements" className="btn btn-outline">
+            <Link to="/announcements" className="btn btn-outline text-xs md:text-sm px-3 py-1.5">
               Voir tout
             </Link>
           </div>
@@ -467,7 +460,7 @@ const Home = () => {
               </button>
             </div>
           ) : announcements.length > 0 ? (
-            <div className="announcements-grid">
+            <div className="announcements-grid" style={{ gap: 12 }}>
               {announcements.map((announcement) => (
                   <AdCard key={announcement._id || announcement.id || announcement.title} announcement={announcement} onBoost={() => navigate(`/announcements/${announcement._id || announcement.id}`)} />
               ))}
@@ -483,8 +476,8 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="w-full px-4 md:px-8 lg:px-12 py-8 md:py-16">
-        <div className="max-w-7xl mx-auto bg-gradient-to-br from-blue-700 to-green-600 rounded-2xl p-8 md:p-12 flex flex-col md:flex-row justify-between items-center gap-6">
+      <section className="w-full px-4 md:px-8 lg:px-12 py-8 md:py-12">
+        <div className="max-w-7xl mx-auto bg-gradient-to-br from-blue-700 to-green-600 rounded-2xl p-6 md:p-10 flex flex-col md:flex-row justify-between items-center gap-6">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">Vous êtes professionnel ?</h2>
             <p className="text-white/95 text-lg">Rejoignez LocaPlus et atteignez des milliers de clients potentiels avec une publication sécurisée.</p>
