@@ -1,6 +1,7 @@
 // filepath: front-end/src/pages/Register.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { UserPlus, Mail, Lock, Phone, User, ArrowRight, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -88,66 +89,199 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h2>Créer un compte</h2>
-        
-        {error && <div className="alert alert-error">{error}</div>}
-        {success && <div className="alert alert-success">{success}</div>}
-
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="form-group">
-            <label className="form-label">Nom complet</label>
-            <input
-              type="text"
-              name="name"
-              className="form-input"
-              placeholder="Votre nom"
-              value={formData.name}
-              onChange={handleChange}
-            />
-            {fieldErrors.name && <span className="form-error">{fieldErrors.name}</span>}
+    <div className="min-h-screen bg-gradient-to-br from-primary-lightest via-bg-primary to-bg-secondary flex items-center justify-center pt-20 pb-20">
+      <div className="container max-w-md">
+        <div className="card shadow-xl">
+          {/* Header */}
+          <div className="card-header text-center space-y-4">
+            <div className="w-16 h-16 rounded-xl bg-accent-lightest flex items-center justify-center mx-auto">
+              <UserPlus className="text-accent" size={32} />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-text-primary">Créer un Compte</h1>
+              <p className="text-text-tertiary mt-2">Rejoignez la communauté LocaPlus</p>
+            </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Email</label>
-            <input
-              type="email"
-              name="email"
-              className="form-input"
-              placeholder="votre@email.com"
-              value={formData.email}
-              onChange={handleChange}
-              autoComplete="email"
-            />
-            {fieldErrors.email && <span className="form-error">{fieldErrors.email}</span>}
+          {/* Success/Error Messages */}
+          {error && (
+            <div className="card-body bg-error-light border-l-4 border-error rounded p-4">
+              <p className="text-error font-medium">{error}</p>
+            </div>
+          )}
+          {success && (
+            <div className="card-body bg-success-light border-l-4 border-success rounded p-4">
+              <p className="text-success font-medium flex items-center gap-2">
+                <CheckCircle size={16} />
+                {success}
+              </p>
+            </div>
+          )}
+
+          {/* Form */}
+          <div className="card-body">
+            <form onSubmit={handleSubmit} noValidate className="space-y-5">
+              {/* Full Name */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-text-primary">
+                  <User size={16} className="inline mr-2 text-primary" />
+                  Nom Complet
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  className={`input w-full ${fieldErrors.name ? 'border-error' : ''}`}
+                  placeholder="Votre nom complet"
+                  value={formData.name}
+                  onChange={handleChange}
+                />
+                {fieldErrors.name && (
+                  <span className="text-xs text-error font-medium">{fieldErrors.name}</span>
+                )}
+              </div>
+
+              {/* Email */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-text-primary">
+                  <Mail size={16} className="inline mr-2 text-primary" />
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  className={`input w-full ${fieldErrors.email ? 'border-error' : ''}`}
+                  placeholder="votre@email.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  autoComplete="email"
+                />
+                {fieldErrors.email && (
+                  <span className="text-xs text-error font-medium">{fieldErrors.email}</span>
+                )}
+              </div>
+
+              {/* Phone */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-text-primary">
+                  <Phone size={16} className="inline mr-2 text-primary" />
+                  Téléphone <span className="text-text-tertiary text-xs">(optionnel)</span>
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  className="input w-full"
+                  placeholder="+225 XX XXX XXX"
+                  value={formData.phone}
+                  onChange={handleChange}
+                />
+              </div>
+
+              {/* Password */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-text-primary">
+                  <Lock size={16} className="inline mr-2 text-primary" />
+                  Mot de Passe
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  className={`input w-full ${fieldErrors.password ? 'border-error' : ''}`}
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                  autoComplete="new-password"
+                />
+                <span className="text-xs text-text-tertiary">Minimum 6 caractères</span>
+                {fieldErrors.password && (
+                  <span className="text-xs text-error font-medium block">{fieldErrors.password}</span>
+                )}
+              </div>
+
+              {/* Confirm Password */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-text-primary">
+                  <Lock size={16} className="inline mr-2 text-primary" />
+                  Confirmer le Mot de Passe
+                </label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  className={`input w-full ${fieldErrors.confirmPassword ? 'border-error' : ''}`}
+                  placeholder="••••••••"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  autoComplete="new-password"
+                />
+                {fieldErrors.confirmPassword && (
+                  <span className="text-xs text-error font-medium">{fieldErrors.confirmPassword}</span>
+                )}
+              </div>
+
+              {/* Privacy Checkbox */}
+              <div className="flex items-start gap-3 py-4 border-t border-b border-border-color">
+                <input
+                  type="checkbox"
+                  id="acceptPrivacy"
+                  checked={acceptedPrivacy}
+                  onChange={(e) => {
+                    setAcceptedPrivacy(e.target.checked);
+                    setFieldErrors(prev => ({ ...prev, acceptedPrivacy: '' }));
+                    setError('');
+                  }}
+                  className="w-5 h-5 mt-0.5 cursor-pointer"
+                />
+                <label htmlFor="acceptPrivacy" className="text-sm text-text-secondary cursor-pointer">
+                  J'accepte la{' '}
+                  <a
+                    href="/privacy-policy.html"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary font-semibold hover:text-primary-light transition-colors"
+                  >
+                    Politique de Confidentialité
+                  </a>{' '}
+                  et les conditions d'utilisation
+                </label>
+              </div>
+              {fieldErrors.acceptedPrivacy && (
+                <span className="text-xs text-error font-medium">{fieldErrors.acceptedPrivacy}</span>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading || !acceptedPrivacy}
+                className="btn btn-primary btn-block btn-lg mt-2"
+              >
+                {loading ? 'Création du compte...' : 'Créer un compte'}
+                {!loading && <ArrowRight size={18} />}
+              </button>
+            </form>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Téléphone (optionnel)</label>
-            <input
-              type="tel"
-              name="phone"
-              className="form-input"
-              placeholder="+225 00 000 000"
-              value={formData.phone}
-              onChange={handleChange}
-            />
+          {/* Footer */}
+          <div className="card-footer text-center">
+            <p className="text-sm text-text-tertiary">
+              Déjà un compte ?{' '}
+              <Link to="/login" className="text-primary font-semibold hover:text-primary-light transition-colors">
+                Se connecter
+              </Link>
+            </p>
           </div>
+        </div>
 
-          <div className="form-group">
-            <label className="form-label">Mot de passe</label>
-            <input
-              type="password"
-              name="password"
-              className="form-input"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange}
-              autoComplete="new-password"
-            />
-            <span className="form-help">Minimum 6 caractères</span>
-            {fieldErrors.password && <span className="form-error">{fieldErrors.password}</span>}
+        {/* Bottom Link */}
+        <p className="text-center text-text-tertiary text-sm mt-6">
+          <Link to="/" className="text-primary hover:text-primary-light transition-colors font-medium">
+            ← Retour à l'accueil
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default Register;
           </div>
 
           <div className="form-group">

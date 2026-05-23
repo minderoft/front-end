@@ -1,9 +1,22 @@
 // filepath: front-end/src/pages/AnnouncementDetail.jsx
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import {
+  Heart,
+  MapPin,
+  Phone,
+  Mail,
+  Flag,
+  Share2,
+  ChevronLeft,
+  ChevronRight,
+  Zap,
+  CheckCircle,
+  Calendar,
+  DollarSign,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { announcementService, paymentService, reportService, favoriteService } from '../services/api';
-import AnnouncementMap from '../components/AnnouncementMap';
+import { announcementService, favoriteService, reportService, paymentService } from '../services/api';
 import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
 import { formatPrice } from '../utils/formatPrice';
 
@@ -16,8 +29,6 @@ const AnnouncementDetail = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
-  const [reportLoading, setReportLoading] = useState(false);
-  const [boostLoading, setBoostLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -25,9 +36,9 @@ const AnnouncementDetail = () => {
       try {
         const response = await announcementService.getById(id);
         setAnnouncement(response.data.announcement);
-      } catch (error) {
-        console.error('Erreur:', error);
-        setError('Impossible de charger cette annonce. Vérifiez votre connexion et réessayez.');
+      } catch (err) {
+        console.error('Erreur:', err);
+        setError('Impossible de charger cette annonce.');
       } finally {
         setLoading(false);
       }
@@ -40,451 +51,334 @@ const AnnouncementDetail = () => {
       if (!user || !announcement?.id) return;
       try {
         const response = await favoriteService.getAll();
-        const favoriteIds = Array.isArray(response.data.favorites) ? response.data.favorites.map((item) => item.announcement_id) : [];
+        const favoriteIds = Array.isArray(response.data.favorites)
+          ? response.data.favorites.map((item) => item.announcement_id)
+          : [];
         setIsFavorite(favoriteIds.includes(announcement.id));
-      } catch (error) {
-        console.error('Erreur chargement favoris:', error);
+      } catch (err) {
+        console.error('Erreur favoris:', err);
       }
     };
-
     fetchFavorite();
   }, [user, announcement]);
 
   if (loading) {
     return (
-      <div className="loading">
-        <div className="spinner"></div>
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center pt-20">
+        <div className="container">
+          <div className="card p-12 text-center">
+            <div className="animate-pulse space-y-4">
+              <div className="h-12 bg-slate-200 rounded w-3/4 mx-auto" />
+              <div className="h-4 bg-slate-200 rounded w-1/2 mx-auto" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error || !announcement) {
     return (
-      <div className="announcement-detail text-center">
-        <h2>Erreur de chargement</h2>
-        <p style={{ color: 'var(--text-light)', marginBottom: 'var(--spacing-md)' }}>{error}</p>
-        <Link to="/announcements" className="btn btn-primary mt-3">
-          Retour aux annonces
-        </Link>
-      </div>
-    );
-  }
-
-  if (!announcement) {
-    return (
-      <div className="announcement-detail text-center">
-        <h2>Annonce non trouvée</h2>
-        <Link to="/announcements" className="btn btn-primary mt-3">
-          Retour aux annonces
-        </Link>
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center pt-20">
+        <div className="container max-w-md">
+          <div className="card text-center py-16">
+            <h2 className="text-2xl font-bold text-text-primary mb-4">
+              {error ? 'Erreur de chargement' : 'Annonce non trouvée'}
+            </h2>
+            <p className="text-text-tertiary mb-6">
+              {error || 'Cette annonce n\'existe pas ou a été supprimée.'}
+            </p>
+            <Link to="/announcements" className="btn btn-primary">
+              <ChevronLeft size={18} />
+              Retour aux annonces
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
 
   const images = Array.isArray(parseImages(announcement.images)) ? parseImages(announcement.images) : [];
-  const allImages = Array.isArray(images)
-    ? (announcement.image_url ? [announcement.image_url, ...images.filter(i => i !== announcement.image_url)] : images)
-    : (announcement.image_url ? [announcement.image_url] : []);
-  const safeIndex = Math.max(0, Math.min(selectedImage, Math.max(0, (allImages?.length || 0) - 1)));
-  const selectedImageUrl = resolveImageUrl(allImages[safeIndex]);
-
-  if (import.meta.env.DEV) {
-    console.log('DEBUG AnnouncementDetail images', {
-      announcementId: announcement.id,
-      rawImages: announcement.images,
-      parsedImages: images,
-      selectedImageUrl,
-    });
-  }
-
-  const categoryLabels = {
-    immobilier: 'Immobilier',
-    vehicule: 'Véhicule',
-    materiaux: 'Matériaux de construction',
-    technicien: 'Technicien',
-  };
-
-  const detailsData = announcement.metadata ?? announcement.details;
-  let detailsObj = null;
-  try {
-    detailsObj = typeof detailsData === 'string' ? JSON.parse(detailsData) : detailsData;
-  } catch (error) {
-    console.error('Erreur parsing details/metadata:', error, detailsData);
-    detailsObj = null;
-  }
-
-  const detailsEntries = detailsObj && typeof detailsObj === 'object'
-    ? Object.entries(detailsObj)
-    : [];
-
-  const sellerPhone = announcement.user_phone || announcement.phone || announcement.phone_number || announcement.user_phone_number;
-  const sellerEmail = announcement.user_email || announcement.email;
+  const allImages = announcement.image_url ? [announcement.image_url, ...images] : images;
+  const selectedImageUrl = resolveImageUrl(allImages[selectedImage] || announcement.image_url);
+  const sellerPhone = announcement.user_phone || announcement.phone;
   const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
-  const announcementLocation = announcement.location || announcement.geolocalisation || '';
-  const announcementLatitude = announcement.latitude ?? announcement.geolocalisation?.latitude ?? announcement.geolocalisation?.lat ?? null;
-  const announcementLongitude = announcement.longitude ?? announcement.geolocalisation?.longitude ?? announcement.geolocalisation?.lng ?? null;
+  const location = announcement.location || announcement.geolocalisation || 'Localisation non spécifiée';
 
   const handleToggleFavorite = async () => {
-    if (!user) {
-      return window.alert('Veuillez vous connecter pour gérer vos favoris.');
-    }
-
+    if (!user) return window.alert('Veuillez vous connecter.');
     setFavoriteLoading(true);
     try {
       if (isFavorite) {
         await favoriteService.remove(announcement.id);
-        setIsFavorite(false);
       } else {
         await favoriteService.add(announcement.id);
-        setIsFavorite(true);
       }
-    } catch (error) {
-      console.error('Erreur favoris:', error);
-      window.alert(error.response?.data?.error || 'Impossible de mettre à jour les favoris.');
+      setIsFavorite(!isFavorite);
+    } catch (err) {
+      window.alert(err.response?.data?.error || 'Erreur');
     } finally {
       setFavoriteLoading(false);
     }
   };
 
   const handleReport = async () => {
-    if (!user) {
-      return window.alert('Veuillez vous connecter pour signaler une annonce.');
-    }
-
-    const reason = window.prompt('Indiquez la raison du signalement (ex: annonce frauduleuse, contenu inapproprié)');
-    if (!reason || !reason.trim()) {
-      return;
-    }
-
-    setReportLoading(true);
+    if (!user) return window.alert('Veuillez vous connecter.');
+    const reason = window.prompt('Raison du signalement:');
+    if (!reason?.trim()) return;
     try {
       await reportService.create({ announcementId: announcement.id, reason: reason.trim() });
-      window.alert('Votre signalement a été envoyé.');
-    } catch (error) {
-      console.error('Erreur signalement:', error);
-      window.alert(error.response?.data?.error || 'Impossible d\'envoyer le signalement.');
-    } finally {
-      setReportLoading(false);
+      window.alert('Signalement envoyé.');
+    } catch (err) {
+      window.alert(err.response?.data?.error || 'Erreur');
     }
   };
 
-  const handleBoost = async () => {
-    if (!user || user.id !== announcement.user_id) {
-      return window.alert('Seul le propriétaire peut booster cette annonce.');
-    }
-
-    if (!window.confirm('Booster cette annonce pour 1000 FCFA pendant 24h ?')) {
-      return;
-    }
-
-    setBoostLoading(true);
-    try {
-      const response = await paymentService.create({
-        announcementId: announcement.id,
-        amount: 1000,
-        method: 'mobile_money',
-        purpose: 'boost',
-      });
-
-      if (response.data.authorizationUrl) {
-        window.location.href = response.data.authorizationUrl;
-      } else {
-        window.alert('Erreur lors de la création du paiement de boost.');
-      }
-    } catch (error) {
-      console.error('Erreur boost:', error);
-      window.alert(error.response?.data?.error || 'Impossible de lancer le boost.');
-    } finally {
-      setBoostLoading(false);
-    }
-  };
+  const categoryLabel = {
+    immobilier: 'Immobilier',
+    vehicule: 'Véhicule',
+    materiaux: 'Matériaux BTP',
+    technicien: 'Technicien',
+  }[announcement.category] || 'Annonce';
 
   return (
-    <div className="announcement-detail">
-      <Link to="/announcements" className="btn btn-ghost mb-3">
-        ← Retour aux annonces
-      </Link>
+    <div className="bg-bg-primary min-h-screen pt-20">
+      <div className="container py-12">
+        {/* Breadcrumb */}
+        <button
+          onClick={() => navigate('/announcements')}
+          className="flex items-center gap-2 text-primary hover:text-primary-light transition-colors mb-8"
+        >
+          <ChevronLeft size={18} />
+          Retour aux annonces
+        </button>
 
-      {/* Galerie d'images - Améliorée */}
-      {allImages.length > 0 ? (
-        <div className="announcement-gallery">
-          {/* Image principale */}
-          <div>
-            {selectedImageUrl ? (
+        <div className="grid lg:grid-2 gap-8">
+          {/* Left: Images */}
+          <div className="space-y-4">
+            {/* Main Image */}
+            <div className="relative h-96 bg-slate-100 rounded-2xl overflow-hidden group">
               <img
                 src={selectedImageUrl}
                 alt={announcement.title}
-                className="announcement-main-image"
-                loading="lazy"
+                className="w-full h-full object-cover"
                 onError={handleImageError}
               />
-            ) : (
-              <div
-                className="announcement-main-image"
-                style={{
-                  backgroundColor: '#E2E8F0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '5rem',
-                  color: '#CBD5E0'
-                }}
-              >
-                🏠
+              
+              {/* Badge */}
+              <div className="absolute top-4 left-4 flex items-center gap-2">
+                {isBoosted && (
+                  <div className="badge badge-accent">
+                    <Zap size={14} />
+                    Boosté
+                  </div>
+                )}
+                {announcement.is_favorite && (
+                  <div className="badge badge-success">
+                    <CheckCircle size={14} />
+                    Favori
+                  </div>
+                )}
+              </div>
+
+              {/* Navigation Arrows */}
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setSelectedImage(Math.max(0, selectedImage - 1))}
+                    disabled={selectedImage === 0}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 btn btn-icon bg-white text-primary hover:bg-primary hover:text-white disabled:opacity-50"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button
+                    onClick={() => setSelectedImage(Math.min(allImages.length - 1, selectedImage + 1))}
+                    disabled={selectedImage === allImages.length - 1}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 btn btn-icon bg-white text-primary hover:bg-primary hover:text-white disabled:opacity-50"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Thumbnails */}
+            {allImages.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {allImages.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImage(idx)}
+                    className={`w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
+                      idx === selectedImage ? 'border-primary' : 'border-transparent hover:border-slate-300'
+                    }`}
+                  >
+                    <img src={resolveImageUrl(img)} alt="Thumbnail" className="w-full h-full object-cover" />
+                  </button>
+                ))}
               </div>
             )}
           </div>
 
-          {/* Miniatures - Visible seulement s'il y a plusieurs images */}
-          {allImages.length > 1 && (
-            <div className="announcement-thumbnails">
-              {allImages.map((img, index) => {
-                const thumbUrl = resolveImageUrl(img);
-                return (
-                  <img
-                    key={index}
-                    src={thumbUrl}
-                    alt={`${announcement.title} - ${index + 1}`}
-                    className={`announcement-thumbnail ${selectedImage === index ? 'active' : ''}`}
-                    loading="lazy"
-                    onClick={() => setSelectedImage(index)}
-                    onError={(e) => {
-                      e.target.style.backgroundColor = '#E2E8F0';
-                      e.target.style.display = 'flex';
-                      e.target.style.alignItems = 'center';
-                      e.target.style.justifyContent = 'center';
-                      e.target.textContent = '🏠';
-                    }}
-                  />
-                );
-              })}
+          {/* Right: Details */}
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="space-y-4">
+              {/* Category & Type */}
+              <div className="flex items-center gap-2">
+                <span className="badge badge-primary">{categoryLabel}</span>
+                {announcement.type && (
+                  <span className="badge badge-accent text-xs">
+                    {announcement.type === 'vente' ? 'Vente' : 'Location'}
+                  </span>
+                )}
+              </div>
+
+              {/* Title */}
+              <h1 className="text-4xl font-bold text-text-primary">
+                {announcement.title}
+              </h1>
+
+              {/* Location */}
+              <div className="flex items-center gap-2 text-lg text-text-secondary">
+                <MapPin size={20} className="text-primary" />
+                {location}
+              </div>
             </div>
-          )}
-        </div>
-      ) : (
-        <div style={{ 
-          backgroundColor: '#33b187', 
-          height: '400px', 
-          borderRadius: 'var(--radius-lg)',
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          fontSize: '5rem',
-          marginBottom: 'var(--spacing-2xl)',
-          color: '#4f1e8f'
-        }}>
-          🏠
-        </div>
-      )}
 
-      {/* Carte de géolocalisation */}
-      <AnnouncementMap 
-        latitude={announcementLatitude}
-        longitude={announcementLongitude}
-        title={announcement.title}
-        location={announcementLocation}
-      />
-
-      {/* Informations */}
-      <div className="announcement-info">
-        <div className="d-flex justify-between align-center mb-3" style={{ flexWrap: 'wrap', gap: '12px' }}>
-          <span style={{ 
-            fontSize: '0.875rem', 
-            color: 'var(--accent)',
-            textTransform: 'uppercase',
-            fontWeight: '600'
-          }}>
-            {categoryLabels[announcement.category]}
-          </span>
-          
-          {announcement.type && (
-            <span style={{ 
-              fontSize: '0.875rem', 
-              backgroundColor: 'var(--primary)',
-              color: 'white',
-              padding: '4px 12px',
-              borderRadius: 'var(--radius-sm)'
-            }}>
-              {announcement.type === 'vente' ? 'À vendre' : 'À location'}
-            </span>
-          )}
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: 'var(--spacing-md)' }}>
-          <h1 style={{ margin: 0, flex: 1 }}>{announcement.title}</h1>
-          <button
-            className="btn btn-ghost"
-            onClick={handleToggleFavorite}
-            disabled={favoriteLoading}
-            style={{ minWidth: '120px' }}
-          >
-            {isFavorite ? '♥ Favori' : '♡ Favoris'}
-          </button>
-        </div>
-
-        {isBoosted && announcement.boost_expiry ? (
-          <div style={{ marginBottom: 'var(--spacing-sm)', color: 'var(--accent)', fontWeight: '600' }}>
-            🚀 Boost actif jusqu'au {new Date(announcement.boost_expiry).toLocaleDateString('fr-FR')} à {new Date(announcement.boost_expiry).toLocaleTimeString('fr-FR')}
-          </div>
-        ) : null}
-
-        {announcement.average_rating ? (
-          <div style={{ marginBottom: 'var(--spacing-sm)', color: 'var(--text-light)' }}>
-            ⭐ {announcement.average_rating} / 5 · {announcement.review_count} avis
-          </div>
-        ) : (
-          <div style={{ marginBottom: 'var(--spacing-sm)', color: 'var(--text-light)' }}>
-            ⭐ Pas encore de note pour ce prestataire
-          </div>
-        )}
-
-        <div className="announcement-price">
-          {announcement.category === 'technicien' || announcement.price === 0 
-            ? 'Prix à négocier' 
-            : formatPrice(announcement.price)}
-        </div>
-
-        <div className="announcement-meta">
-          <span>📍 {announcement.location}</span>
-          {announcement.phone && <span>📞 {announcement.phone}</span>}
-          <span>📅 Publié le {new Date(announcement.created_at).toLocaleDateString('fr-FR')}</span>
-        </div>
-
-        {user?.id === announcement.user_id && !isBoosted && (
-          <button
-            onClick={handleBoost}
-            disabled={boostLoading}
-            className="btn btn-accent"
-            style={{ marginTop: 'var(--spacing-md)' }}
-          >
-            {boostLoading ? 'Génération du paiement...' : 'Booster cette annonce (1000 FCFA)'}
-          </button>
-        )}
-
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: 'var(--spacing-md)' }}>
-          {/* Bouton Contacter - Visible si on n'est pas le propriétaire */}
-          {user?.id !== announcement.user_id && (
-            <>
-              {sellerPhone && (
-                <a
-                  href={`https://wa.me/${sellerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-accent"
-                  style={{ textDecoration: 'none', textAlign: 'center' }}
-                >
-                  💬 Contacter via WhatsApp
-                </a>
+            {/* Price Card */}
+            <div className="card bg-gradient-to-br from-accent-lightest to-white p-8 space-y-4">
+              <p className="text-sm text-text-tertiary uppercase tracking-wider font-semibold">
+                Prix de l'annonce
+              </p>
+              <h2 className="text-5xl font-bold text-accent">
+                {announcement.category === 'technicien' || announcement.price === 0
+                  ? 'Sur devis'
+                  : formatPrice(announcement.price)}
+              </h2>
+              {announcement.currency && (
+                <p className="text-sm text-text-tertiary">{announcement.currency}</p>
               )}
-              {sellerPhone && (
-                <a
-                  href={`tel:${sellerPhone.replace(/\D/g, '')}`}
-                  className="btn btn-outline"
-                  style={{ textDecoration: 'none', textAlign: 'center' }}
-                >
-                  ☎️ Appeler
-                </a>
-              )}
-              {sellerEmail && (
-                <a
-                  href={`mailto:${sellerEmail}?subject=${encodeURIComponent(`Demande de contact - ${announcement.title}`)}&body=${encodeURIComponent(`Bonjour,\n\nJe vous contacte depuis LocaPlus concernant votre annonce : ${announcement.title}`)}`}
-                  className="btn btn-outline"
-                  style={{ textDecoration: 'none', textAlign: 'center' }}
-                >
-                  📧 Email
-                </a>
-              )}
-            </>
-          )}
-          
-          <button onClick={handleReport} className="btn btn-outline" disabled={reportLoading}>
-            {reportLoading ? 'Signalement en cours...' : '🚩 Signaler'}
-          </button>
-        </div>
+            </div>
 
-        <hr style={{ margin: 'var(--spacing-lg) 0', border: 'none', borderTop: '1px solid var(--border)' }} />
+            {/* Description */}
+            <div className="space-y-3">
+              <h3 className="text-xl font-bold text-text-primary">Description</h3>
+              <p className="text-lg text-text-secondary leading-relaxed">
+                {announcement.description}
+              </p>
+            </div>
 
-        <h3 className="mb-2">Description</h3>
-        <p style={{ whiteSpace: 'pre-wrap', lineHeight: '1.8' }}>
-          {announcement.description || 'Aucune description fournie.'}
-        </p>
-
-        {/* Métadonnées spécifiques selon la catégorie */}
-        {(detailsEntries?.length || 0) > 0 && (
-          <>
-            <hr style={{ margin: 'var(--spacing-lg) 0', border: 'none', borderTop: '1px solid var(--border)' }} />
-            <h3 className="mb-2">Détails</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--spacing-md)' }}>
-              {detailsEntries.map(([key, value]) => (
-                <div key={key}>
-                  <strong style={{ color: 'var(--text-light)' }}>{key}:</strong> {value}
+            {/* Seller Info Card */}
+            <div className="card space-y-6">
+              <div>
+                <h3 className="text-lg font-bold text-text-primary mb-4">Vendeur</h3>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white font-bold text-2xl flex-shrink-0">
+                  {announcement.user_name?.[0]?.toUpperCase() || 'U'}
                 </div>
-              ))}
+                <div>
+                  <h4 className="font-bold text-text-primary text-lg">
+                    {announcement.user_name || 'Vendeur'}
+                  </h4>
+                  <p className="text-sm text-text-tertiary">Membre LocaPlus</p>
+                </div>
+              </div>
+
+              {/* Contact Buttons */}
+              <div className="flex flex-col gap-3 pt-4 border-t border-border-color">
+                {sellerPhone && (
+                  <a
+                    href={`https://wa.me/${sellerPhone.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary btn-block btn-lg"
+                  >
+                    <Phone size={18} />
+                    Contacter sur WhatsApp
+                  </a>
+                )}
+                <button className="btn btn-secondary btn-block btn-lg">
+                  <Mail size={18} />
+                  Envoyer un message
+                </button>
+              </div>
             </div>
-          </>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleToggleFavorite}
+                disabled={favoriteLoading}
+                className={`btn btn-lg flex-1 ${
+                  isFavorite
+                    ? 'bg-error text-white hover:bg-error'
+                    : 'btn-secondary'
+                }`}
+              >
+                <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
+                {isFavorite ? 'Favoris' : 'Ajouter aux favoris'}
+              </button>
+              <button
+                onClick={handleReport}
+                className="btn btn-text text-error hover:bg-error-light"
+              >
+                <Flag size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional Details */}
+        {announcement.metadata && (
+          <div className="mt-12 card">
+            <div className="card-header">
+              <h3 className="text-2xl font-bold">Informations détaillées</h3>
+            </div>
+            <div className="card-body">
+              <div className="grid md:grid-2 gap-8">
+                {typeof announcement.metadata === 'string'
+                  ? Object.entries(JSON.parse(announcement.metadata)).map(([key, value]) => (
+                      <div key={key} className="border-b border-border-color pb-4 last:border-0">
+                        <p className="text-sm text-text-tertiary uppercase tracking-wider font-semibold mb-2">
+                          {key}
+                        </p>
+                        <p className="text-lg font-medium text-text-primary">{value}</p>
+                      </div>
+                    ))
+                  : null}
+              </div>
+            </div>
+          </div>
         )}
 
-        <hr style={{ margin: 'var(--spacing-lg) 0', border: 'none', borderTop: '1px solid var(--border)' }} />
-
-        {/* Contact */}
-        <div style={{ 
-          backgroundColor: 'var(--background)', 
-          padding: 'var(--spacing-lg)', 
-          borderRadius: 'var(--radius-md)' 
-        }}>
-          <h3 className="mb-3">Contacter le vendeur</h3>
-          
-          {announcement.user_name && (
-            <p className="mb-2">
-              <strong>Nom:</strong> {announcement.user_name}
+        {/* Meta Information */}
+        <div className="mt-12 grid md:grid-3 gap-6">
+          <div className="card text-center py-8">
+            <Calendar size={24} className="text-primary mx-auto mb-3" />
+            <p className="text-sm text-text-tertiary mb-2">Publié le</p>
+            <p className="font-semibold text-text-primary">
+              {new Date(announcement.created_at).toLocaleDateString('fr-FR')}
             </p>
-          )}
-          
-          {sellerPhone && (
-            <p className="mb-2">
-              <strong>Téléphone:</strong> {sellerPhone}
+          </div>
+          <div className="card text-center py-8">
+            <DollarSign size={24} className="text-accent mx-auto mb-3" />
+            <p className="text-sm text-text-tertiary mb-2">Type d'annonce</p>
+            <p className="font-semibold text-text-primary">
+              {announcement.type === 'vente' ? 'Vente' : 'Location'}
             </p>
-          )}
-          
-          {announcement.user_email && (
-            <p className="mb-3">
-              <strong>Email:</strong> {announcement.user_email}</p>
-          )}
-
-          {sellerPhone ? (
-            <>
-              <a
-                href={`https://wa.me/${sellerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je vous contacte depuis LocaPlus pour votre annonce : ${announcement.title}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn w-full mb-3"
-                style={{
-                  backgroundColor: '#25D366',
-                  color: 'white',
-                  border: 'none',
-                  fontWeight: '600'
-                }}
-              >
-                💬 Contacter sur WhatsApp
-              </a>
-              <a 
-                href={`tel:${sellerPhone}`} 
-                className="btn btn-accent w-full"
-              >
-                📞 Appeler maintenant
-              </a>
-            </>
-          ) : sellerEmail ? (
-            <a
-              href={`mailto:${sellerEmail}?subject=${encodeURIComponent(`Contact LocaPlus : ${announcement.title}`)}`}
-              className="btn btn-accent w-full"
-              style={{ textAlign: 'center' }}
-            >
-              ✉️ Contacter par email
-            </a>
-          ) : (
-            <p style={{ color: '#999', fontSize: '0.875rem' }}>Aucun contact disponible pour cette annonce</p>
-          )}
+          </div>
+          <div className="card text-center py-8">
+            {isBoosted && (
+              <>
+                <Zap size={24} className="text-accent mx-auto mb-3" />
+                <p className="text-sm text-text-tertiary mb-2">Statut</p>
+                <p className="font-semibold text-accent">Boosté</p>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

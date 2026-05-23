@@ -1,6 +1,7 @@
 // filepath: front-end/src/pages/Login.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { LogIn, Mail, Lock, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -54,49 +55,99 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h2>Connexion</h2>
-        
-        {error && <div className="alert alert-error">{error}</div>}
-
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="form-group">
-            <label className="form-label">Email</label>
-            <input
-              type="email"
-              name="email"
-              className="form-input"
-              placeholder="votre@email.com"
-              value={formData.email}
-              onChange={handleChange}
-              autoComplete="email"
-            />
-            {fieldErrors.email && <span className="form-error">{fieldErrors.email}</span>}
+    <div className="min-h-screen bg-gradient-to-br from-primary-lightest via-bg-primary to-bg-secondary flex items-center justify-center pt-20">
+      <div className="container max-w-md">
+        <div className="card shadow-xl">
+          {/* Header */}
+          <div className="card-header text-center space-y-4">
+            <div className="w-16 h-16 rounded-xl bg-primary-lightest flex items-center justify-center mx-auto">
+              <LogIn className="text-primary" size={32} />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-text-primary">Connexion</h1>
+              <p className="text-text-tertiary mt-2">Accédez à votre compte LocaPlus</p>
+            </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Mot de passe</label>
-            <input
-              type="password"
-              name="password"
-              className="form-input"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange}
-              autoComplete="current-password"
-            />
-            {fieldErrors.password && <span className="form-error">{fieldErrors.password}</span>}
+          {/* Error Message */}
+          {error && (
+            <div className="card-body bg-error-light border-l-4 border-error rounded p-4">
+              <p className="text-error font-medium">{error}</p>
+            </div>
+          )}
+
+          {/* Form */}
+          <div className="card-body">
+            <form onSubmit={handleSubmit} noValidate className="space-y-6">
+              {/* Email Field */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-text-primary">
+                  <Mail size={16} className="inline mr-2 text-primary" />
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  className={`input w-full ${fieldErrors.email ? 'border-error' : ''}`}
+                  placeholder="votre@email.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  autoComplete="email"
+                />
+                {fieldErrors.email && (
+                  <span className="text-xs text-error font-medium">{fieldErrors.email}</span>
+                )}
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-text-primary">
+                  <Lock size={16} className="inline mr-2 text-primary" />
+                  Mot de passe
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  className={`input w-full ${fieldErrors.password ? 'border-error' : ''}`}
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                  autoComplete="current-password"
+                />
+                {fieldErrors.password && (
+                  <span className="text-xs text-error font-medium">{fieldErrors.password}</span>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary btn-block btn-lg mt-8"
+              >
+                {loading ? 'Connexion en cours...' : 'Se connecter'}
+                {!loading && <ArrowRight size={18} />}
+              </button>
+            </form>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
-            {loading ? 'Connexion...' : 'Se connecter'}
-          </button>
-        </form>
-
-        <div className="auth-footer">
-          <p>Pas encore de compte ? <Link to="/register">S'inscrire</Link></p>
+          {/* Footer */}
+          <div className="card-footer text-center">
+            <p className="text-sm text-text-tertiary">
+              Pas encore de compte ?{' '}
+              <Link to="/register" className="text-primary font-semibold hover:text-primary-light transition-colors">
+                Créer un compte
+              </Link>
+            </p>
+          </div>
         </div>
+
+        {/* Bottom Link */}
+        <p className="text-center text-text-tertiary text-sm mt-6">
+          <Link to="/" className="text-primary hover:text-primary-light transition-colors font-medium">
+            ← Retour à l'accueil
+          </Link>
+        </p>
       </div>
     </div>
   );

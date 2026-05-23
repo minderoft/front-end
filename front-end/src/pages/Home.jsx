@@ -1,28 +1,20 @@
-// filepath: front-end/src/pages/Home.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Home as HomeIcon,
-  Car,
-  HardHat,
-  Wrench,
   Shield,
   CheckCircle,
-  CreditCard,
+  Lock,
   MapPin,
   Sparkles,
-  Layers,
-  ShieldCheck,
-  BarChart3,
-  Users,
-  Globe,
-  Phone,
-  Eye,
-  ChevronDown,
-  Rocket,
   TrendingUp,
-  Search,
-  SlidersHorizontal,
+  Plus,
+  ArrowRight,
+  Award,
+  ChevronRight,
+  Star,
+  Wrench,
+  Car,
+  HardHat,
 } from 'lucide-react';
 
 const setPageMeta = (title, description) => {
@@ -42,92 +34,52 @@ const categories = [
     id: 'immobilier',
     name: 'Immobilier',
     description: 'Maisons, appartements, terrains',
+    icon: Shield,
+    color: 'primary',
     image: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1050&q=80',
   },
   {
     id: 'vehicule',
-    name: 'Vehicules',
-    description: 'Voitures, motos et utilitaires',
-    image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1050&q=80',
+    name: 'Véhicules',
+    description: 'Voitures, motos, utilitaires',
+    icon: Car,
+    color: 'accent',
+    image: 'https://images.unsplash.com/photo-1552820728-8ac41f1ce891?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 'materiaux',
-    name: 'BTP',
-    description: 'Materiaux et equipements de construction',
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1050&q=80',
+    name: 'Matériaux BTP',
+    description: 'Matériaux et équipements',
+    icon: HardHat,
+    color: 'primary',
+    image: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 'technicien',
     name: 'Techniciens',
-    description: 'Artisans, serruriers, electriciens, plombiers',
-    image: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1050&q=80',
+    description: 'Artisans, électriciens, plombiers',
+    icon: Wrench,
+    color: 'accent',
+    image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=800&q=80',
   },
 ];
 
-// Professional pricing
-const professionalPricing = [
+// Trust features
+const trustFeatures = [
   {
-    id: 'immobilier',
-    name: 'Immobilier',
-    icon: 'ri-home-line',
-    price: '5,000',
-    currency: 'FCFA',
-    description: 'Annonce 30 jours · Visibilite standard',
-    features: ['Publication 30 jours', 'Photos illimitees', 'Support client'],
-    category: 'immobilier',
-    popular: true,
+    icon: Shield,
+    title: 'Paiements Sécurisés',
+    description: 'Transactions protégées avec Paystack et Djamo pour votre tranquillité',
   },
   {
-    id: 'materiaux',
-    name: 'Materiaux',
-    icon: 'ri-building-line',
-    price: '3,000',
-    currency: 'FCFA',
-    description: 'Annonce 30 jours · Visibilite standard',
-    features: ['Publication 30 jours', 'Jusqua 10 photos', 'Support client'],
-    category: 'materiaux',
-    popular: false,
+    icon: CheckCircle,
+    title: 'Vendeurs Vérifiés',
+    description: 'Tous nos vendeurs sont validés et certifiés pour garantir la qualité',
   },
   {
-    id: 'technicien',
-    name: 'Technicien',
-    icon: 'ri-tools-line',
-    price: '2,000',
-    currency: 'FCFA',
-    description: 'Annonce 30 jours',
-    features: ['Publication 30 jours', 'Jusqua 5 photos', 'Support client'],
-    category: 'technicien',
-    popular: false,
-  },
-  {
-    id: 'vehicule',
-    name: 'Vehicule',
-    icon: 'ri-car-line',
-    price: '4,000',
-    currency: 'FCFA',
-    description: 'Annonce 30 jours',
-    features: ['Publication 30 jours', 'Jusqua 8 photos', 'Support client'],
-    category: 'vehicule',
-    popular: false,
-  },
-];
-
-// Security features
-const securityFeatures = [
-  {
-    title: 'Donnees chiffrees',
-    description: 'Toutes les conversations et les paiements sont proteges par SSL et chiffrement de bout en bout.',
-    Icon: Shield,
-  },
-  {
-    title: 'Verification RSI',
-    description: 'Vendeurs qualifies et verifies pour renforcer la confiance sur chaque transaction.',
-    Icon: CheckCircle,
-  },
-  {
-    title: 'Paiement securise',
-    description: 'Integration Paystack/Djamo pour des transactions fluides et sures.',
-    Icon: CreditCard,
+    icon: Lock,
+    title: 'Données Chiffrées',
+    description: 'Vos conversations et données sont protégées par SSL de bout en bout',
   },
 ];
 
@@ -135,84 +87,202 @@ const securityFeatures = [
 const mockAnnouncements = [
   {
     id: 1,
-    title: 'Villa moderne a Cocody',
-    description: 'Magnifique villa de 4 chambres avec piscine et jardin arbore, quartier residentiel securise.',
-    price: '45,000,000 FCFA',
+    title: 'Villa moderne à Cocody',
+    description: 'Magnifique villa de 4 chambres avec piscine et jardin arboré',
+    price: '45,000,000',
+    currency: 'FCFA',
     location: 'Cocody, Abidjan',
     category: 'immobilier',
-    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1229c5?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1229c5?auto=format&fit=crop&w=500&q=80',
+    verified: true,
+    featured: true,
   },
   {
     id: 2,
     title: 'Toyota RAV4 2020',
-    description: 'SUV impeccable, full options, premiere main, entretien regulier en concession.',
-    price: '12,500,000 FCFA',
+    description: 'SUV impeccable, full options, première main, entretien régulier',
+    price: '12,500,000',
+    currency: 'FCFA',
     location: 'Treichville, Abidjan',
     category: 'vehicule',
-    image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1552820728-8ac41f1ce891?auto=format&fit=crop&w=500&q=80',
+    verified: true,
+    featured: true,
   },
   {
     id: 3,
     title: 'Ciment Portland 50kg',
-    description: 'Lot de 100 sacs de ciment Portland de haute qualite, livraison disponible.',
-    price: '6,500 FCFA/sac',
+    description: 'Lot de 100 sacs de ciment Portland de haute qualité',
+    price: '6,500',
+    currency: 'FCFA/sac',
     location: 'Yopougon, Abidjan',
     category: 'materiaux',
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=500&q=80',
+    verified: false,
+    featured: false,
   },
   {
     id: 4,
-    title: 'Electricien professionnel',
-    description: 'Installation, renovation et depannage electrique residentiel et commercial.',
+    title: 'Électricien professionnel',
+    description: 'Installation, rénovation et dépannage électrique résidentiel',
     price: 'Sur devis',
+    currency: '',
     location: 'Plateau, Abidjan',
     category: 'technicien',
-    image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=500&q=80',
+    verified: true,
+    featured: false,
   },
   {
     id: 5,
-    title: 'Appartement F3 a louer',
-    description: 'Bel appartement F3 lumineux, proche des commerces et transports en commun.',
-    price: '350,000 FCFA/mois',
+    title: 'Appartement F3 à louer',
+    description: 'Bel appartement F3 lumineux, proche des commerces',
+    price: '350,000',
+    currency: 'FCFA/mois',
     location: 'Marcory, Abidjan',
     category: 'immobilier',
-    image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=500&q=80',
+    verified: true,
+    featured: false,
   },
   {
     id: 6,
     title: 'Mercedes C300 2019',
-    description: 'Berline premium, cuir noir, toit ouvrant, faible kilometrage.',
-    price: '18,000,000 FCFA',
+    description: 'Berline premium, cuir noir, toit ouvrant, faible kilométrage',
+    price: '18,000,000',
+    currency: 'FCFA',
     location: 'Koumassi, Abidjan',
     category: 'vehicule',
-    image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=500&q=80',
+    verified: true,
+    featured: false,
   },
 ];
+
+// AnnouncementCard Component
+const AnnouncementCard = ({ announcement, onNavigate }) => {
+  return (
+    <div 
+      className="card bg-white overflow-hidden hover:shadow-xl transition-all group cursor-pointer"
+      onClick={() => onNavigate(`/announcements/${announcement.id}`)}
+    >
+      {/* Image Container */}
+      <div className="relative h-56 overflow-hidden bg-slate-100">
+        <img 
+          src={announcement.image} 
+          alt={announcement.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        {announcement.featured && (
+          <div className="absolute top-3 right-3">
+            <span className="badge badge-accent">
+              <Star size={12} />
+              En vedette
+            </span>
+          </div>
+        )}
+        {announcement.verified && (
+          <div className="absolute top-3 left-3">
+            <div className="bg-success bg-opacity-90 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+              <CheckCircle size={14} />
+              Vérifié
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-5">
+        {/* Category Badge */}
+        <span className="inline-block text-xs font-semibold uppercase tracking-wider text-primary mb-3">
+          {announcement.category}
+        </span>
+
+        {/* Title */}
+        <h3 className="text-lg font-bold text-text-primary mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+          {announcement.title}
+        </h3>
+
+        {/* Description */}
+        <p className="text-sm text-text-tertiary mb-4 line-clamp-2">
+          {announcement.description}
+        </p>
+
+        {/* Location */}
+        <div className="flex items-center gap-1 text-sm text-text-tertiary mb-4">
+          <MapPin size={16} className="flex-shrink-0" />
+          <span>{announcement.location}</span>
+        </div>
+
+        {/* Price */}
+        <div className="pt-4 border-t border-border-color">
+          <div className="text-xl font-bold text-accent">
+            {announcement.price}
+            {announcement.currency && <span className="text-sm font-medium text-text-secondary ml-1">{announcement.currency}</span>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// CategoryCard Component
+const CategoryCard = ({ category, onNavigate }) => {
+  const Icon = category.icon;
+  
+  return (
+    <div 
+      className="group cursor-pointer"
+      onClick={() => onNavigate(`/announcements?category=${category.id}`)}
+    >
+      <div className="relative h-48 overflow-hidden rounded-2xl mb-4 bg-slate-100">
+        <img 
+          src={category.image}
+          alt={category.name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-40 group-hover:opacity-50 transition-opacity" />
+      </div>
+      
+      <div className="space-y-2">
+        <div className="flex items-center gap-3">
+          <Icon size={24} className="text-primary group-hover:text-accent transition-colors" />
+          <h3 className="text-lg font-bold text-text-primary group-hover:text-primary transition-colors">
+            {category.name}
+          </h3>
+        </div>
+        <p className="text-sm text-text-tertiary">
+          {category.description}
+        </p>
+      </div>
+      
+      <div className="flex items-center gap-2 text-primary font-semibold mt-3 group-hover:gap-3 transition-all">
+        Découvrir
+        <ChevronRight size={18} />
+      </div>
+    </div>
+  );
+};
 
 const Home = () => {
   const navigate = useNavigate();
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [homeError, setHomeError] = useState('');
-  const [openContact, setOpenContact] = useState(null);
-  const [nearbyLoading, setNearbyLoading] = useState(false);
-  const [nearbyActive, setNearbyActive] = useState(false);
 
   useEffect(() => {
     setPageMeta(
-      'LocaPlus - Marketplace multi-services securisee',
-      'LocaPlus : immobilier, vehicules, BTP, techniciens. Vendeurs verifies, paiement securise Paystack/Djamo.'
+      'LocaPlus - Marketplace Sécurisée pour Immobilier, Véhicules & Services',
+      'LocaPlus : immobilier, véhicules, BTP, techniciens. Vendeurs vérifiés, paiement sécurisé Paystack/Djamo.'
     );
 
     const fetchRecentAnnouncements = async () => {
       setLoading(true);
       try {
-        await new Promise((r) => setTimeout(r, 800));
+        await new Promise((r) => setTimeout(r, 300));
         setAnnouncements(mockAnnouncements);
       } catch (error) {
-        console.error('Erreur chargement annonces Home:', error);
+        console.error('Erreur chargement annonces:', error);
         setAnnouncements(mockAnnouncements);
-        setHomeError('Impossible de charger les annonces recentes. Mode demonstration active.');
       } finally {
         setLoading(false);
       }
@@ -221,179 +291,219 @@ const Home = () => {
     fetchRecentAnnouncements();
   }, []);
 
-  const handleNearby = () => {
-    setNearbyLoading(true);
-    setTimeout(() => {
-      setNearbyLoading(false);
-      setNearbyActive(true);
-    }, 1500);
-  };
-
   return (
-    <div className="min-h-screen bg-white">
+    <div className="bg-bg-primary">
       {/* ========== HERO SECTION ========== */}
-      <section className="w-full bg-gradient-to-b from-blue-50 via-white to-white px-5 py-12 md:py-16">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-            {/* Left: Copy */}
-            <div className="order-1 space-y-6">
-              <span className="inline-block text-xs font-semibold uppercase tracking-widest text-blue-600 mb-4">
-                Fintech + Securite
-              </span>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
-                LocaPlus, la marketplace securisee pour vos services.
-              </h1>
-              <p className="text-base md:text-lg text-gray-700 leading-relaxed max-w-xl">
-                Immobilier, vehicules, BTP, techniciens - vendeurs verifies, paiement Paystack/Djamo.
-              </p>
+      <section className="hero py-20 lg:py-32 relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary opacity-10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-20 -left-40 w-80 h-80 bg-accent opacity-5 rounded-full blur-3xl" />
+        </div>
+
+        <div className="container relative z-10">
+          <div className="grid lg:grid-2 gap-12 items-center">
+            {/* Left: Headline & CTA */}
+            <div className="space-y-8 max-w-2xl">
+              <div className="space-y-6">
+                <span className="badge badge-primary inline-block">
+                  <Sparkles size={14} />
+                  Marketplace de Confiance
+                </span>
+
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-text-primary leading-tight">
+                  Trouvez Tout ce Dont vous Avez Besoin
+                </h1>
+
+                <p className="text-lg text-text-secondary max-w-lg leading-relaxed">
+                  Immobilier, véhicules, matériaux de construction et services techniques. Une marketplace sécurisée avec vendeurs vérifiés et paiements certifiés.
+                </p>
+              </div>
+
+              {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Link
-                  to="/announcements"
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md block text-center transition-colors"
-                >
-                  Explorer les annonces
+                <Link to="/announcements" className="btn btn-primary btn-lg">
+                  <TrendingUp size={20} />
+                  Explorer les Annonces
                 </Link>
-                <Link
-                  to="/register"
-                  className="w-full sm:w-auto border-2 border-blue-600 text-blue-600 font-semibold py-3 px-8 rounded-lg block text-center bg-transparent hover:bg-blue-50 transition-colors"
-                >
-                  Publier une annonce
+                <Link to="/register" className="btn btn-secondary btn-lg">
+                  <Plus size={20} />
+                  Publier une Annonce
                 </Link>
+              </div>
+
+              {/* Trust Badges */}
+              <div className="grid grid-cols-3 gap-4 pt-8 border-t border-border-color">
+                <div>
+                  <div className="text-2xl font-bold text-accent">12.5K+</div>
+                  <div className="text-sm text-text-tertiary">Utilisateurs actifs</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-accent">2.3K+</div>
+                  <div className="text-sm text-text-tertiary">Transactions/mois</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-accent">99.9%</div>
+                  <div className="text-sm text-text-tertiary">Sécurité SSL</div>
+                </div>
               </div>
             </div>
 
-            {/* Right: Metrics Panel */}
-            <div className="order-2">
-              <div className="bg-white rounded-2xl border-2 border-gray-200 shadow-lg p-6 md:p-8 space-y-6">
-                <div className="flex items-center justify-between pb-4 border-b border-gray-200">
-                  <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Performance
-                  </span>
-                  <strong className="text-sm font-bold text-blue-600">
-                    {announcements.length} annonces actives
-                  </strong>
+            {/* Right: Visual Element */}
+            <div className="hidden lg:block">
+              <div className="relative">
+                {/* Floating Card */}
+                <div className="card bg-white p-8 space-y-6">
+                  <div className="flex items-center gap-4 pb-6 border-b border-border-color">
+                    <div className="w-16 h-16 rounded-xl bg-primary-lightest flex items-center justify-center">
+                      <Award className="text-primary" size={28} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-text-primary">Catégories Premium</h3>
+                      <p className="text-sm text-text-tertiary">4 secteurs de qualité</p>
+                    </div>
+                  </div>
+
+                  {categories.map((cat) => (
+                    <div key={cat.id} className="flex items-center justify-between py-2">
+                      <span className="text-sm font-medium text-text-secondary">{cat.name}</span>
+                      <ChevronRight size={18} className="text-text-tertiary" />
+                    </div>
+                  ))}
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                      <BarChart3 className="w-5 h-5 text-orange-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-600 font-semibold">Transactions/mois</p>
-                      <p className="text-lg font-bold text-gray-900">2,345</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                      <Users className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-600 font-semibold">Utilisateurs</p>
-                      <p className="text-lg font-bold text-gray-900">12.5K</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                      <Globe className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-600 font-semibold">Pays operationnels</p>
-                      <p className="text-lg font-bold text-gray-900">25+</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                      <Shield className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-600 font-semibold">Taux de securite</p>
-                      <p className="text-lg font-bold text-gray-900">99.9%</p>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={handleNearby}
-                  className="w-full px-4 py-3 text-sm font-bold text-white bg-blue-600 border-0 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-md"
-                >
-                  <MapPin className="w-4 h-4" />
-                  {nearbyActive ? 'Annonces a proximite activees' : 'Voir les annonces a proximite'}
-                  {nearbyLoading && <span className="animate-spin">+</span>}
-                </button>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ========== RECENT ANNOUNCEMENTS ========== */}
-      <section className="w-full px-5 py-12 md:py-16 bg-white">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Annonces recentes</h2>
-              <p className="text-gray-700 mt-2 font-medium">Decouvrez les meilleures offres de notre communaute</p>
+      {/* ========== CATEGORIES SECTION ========== */}
+      <section className="py-20 lg:py-28 bg-bg-secondary">
+        <div className="container">
+          <div className="space-y-16">
+            {/* Header */}
+            <div className="text-center space-y-4 max-w-2xl mx-auto">
+              <h2 className="text-4xl md:text-5xl font-bold text-text-primary">
+                Nos Catégories Principales
+              </h2>
+              <p className="text-lg text-text-secondary">
+                Explorez les 4 secteurs majeurs de LocaPlus pour trouver exactement ce que vous cherchez
+              </p>
             </div>
-            <Link to="/announcements" className="text-blue-600 font-bold flex items-center gap-2 hover:gap-3 transition-all text-sm">
-              Voir tout <ChevronDown className="w-4 h-4 rotate-[-90deg]" />
-            </Link>
-          </div>
 
-          {loading ? (
-            <div className="skeleton-grid">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="skeleton-card">
-                  <div className="skeleton-line title" />
-                  <div className="skeleton-line short" />
-                  <div className="skeleton-line bar" />
-                  <div className="skeleton-line bar" />
-                </div>
+            {/* Categories Grid */}
+            <div className="grid md:grid-3 lg:grid-4 gap-8">
+              {categories.map((category) => (
+                <CategoryCard 
+                  key={category.id} 
+                  category={category}
+                  onNavigate={navigate}
+                />
               ))}
             </div>
-          ) : homeError ? (
-            <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6 space-y-4">
-              <p className="text-red-800 font-semibold">{homeError}</p>
-              <button onClick={() => window.location.reload()} className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors" type="button">
-                Reessayer
-              </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ========== TRUST SECTION ========== */}
+      <section className="py-20 lg:py-28 bg-bg-primary">
+        <div className="container">
+          <div className="space-y-16">
+            {/* Header */}
+            <div className="text-center space-y-4 max-w-2xl mx-auto">
+              <h2 className="text-4xl md:text-5xl font-bold text-text-primary">
+                La Confiance au Cœur de LocaPlus
+              </h2>
+              <p className="text-lg text-text-secondary">
+                Vos transactions et vos données sont protégées par les standards internationaux
+              </p>
             </div>
-          ) : announcements.length > 0 ? (
-            <div className="announcements-grid" style={{ gap: 12 }}>
-              {announcements.map((announcement) => (
-                  <div
-                    key={announcement._id || announcement.id || announcement.title}
-                    className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => navigate(`/announcements/${announcement._id || announcement.id}`)}
-                  >
-                    <img src={announcement.image} alt={announcement.title} className="w-full h-48 object-cover" />
-                    <div className="p-4">
-                      <h3 className="font-bold text-gray-900 line-clamp-2">{announcement.title}</h3>
-                      <p className="text-sm text-gray-600 mt-1">{announcement.location}</p>
-                      <p className="text-blue-600 font-bold mt-3">{announcement.price}</p>
+
+            {/* Trust Cards */}
+            <div className="grid md:grid-3 gap-8">
+              {trustFeatures.map((feature, idx) => {
+                const Icon = feature.icon;
+                return (
+                  <div key={idx} className="card bg-gradient-to-br from-primary-lightest to-white p-8">
+                    <div className="w-16 h-16 rounded-xl bg-primary-lightest flex items-center justify-center mb-6">
+                      <Icon size={28} className="text-primary" />
                     </div>
+                    <h3 className="text-xl font-bold text-text-primary mb-3">
+                      {feature.title}
+                    </h3>
+                    <p className="text-text-secondary">
+                      {feature.description}
+                    </p>
                   </div>
-              ))}
+                );
+              })}
             </div>
-          ) : (
-            <div className="bg-gray-50 rounded-lg p-8 text-center space-y-4">
-              <p className="text-gray-700 font-semibold text-lg">Aucune annonce pour le moment. Soyez le premier a publier !</p>
-              <Link to="/create" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors">
-                Publier une annonce
+          </div>
+        </div>
+      </section>
+
+      {/* ========== RECENT ANNOUNCEMENTS SECTION ========== */}
+      <section className="py-20 lg:py-28 bg-bg-secondary">
+        <div className="container">
+          <div className="space-y-12">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+              <div>
+                <h2 className="text-4xl md:text-5xl font-bold text-text-primary mb-3">
+                  Annonces Récentes
+                </h2>
+                <p className="text-lg text-text-secondary">
+                  Découvrez les meilleures offres de notre communauté
+                </p>
+              </div>
+              <Link to="/announcements" className="btn btn-primary btn-lg">
+                Voir Toutes les Annonces
+                <ArrowRight size={20} />
               </Link>
             </div>
-          )}
+
+            {/* Announcements Grid */}
+            {loading ? (
+              <div className="grid md:grid-2 lg:grid-3 gap-8">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div key={idx} className="card h-96 bg-slate-100 animate-pulse" />
+                ))}
+              </div>
+            ) : announcements.length > 0 ? (
+              <div className="grid md:grid-2 lg:grid-3 gap-8">
+                {announcements.slice(0, 6).map((announcement) => (
+                  <AnnouncementCard 
+                    key={announcement.id}
+                    announcement={announcement}
+                    onNavigate={navigate}
+                  />
+                ))}
+              </div>
+            ) : null}
+          </div>
         </div>
       </section>
 
-      {/* ========== PROFESSIONAL CTA ========== */}
-      <section className="w-full px-5 py-12 md:py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto bg-gradient-to-br from-blue-700 to-blue-900 rounded-2xl p-8 md:p-12 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex-1">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Vous etes professionnel ?</h2>
-            <p className="text-blue-100 text-lg font-medium">Rejoignez LocaPlus et atteignez des milliers de clients potentiels avec une publication securisee.</p>
+      {/* ========== FINAL CTA SECTION ========== */}
+      <section className="py-20 lg:py-28 bg-bg-primary">
+        <div className="container">
+          <div className="bg-gradient-to-br from-primary to-primary-light rounded-3xl p-12 lg:p-16 text-center space-y-8">
+            <h2 className="text-4xl lg:text-5xl font-bold text-white">
+              Prêt à Commencer ?
+            </h2>
+            <p className="text-lg text-primary-lightest max-w-2xl mx-auto">
+              Rejoignez des milliers de vendeurs et d'acheteurs qui font confiance à LocaPlus pour leurs transactions
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/register" className="btn btn-lg bg-white text-primary hover:bg-slate-100">
+                Créer un Compte Gratuit
+                <ArrowRight size={20} />
+              </Link>
+              <Link to="/announcements" className="btn btn-lg border-2 border-white text-white hover:bg-white hover:bg-opacity-10">
+                Parcourir les Annonces
+              </Link>
+            </div>
           </div>
-          <Link to="/register" className="w-full sm:w-auto bg-white hover:bg-blue-50 text-blue-700 font-bold py-4 px-8 rounded-lg whitespace-nowrap block text-center transition-colors shadow-lg">
-            Creer un compte gratuitement
-          </Link>
         </div>
       </section>
     </div>
