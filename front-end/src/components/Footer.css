@@ -1,0 +1,352 @@
+/* ============================================
+   Footer - LocaPlus
+   Professional 4-column layout
+   ============================================ */
+
+.footer {
+  background-color: var(--primary);
+  color: white;
+  padding: 0;
+  margin-top: auto;
+}
+
+/* Main Footer Container - 4 Columns */
+.footer-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--spacing-20) var(--spacing-6);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-12);
+}
+
+/* Footer Section */
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+.footer-section--brand {
+  gap: var(--spacing-8);
+}
+
+/* Logo */
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.footer-logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  background-color: rgba(255, 255, 255, 0.2);
+  font-size: var(--text-xl);
+}
+
+.footer-logo-text {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: white;
+  letter-spacing: -0.02em;
+}
+
+/* Brand Pitch */
+.footer-pitch {
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 280px;
+}
+
+/* Social Links */
+.footer-socials {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.footer-social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.footer-social-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Section Title */
+.footer-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+  padding-bottom: var(--spacing-2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Links */
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.footer-link {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: var(--transition);
+  display: inline-block;
+}
+
+.footer-link:hover {
+  color: white;
+  padding-left: var(--spacing-1);
+}
+
+/* Divider */
+.footer-divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Bottom Section */
+.footer-bottom {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: var(--spacing-6);
+}
+
+.footer-bottom-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-8);
+  flex-wrap: wrap;
+}
+
+/* Copyright */
+.footer-copyright {
+  flex: 1;
+  min-width: 200px;
+}
+
+.footer-copyright p {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+/* Payment Methods */
+.footer-payments {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.footer-payments-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+}
+
+.footer-payment-icons {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.footer-payment-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background-color: rgba(255, 255, 255, 0.1);
+  font-size: var(--text-lg);
+  cursor: default;
+  transition: var(--transition);
+}
+
+.footer-payment-icon:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+/* Empty group for balance */
+.footer-links-group {
+  flex: 0 0 auto;
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+
+@media (max-width: 1024px) {
+  .footer-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-8);
+    padding: var(--spacing-16) var(--spacing-6);
+  }
+
+  .footer-bottom-container {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-4);
+  }
+
+  .footer-copyright {
+    width: 100%;
+  }
+
+  .footer-payments {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-6);
+    padding: var(--spacing-12) var(--spacing-4);
+  }
+
+  .footer-section--brand {
+    padding-bottom: var(--spacing-6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .footer-bottom {
+    padding: var(--spacing-4);
+  }
+
+  .footer-bottom-container {
+    padding: 0 var(--spacing-3);
+  }
+
+  .footer-payments {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+  }
+
+  .footer-payment-icons {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .footer-copyright p {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-container {
+    gap: var(--spacing-6);
+    padding: var(--spacing-8) var(--spacing-3);
+  }
+
+  .footer-logo {
+    gap: var(--spacing-2);
+  }
+
+  .footer-pitch {
+    font-size: var(--text-xs);
+  }
+
+  .footer-title {
+    font-size: var(--text-xs);
+  }
+
+  .footer-link {
+    font-size: var(--text-xs);
+  }
+
+  .footer-social-link {
+    width: 36px;
+    height: 36px;
+  }
+
+  .footer-social-link svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .footer-bottom {
+    padding: var(--spacing-3);
+  }
+
+  .footer-bottom-container {
+    padding: 0 var(--spacing-2);
+    gap: var(--spacing-2);
+  }
+
+  .footer-copyright p {
+    font-size: var(--text-xs);
+  }
+
+  .footer-payments-label {
+    font-size: var(--text-xs);
+  }
+
+  .footer-payment-icon {
+    width: 28px;
+    height: 28px;
+    font-size: var(--text-base);
+  }
+}
+
+/* ============================================
+   Accessibility
+   ============================================ */
+
+.footer-link:focus-visible,
+.footer-social-link:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
+@media print {
+  .footer {
+    background-color: white;
+    color: black;
+  }
+
+  .footer-logo-text,
+  .footer-title {
+    color: black;
+  }
+
+  .footer-link,
+  .footer-pitch {
+    color: #333;
+  }
+}

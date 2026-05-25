@@ -1,12 +1,34 @@
-// filepath: front-end/src/components/Navbar.jsx
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Home, ShoppingBag, MessageCircle, Bell, HelpCircle,
-  LogOut, ChevronDown, Menu, X, Plus
+  Home,
+  ShoppingBag,
+  MessageCircle,
+  Bell,
+  HelpCircle,
+  LogOut,
+  ChevronDown,
+  Menu,
+  X,
+  Plus,
+  Search,
+  MapPin,
+  Heart,
+  User,
+  Settings,
+  MoreHorizontal,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Button from './Button';
 import './Navbar.css';
+
+const categories = [
+  { id: 'immobilier', name: 'Immobilier' },
+  { id: 'vehicule', name: 'Véhicules' },
+  { id: 'materiaux', name: 'Matériaux BTP' },
+  { id: 'technicien', name: 'Techniciens' },
+  { id: 'services', name: 'Services' },
+];
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -14,6 +36,7 @@ const Navbar = () => {
   const location = useLocation();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
 
@@ -31,61 +54,73 @@ const Navbar = () => {
       if (event.key === 'Escape') {
         setIsUserMenuOpen(false);
         setIsMobileMenuOpen(false);
+        setIsCategoriesOpen(false);
       }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, []);
 
-  // Close menus when route changes
   useEffect(() => {
     setIsUserMenuOpen(false);
     setIsMobileMenuOpen(false);
+    setIsCategoriesOpen(false);
   }, [location]);
 
   return (
     <>
       {/* Main Navigation Bar */}
-      <nav className="navbar-premium">
+      <nav className="navbar">
         <div className="navbar-container">
-          {/* Left: Logo */}
-          <div className="navbar-left">
-            <Link to="/" className="navbar-logo">
-              <div className="navbar-logo-icon">
-                <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="40" height="40" rx="8" fill="currentColor" opacity="0.1"/>
-                  <rect x="4" y="4" width="15" height="15" rx="2" fill="currentColor" opacity="0.8"/>
-                  <path d="M11.5 9L8 12V16H15V12L11.5 9Z" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                  <circle cx="12" cy="14" r="0.8" fill="currentColor"/>
-                  <rect x="21" y="4" width="15" height="15" rx="2" fill="currentColor" opacity="0.6"/>
-                  <path d="M24 11H32V13H24V11Z" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
-                  <circle cx="26" cy="14.5" r="1.2" fill="currentColor"/>
-                  <circle cx="30" cy="14.5" r="1.2" fill="currentColor"/>
-                </svg>
-              </div>
-              <span className="navbar-logo-text">LocaPlus</span>
-            </Link>
+          {/* Logo */}
+          <Link to="/" className="navbar-logo">
+            <div className="navbar-logo-icon">🏠</div>
+            <span className="navbar-logo-text">LocaPlus</span>
+          </Link>
+
+          {/* Search Bar (Desktop Only) */}
+          <div className="navbar-search-desktop hidden-mobile">
+            <div className="navbar-search-wrapper">
+              <Search className="navbar-search-icon" size={20} />
+              <input
+                type="text"
+                placeholder="Rechercher..."
+                className="navbar-search-input"
+              />
+            </div>
           </div>
 
-          {/* Center: Main Navigation (Desktop) */}
-          <div className="navbar-center hidden-mobile">
-            <Link to="/" className={`navbar-nav-item ${isActive('/') ? 'active' : ''}`}>
-              <Home size={18} />
-              <span>Accueil</span>
-            </Link>
-            <Link to="/announcements" className={`navbar-nav-item ${isActive('/announcements') ? 'active' : ''}`}>
-              <ShoppingBag size={18} />
-              <span>Annonces</span>
-            </Link>
-            <a href="#features" className="navbar-nav-item">
-              <span>Caractéristiques</span>
-            </a>
-          </div>
-
-          {/* Right: Action Items */}
+          {/* Right Section */}
           <div className="navbar-right">
-            {/* Icons Navigation (Desktop) */}
-            <div className="navbar-icons hidden-mobile">
+            {/* Categories Dropdown (Desktop) */}
+            <div className="navbar-categories hidden-mobile">
+              <button
+                className="navbar-categories-toggle"
+                onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+              >
+                <ShoppingBag size={18} />
+                <span>Catégories</span>
+                <ChevronDown size={16} className={isCategoriesOpen ? 'open' : ''} />
+              </button>
+
+              {isCategoriesOpen && (
+                <div className="navbar-categories-menu">
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      to={`/announcements?category=${cat.id}`}
+                      className="navbar-categories-item"
+                      onClick={() => setIsCategoriesOpen(false)}
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Icons Section */}
+            <div className="navbar-icons">
               {user && (
                 <>
                   <Link
@@ -98,6 +133,7 @@ const Navbar = () => {
                       <span className="navbar-badge">{unreadMessages}</span>
                     )}
                   </Link>
+
                   <Link
                     to="/notifications"
                     className={`navbar-icon-btn ${isActive('/notifications') ? 'active' : ''}`}
@@ -108,17 +144,32 @@ const Navbar = () => {
                       <span className="navbar-badge">{notificationCount}</span>
                     )}
                   </Link>
+
+                  <Link
+                    to="/favorites"
+                    className={`navbar-icon-btn ${isActive('/favorites') ? 'active' : ''}`}
+                    title="Favoris"
+                  >
+                    <Heart size={20} />
+                  </Link>
                 </>
               )}
+
+              <Link to="/help" className="navbar-icon-btn" title="Aide">
+                <HelpCircle size={20} />
+              </Link>
             </div>
 
-            {/* Primary CTA: Publish */}
-            {user && (
-              <Link to="/create" className="btn btn-primary btn-md hidden-mobile">
-                <Plus size={18} />
-                Publier
-              </Link>
-            )}
+            {/* Publish Button */}
+            <Button
+              variant="cta"
+              size="md"
+              className="navbar-publish-btn hidden-mobile"
+              onClick={() => navigate('/create')}
+              icon={Plus}
+            >
+              Publier
+            </Button>
 
             {/* Auth Section */}
             {user ? (
@@ -126,8 +177,7 @@ const Navbar = () => {
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="navbar-user-btn"
-                  aria-expanded={isUserMenuOpen}
-                  aria-haspopup="true"
+                  title={user.name}
                 >
                   <div className="navbar-avatar">
                     {user.name?.charAt(0).toUpperCase() || 'U'}
@@ -135,71 +185,91 @@ const Navbar = () => {
                   <span className="navbar-username hidden-mobile">
                     {user.name?.split(' ')[0]}
                   </span>
-                  <ChevronDown size={16} className={`navbar-chevron ${isUserMenuOpen ? 'open' : ''}`} />
+                  <ChevronDown
+                    size={16}
+                    className={`navbar-chevron ${isUserMenuOpen ? 'open' : ''}`}
+                  />
                 </button>
 
-                {/* User Dropdown Menu */}
+                {/* User Menu Dropdown */}
                 {isUserMenuOpen && (
-                  <div className="navbar-dropdown">
-                    <div className="navbar-dropdown-header">
-                      <div className="navbar-dropdown-avatar">{user.name?.charAt(0).toUpperCase() || 'U'}</div>
+                  <div className="navbar-user-menu">
+                    <div className="navbar-user-header">
+                      <div className="navbar-user-avatar">{user.name?.charAt(0).toUpperCase() || 'U'}</div>
                       <div>
-                        <div className="navbar-dropdown-name">{user.name}</div>
-                        <div className="navbar-dropdown-email">{user.email}</div>
+                        <div className="navbar-user-name">{user.name}</div>
+                        <div className="navbar-user-email">{user.email}</div>
                       </div>
                     </div>
-                    <div className="navbar-dropdown-divider"></div>
+                    <div className="navbar-menu-divider"></div>
                     <Link
                       to="/dashboard"
+                      className="navbar-menu-item"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="navbar-dropdown-item"
                     >
-                      <Home size={16} />
-                      Mon Dashboard
+                      <Home size={18} />
+                      <span>Tableau de bord</span>
                     </Link>
                     <Link
-                      to="/create"
-                      className="navbar-dropdown-item visible-mobile"
+                      to="/my-listings"
+                      className="navbar-menu-item"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
-                      <Plus size={16} />
-                      Publier une annonce
+                      <ShoppingBag size={18} />
+                      <span>Mes annonces</span>
                     </Link>
                     <Link
-                      to="/messages"
-                      className="navbar-dropdown-item visible-mobile"
+                      to="/profile"
+                      className="navbar-menu-item"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
-                      <MessageCircle size={16} />
-                      Messages
+                      <User size={18} />
+                      <span>Mon profil</span>
+                    </Link>
+                    <Link
+                      to="/settings"
+                      className="navbar-menu-item"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <Settings size={18} />
+                      <span>Paramètres</span>
                     </Link>
                     <Link
                       to="/help"
-                      className="navbar-dropdown-item"
+                      className="navbar-menu-item"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
-                      <HelpCircle size={16} />
-                      Aide et support
+                      <HelpCircle size={18} />
+                      <span>Aide</span>
                     </Link>
-                    <div className="navbar-dropdown-divider"></div>
+                    <div className="navbar-menu-divider"></div>
                     <button
                       onClick={handleLogout}
-                      className="navbar-dropdown-item navbar-dropdown-item--danger"
+                      className="navbar-menu-item navbar-menu-item--danger"
                     >
-                      <LogOut size={16} />
-                      Déconnexion
+                      <LogOut size={18} />
+                      <span>Déconnexion</span>
                     </button>
                   </div>
                 )}
               </div>
             ) : (
               <div className="navbar-auth-buttons">
-                <Link to="/login" className="btn btn-text btn-md hidden-mobile">
-                  Se connecter
-                </Link>
-                <Link to="/register" className="btn btn-primary btn-md">
-                  S'inscrire
-                </Link>
+                <Button
+                  variant="ghost"
+                  size="md"
+                  onClick={() => navigate('/login')}
+                  className="hidden-mobile"
+                >
+                  Connexion
+                </Button>
+                <Button
+                  variant="cta"
+                  size="md"
+                  onClick={() => navigate('/register')}
+                >
+                  Inscription
+                </Button>
               </div>
             )}
 
@@ -213,30 +283,132 @@ const Navbar = () => {
             </button>
           </div>
         </div>
+
+        {/* Search Bar Mobile */}
+        <div className="navbar-search-mobile visible-mobile">
+          <div className="navbar-search-wrapper">
+            <Search className="navbar-search-icon" size={20} />
+            <input
+              type="text"
+              placeholder="Rechercher..."
+              className="navbar-search-input"
+            />
+          </div>
+        </div>
       </nav>
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="navbar-mobile-menu">
-          <Link to="/" className={`navbar-mobile-item ${isActive('/') ? 'active' : ''}`}>
+          <Link
+            to="/"
+            className={`navbar-mobile-item ${isActive('/') ? 'active' : ''}`}
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
             <Home size={18} />
-            Accueil
+            <span>Accueil</span>
           </Link>
-          <Link to="/announcements" className={`navbar-mobile-item ${isActive('/announcements') ? 'active' : ''}`}>
+          <Link
+            to="/announcements"
+            className={`navbar-mobile-item ${isActive('/announcements') ? 'active' : ''}`}
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
             <ShoppingBag size={18} />
-            Annonces
+            <span>Annonces</span>
           </Link>
-          <a href="#features" className="navbar-mobile-item">
-            Caractéristiques
-          </a>
-          {!user && (
+
+          {/* Mobile Categories */}
+          <button
+            className="navbar-mobile-item"
+            onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+          >
+            <ShoppingBag size={18} />
+            <span>Catégories</span>
+            <ChevronDown size={16} className={isCategoriesOpen ? 'open' : ''} />
+          </button>
+          {isCategoriesOpen && (
+            <div className="navbar-mobile-categories">
+              {categories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  to={`/announcements?category=${cat.id}`}
+                  className="navbar-mobile-category-item"
+                  onClick={() => {
+                    setIsCategoriesOpen(false);
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  {cat.name}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {user && (
             <>
-              <div className="navbar-mobile-divider"></div>
-              <Link to="/help" className="navbar-mobile-item">
-                <HelpCircle size={18} />
-                Aide
+              <Link
+                to="/create"
+                className="navbar-mobile-item"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Plus size={18} />
+                <span>Publier une annonce</span>
+              </Link>
+              <Link
+                to="/dashboard"
+                className="navbar-mobile-item"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Home size={18} />
+                <span>Tableau de bord</span>
               </Link>
             </>
+          )}
+
+          <div className="navbar-mobile-divider"></div>
+
+          <Link
+            to="/help"
+            className="navbar-mobile-item"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <HelpCircle size={18} />
+            <span>Aide</span>
+          </Link>
+
+          {!user && (
+            <div className="navbar-mobile-auth">
+              <Button
+                variant="ghost"
+                size="md"
+                onClick={() => {
+                  navigate('/login');
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                Connexion
+              </Button>
+              <Button
+                variant="cta"
+                size="md"
+                onClick={() => {
+                  navigate('/register');
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                Inscription
+              </Button>
+            </div>
+          )}
+
+          {user && (
+            <button
+              onClick={handleLogout}
+              className="navbar-mobile-logout"
+            >
+              <LogOut size={18} />
+              <span>Déconnexion</span>
+            </button>
           )}
         </div>
       )}

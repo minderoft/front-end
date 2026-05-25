@@ -11,7 +11,18 @@ import {
   Car,
   HardHat,
   Home as HomeIcon,
+  Zap,
+  TrendingUp,
+  Users,
+  Award,
+  Upload,
+  Lock as LockIcon,
+  CreditCard,
 } from 'lucide-react';
+import Button from '../components/Button';
+import Card, { CardImage, CardBody } from '../components/Card';
+import SearchBar from '../components/SearchBar';
+import './Home.css';
 
 const setPageMeta = (title, description) => {
   document.title = title;
@@ -29,53 +40,64 @@ const categories = [
     id: 'immobilier',
     name: 'Immobilier',
     icon: HomeIcon,
+    count: 142,
   },
   {
     id: 'vehicule',
     name: 'Véhicules',
     icon: Car,
+    count: 89,
   },
   {
     id: 'materiaux',
-    name: 'BTP',
+    name: 'Matériaux BTP',
     icon: HardHat,
+    count: 56,
   },
   {
     id: 'technicien',
     name: 'Techniciens',
     icon: Wrench,
+    count: 34,
+  },
+  {
+    id: 'services',
+    name: 'Services',
+    icon: Award,
+    count: 78,
   },
 ];
 
+// Annonces réalistes avec images cohérentes
 const mockAnnouncements = [
   {
     id: 1,
-    title: 'Villa moderne à Cocody',
-    description: 'Magnifique villa de 4 chambres avec piscine et jardin arboré',
+    title: 'Villa moderne à Cocody - 4 chambres',
+    description: 'Magnifique villa contemporaine avec piscine, jardin et parking sécurisé',
     price: '45,000,000',
     currency: 'FCFA',
     location: 'Cocody, Abidjan',
     category: 'immobilier',
-    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1229c5?auto=format&fit=crop&w=500&q=80',
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=500&q=80',
     verified: true,
     featured: true,
   },
   {
     id: 2,
-    title: 'Toyota RAV4 2020',
-    description: 'SUV impeccable, full options, première main, entretien régulier',
+    title: 'Toyota RAV4 2020 - État excellent',
+    description: 'SUV compact fiable, full options, première main, entretien régulier',
     price: '12,500,000',
     currency: 'FCFA',
     location: 'Treichville, Abidjan',
     category: 'vehicule',
-    image: 'https://images.unsplash.com/photo-1552820728-8ac41f1ce891?auto=format&fit=crop&w=500&q=80',
+    image: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=500&q=80',
     verified: true,
     featured: true,
   },
   {
     id: 3,
-    title: 'Ciment Portland 50kg',
-    description: 'Lot de 100 sacs de ciment Portland de haute qualité',
+    title: 'Ciment Portland 50kg - Lot de 100 sacs',
+    description: 'Matériau de construction de qualité premium pour tous vos projets BTP',
     price: '6,500',
     currency: 'FCFA/sac',
     location: 'Yopougon, Abidjan',
@@ -86,8 +108,8 @@ const mockAnnouncements = [
   },
   {
     id: 4,
-    title: 'Électricien professionnel',
-    description: 'Installation, rénovation et dépannage électrique résidentiel',
+    title: 'Électricien professionnel - Installation & Réparation',
+    description: 'Services électriques résidentiels et commerciaux. Travaux garantis, délai rapide',
     price: 'Sur devis',
     currency: '',
     location: 'Plateau, Abidjan',
@@ -98,8 +120,8 @@ const mockAnnouncements = [
   },
   {
     id: 5,
-    title: 'Appartement F3 à louer',
-    description: 'Bel appartement F3 lumineux, proche des commerces',
+    title: 'Appartement F3 lumineux à proximité du marché',
+    description: 'Bien immobilier rénové, lumineux, proche des commerces et transports',
     price: '350,000',
     currency: 'FCFA/mois',
     location: 'Marcory, Abidjan',
@@ -110,30 +132,75 @@ const mockAnnouncements = [
   },
   {
     id: 6,
-    title: 'Mercedes C300 2019',
-    description: 'Berline premium, cuir noir, toit ouvrant, faible kilométrage',
+    title: 'Mercedes C300 2019 - Berline premium',
+    description: 'Automobile de prestige, cuir noir, toit ouvrant, faible kilométrage',
     price: '18,000,000',
     currency: 'FCFA',
     location: 'Koumassi, Abidjan',
     category: 'vehicule',
-    image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=500&q=80',
+    image: 'https://images.unsplash.com/photo-1554744512-d2c1221a6101?auto=format&fit=crop&w=500&q=80',
     verified: true,
     featured: false,
   },
 ];
 
+const kpis = [
+  {
+    icon: Users,
+    label: 'Utilisateurs actifs',
+    value: '8,500+',
+  },
+  {
+    icon: CheckCircle,
+    label: 'Vendeurs vérifiés',
+    value: '1,200+',
+  },
+  {
+    icon: CreditCard,
+    label: 'Transactions sécurisées',
+    value: '15,000+',
+  },
+  {
+    icon: TrendingUp,
+    label: 'Taux de satisfaction',
+    value: '98%',
+  },
+];
+
+const steps = [
+  {
+    number: 1,
+    title: 'Créer votre annonce',
+    description: 'Publiez votre bien ou service en 5 minutes. Ajoutez photos, prix et détails',
+    icon: Upload,
+  },
+  {
+    number: 2,
+    title: 'Échanger en sécurité',
+    description: 'Communiquez directement avec les acheteurs via notre système de messagerie',
+    icon: LockIcon,
+  },
+  {
+    number: 3,
+    title: 'Payer via Paystack ou Djamo',
+    description: 'Transactions garanties avec nos partenaires de paiement sécurisés',
+    icon: CreditCard,
+  },
+];
+
 const CategoryCard = ({ category, onNavigate }) => {
   const Icon = category.icon;
-
   return (
     <button
       onClick={() => onNavigate(`/announcements?category=${category.id}`)}
-      className="bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all rounded-xl p-5 flex flex-col items-center text-center cursor-pointer group focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      className="category-card"
     >
-      <Icon className="w-8 h-8 text-blue-600 mb-3" />
-      <span className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
-        {category.name}
-      </span>
+      <div className="category-icon-wrapper">
+        <Icon className="category-icon" />
+      </div>
+      <h3 className="category-name">{category.name}</h3>
+      <p className="category-count">{category.count} annonces</p>
+      <ArrowRight className="category-arrow" />
     </button>
   );
 };
@@ -142,56 +209,69 @@ const AnnouncementCard = ({ announcement, onNavigate }) => {
   return (
     <button
       onClick={() => onNavigate(`/announcements/${announcement.id}`)}
-      className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden cursor-pointer group focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-left"
+      className="announcement-card"
     >
-      <div className="relative h-56 overflow-hidden bg-gray-100">
-        <img
-          src={announcement.image}
-          alt={announcement.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-        {announcement.featured && (
-          <div className="absolute top-3 right-3 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
-            <Star size={12} fill="currentColor" />
-            En vedette
-          </div>
-        )}
-        {announcement.verified && (
-          <div className="absolute top-3 left-3 bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
-            <CheckCircle size={12} />
-            Vérifié
-          </div>
-        )}
-      </div>
+      <CardImage src={announcement.image} alt={announcement.title} />
+      
+      {announcement.featured && (
+        <div className="card-badge card-badge-featured">
+          <Star size={12} fill="currentColor" />
+          En vedette
+        </div>
+      )}
+      {announcement.verified && (
+        <div className="card-badge card-badge-verified">
+          <CheckCircle size={12} />
+          Vérifié
+        </div>
+      )}
 
-      <div className="p-5">
-        <span className="inline-block text-xs font-bold uppercase text-blue-600 mb-2 tracking-widest">
-          {announcement.category}
-        </span>
+      <CardBody>
+        <span className="announcement-category">{announcement.category}</span>
+        <h3 className="announcement-title">{announcement.title}</h3>
+        <p className="announcement-description">{announcement.description}</p>
 
-        <h3 className="text-base font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-          {announcement.title}
-        </h3>
-
-        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-          {announcement.description}
-        </p>
-
-        <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-          <MapPin size={14} className="flex-shrink-0" />
-          <span className="truncate">{announcement.location}</span>
+        <div className="announcement-location">
+          <MapPin size={16} />
+          <span>{announcement.location}</span>
         </div>
 
-        <div className="border-t border-gray-100 pt-4">
-          <div className="text-lg font-bold text-blue-600">
+        <div className="announcement-footer">
+          <div className="announcement-price">
             {announcement.price}
             {announcement.currency && (
-              <span className="text-xs font-medium text-gray-500 ml-2">{announcement.currency}</span>
+              <span className="announcement-currency">{announcement.currency}</span>
             )}
           </div>
         </div>
-      </div>
+      </CardBody>
     </button>
+  );
+};
+
+const KPICard = ({ icon: Icon, label, value }) => {
+  return (
+    <div className="kpi-card">
+      <div className="kpi-icon">
+        <Icon size={28} />
+      </div>
+      <div className="kpi-value">{value}</div>
+      <div className="kpi-label">{label}</div>
+    </div>
+  );
+};
+
+const StepCard = ({ step, index }) => {
+  const Icon = step.icon;
+  return (
+    <div className="step-card">
+      <div className="step-number">{step.number}</div>
+      <div className="step-icon">
+        <Icon size={32} />
+      </div>
+      <h3 className="step-title">{step.title}</h3>
+      <p className="step-description">{step.description}</p>
+    </div>
   );
 };
 
@@ -202,130 +282,129 @@ const Home = () => {
 
   useEffect(() => {
     setPageMeta(
-      'LocaPlus - Marketplace Sécurisée pour Immobilier, Véhicules & Services',
+      'LocaPlus - Marketplace sécurisée pour immobilier, véhicules & services',
       'LocaPlus : immobilier, véhicules, BTP, techniciens. Vendeurs vérifiés, paiement sécurisé Paystack/Djamo.'
     );
 
     const fetchRecentAnnouncements = async () => {
-      setLoading(true);
-      try {
-        await new Promise((r) => setTimeout(r, 300));
-        setAnnouncements(mockAnnouncements);
-      } catch (error) {
-        console.error('Erreur chargement annonces:', error);
-        setAnnouncements(mockAnnouncements);
-      } finally {
-        setLoading(false);
-      }
+      setLoading(false);
+      setAnnouncements(mockAnnouncements);
     };
 
     fetchRecentAnnouncements();
   }, []);
 
-  return (
-    <div className="w-full min-h-screen bg-gray-50/50 flex flex-col pt-20 sm:pt-24">
-      {/* HERO BANNER SECTION */}
-      <section className="w-full px-4 sm:px-8 my-6">
-        <div className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-12 px-6 sm:px-8 rounded-2xl shadow-sm text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-5xl font-bold mb-4 leading-tight">
-            Trouvez un service ou un bien en Côte d'Ivoire
-          </h1>
-          <p className="text-base md:text-lg text-blue-100 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Immobilier, véhicules, matériaux de construction et services techniques. Une marketplace sécurisée avec vendeurs vérifiés.
-          </p>
+  const handleSearch = ({ keyword, location, category }) => {
+    const params = new URLSearchParams();
+    if (keyword) params.append('keyword', keyword);
+    if (location) params.append('location', location);
+    if (category) params.append('category', category);
+    navigate(`/announcements?${params.toString()}`);
+  };
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              to="/announcements"
-              className="bg-white text-blue-600 font-bold py-3 px-8 rounded-xl shadow-md hover:shadow-lg hover:bg-gray-50 transition-all"
+  return (
+    <div className="home-container">
+      {/* ===== HERO SECTION ===== */}
+      <section className="hero-section">
+        <div className="hero-overlay"></div>
+        <div className="hero-content">
+          <div className="hero-text">
+            <h1 className="hero-title">
+              Découvrez l'immobilier, les véhicules et services de qualité en Côte d'Ivoire
+            </h1>
+            <p className="hero-subtitle">
+              La marketplace sécurisée pour vendre, acheter et louer. Vendeurs vérifiés, paiement garanti.
+            </p>
+          </div>
+
+          {/* Trust Badges */}
+          <div className="hero-badges">
+            <div className="badge">
+              <Shield size={18} />
+              <span>Paiement sécurisé Paystack & Djamo</span>
+            </div>
+            <div className="badge">
+              <CheckCircle size={18} />
+              <span>Vendeurs vérifiés</span>
+            </div>
+            <div className="badge">
+              <Lock size={18} />
+              <span>Support 7j/7</span>
+            </div>
+          </div>
+
+          {/* Search Bar */}
+          <div className="hero-search">
+            <SearchBar categories={categories} onSearch={handleSearch} />
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="hero-cta">
+            <Button
+              variant="cta"
+              size="lg"
+              onClick={() => navigate('/announcements')}
             >
               Explorer les annonces
-            </Link>
-            <Link
-              to="/register"
-              className="border-2 border-white text-white font-bold py-3 px-8 rounded-xl bg-white/10 hover:bg-white/20 transition-all"
+            </Button>
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={() => navigate('/register')}
             >
               Publier une annonce
-            </Link>
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* VISUAL CATEGORIES GRID */}
-      <section className="w-full px-4 sm:px-8 my-8">
-        <h2 className="text-lg font-bold text-gray-800 mb-6">
-          Navigation visuelle par catégorie
-        </h2>
-        <div className="grid grid-cols-2 gap-4 w-full sm:grid-cols-4">
-          {categories.map((category) => (
-            <CategoryCard
-              key={category.id}
-              category={category}
-              onNavigate={navigate}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* STATS & FEATURES GRID */}
-      <section className="w-full border-y border-gray-100 py-8 my-6">
-        <div className="w-full px-4 sm:px-8">
-          <div className="grid grid-cols-3 gap-4 w-full text-center">
-            <div>
-              <div className="text-2xl font-bold text-blue-600">12+</div>
-              <div className="text-xs text-gray-500 font-medium tracking-widest uppercase mt-1">
-                Annonces
-              </div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-600">4</div>
-              <div className="text-xs text-gray-500 font-medium tracking-widest uppercase mt-1">
-                Catégories
-              </div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-600">100%</div>
-              <div className="text-xs text-gray-500 font-medium tracking-widest uppercase mt-1">
-                Sécurisé
-              </div>
-            </div>
+      {/* ===== KPIs SECTION ===== */}
+      <section className="kpi-section">
+        <div className="section-container">
+          <h2 className="section-title">Nos performances</h2>
+          <div className="kpi-grid">
+            {kpis.map((kpi) => (
+              <KPICard key={kpi.label} {...kpi} />
+            ))}
           </div>
         </div>
       </section>
 
-      {/* RECENT ANNOUNCEMENTS SECTION */}
-      <section className="w-full px-4 sm:px-8 py-12">
-        <div className="w-full space-y-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                Annonces Récentes
-              </h2>
-              <p className="text-base text-gray-600">
-                Découvrez les meilleures offres de notre communauté
-              </p>
-            </div>
-            <Link
-              to="/announcements"
-              className="hidden md:inline-flex bg-blue-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-700 transition-all items-center gap-2 whitespace-nowrap shadow-sm"
+      {/* ===== CATEGORIES SECTION ===== */}
+      <section className="categories-section">
+        <div className="section-container">
+          <h2 className="section-title">Explorez par catégorie</h2>
+          <div className="categories-grid">
+            {categories.map((category) => (
+              <CategoryCard
+                key={category.id}
+                category={category}
+                onNavigate={navigate}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== RECENT ANNOUNCEMENTS SECTION ===== */}
+      <section className="announcements-section">
+        <div className="section-container">
+          <div className="section-header">
+            <h2 className="section-title">Annonces récentes</h2>
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/announcements')}
             >
-              Voir Toutes les Annonces
-              <ArrowRight size={20} />
-            </Link>
+              Voir toutes les annonces
+              <ArrowRight size={18} />
+            </Button>
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white rounded-xl h-96 animate-pulse shadow-sm"
-                />
-              ))}
-            </div>
-          ) : announcements.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {announcements.slice(0, 6).map((announcement) => (
+            <div className="announcements-loading">Chargement...</div>
+          ) : (
+            <div className="announcements-grid">
+              {announcements.map((announcement) => (
                 <AnnouncementCard
                   key={announcement.id}
                   announcement={announcement}
@@ -333,95 +412,55 @@ const Home = () => {
                 />
               ))}
             </div>
-          ) : null}
-
-          <div className="md:hidden">
-            <Link
-              to="/announcements"
-              className="w-full block bg-blue-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-blue-700 transition-all text-center shadow-sm"
-            >
-              Voir Toutes les Annonces
-            </Link>
-          </div>
+          )}
         </div>
       </section>
 
-      {/* TRUST & SECURITY SECTION */}
-      <section className="w-full px-4 sm:px-8 py-12">
-        <div className="space-y-8">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 text-center">
-              La Confiance au Cœur de LocaPlus
-            </h2>
-            <p className="text-base text-gray-600 text-center max-w-2xl mx-auto">
-              Vos transactions et vos données sont protégées par les standards internationaux
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-all">
-              <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center mb-4">
-                <Shield size={24} className="text-blue-600" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">
-                Paiements Sécurisés
-              </h3>
-              <p className="text-sm text-gray-600">
-                Transactions protégées avec Paystack et Djamo pour votre tranquillité
-              </p>
-            </div>
-
-            <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-all">
-              <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center mb-4">
-                <CheckCircle size={24} className="text-blue-600" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">
-                Vendeurs Vérifiés
-              </h3>
-              <p className="text-sm text-gray-600">
-                Tous nos vendeurs sont validés et certifiés pour garantir la qualité
-              </p>
-            </div>
-
-            <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-all">
-              <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center mb-4">
-                <Lock size={24} className="text-blue-600" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">
-                Données Chiffrées
-              </h3>
-              <p className="text-sm text-gray-600">
-                Vos conversations et données sont protégées par SSL de bout en bout
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FINAL CTA SECTION */}
-      <section className="w-full px-4 sm:px-8 py-12">
-        <div className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 md:p-12 text-center space-y-6 text-white shadow-sm">
-          <h2 className="text-3xl md:text-4xl font-bold">
-            Prêt à Commencer ?
-          </h2>
-          <p className="text-base md:text-lg text-blue-100 max-w-2xl mx-auto">
-            Rejoignez des milliers de vendeurs et d'acheteurs qui font confiance à LocaPlus pour leurs transactions
+      {/* ===== HOW IT WORKS SECTION ===== */}
+      <section className="how-it-works-section">
+        <div className="section-container">
+          <h2 className="section-title">Comment ça marche</h2>
+          <p className="section-subtitle">
+            Trois étapes simples pour vendre, acheter ou trouver les services que vous cherchez
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              to="/register"
-              className="bg-white text-blue-600 font-bold py-3 px-8 rounded-xl shadow-md hover:shadow-lg hover:bg-gray-50 transition-all flex items-center gap-2"
-            >
-              Créer un Compte Gratuit
-              <ArrowRight size={20} />
-            </Link>
-            <Link
-              to="/announcements"
-              className="border-2 border-white text-white font-bold py-3 px-8 rounded-xl bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2 justify-center"
-            >
-              Parcourir les Annonces
-              <ArrowRight size={20} />
-            </Link>
+          <div className="steps-grid">
+            {steps.map((step, index) => (
+              <StepCard key={step.number} step={step} index={index} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== PROFESSIONAL CTA SECTION ===== */}
+      <section className="professional-cta-section">
+        <div className="section-container">
+          <div className="professional-cta">
+            <div className="professional-content">
+              <h2 className="professional-title">
+                Vous êtes professionnel ?
+              </h2>
+              <p className="professional-subtitle">
+                Rejoignez nos vendeurs professionnels et augmentez votre visibilité
+              </p>
+              <ul className="professional-benefits">
+                <li>Paiement garanti et sécurisé</li>
+                <li>Tableau de bord exclusif et analytique</li>
+                <li>Visibilité prioritaire sur la marketplace</li>
+                <li>Support client dédié</li>
+              </ul>
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={() => navigate('/register')}
+              >
+                Créer un compte professionnel
+              </Button>
+            </div>
+            <div className="professional-image">
+              <div className="professional-image-placeholder">
+                <Zap size={48} />
+              </div>
+            </div>
           </div>
         </div>
       </section>
