@@ -1,36 +1,33 @@
 /* ============================================
-   Navbar - LocaPlus
-   Design moderne, sticky, et responsive
+   Navbar - LocaPlus Minimalist Premium Header
+   Burger Menu + Sliding Sidebar Drawer
    ============================================ */
 
-/* Base Navbar */
-.navbar {
-  position: sticky;
+/* Premium Minimalist Header */
+.navbar-header {
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  background: var(--bg-primary);
+  height: 70px;
+  background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
-  box-shadow: var(--shadow-xs);
-  z-index: 100;
-  backdrop-filter: blur(10px);
-  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: var(--shadow-sm);
+  z-index: 1000;
+  backdrop-filter: blur(8px);
 }
 
-/* Container Layout */
-.navbar-container {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 var(--spacing-6);
-  height: 80px;
+.navbar-header-content {
+  max-width: 100%;
+  height: 100%;
+  padding: 0 var(--spacing-4);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-4);
 }
 
-/* Logo Section */
-.navbar-logo {
+/* Brand Logo */
+.navbar-brand {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
@@ -38,16 +35,233 @@
   transition: var(--transition);
   padding: var(--spacing-2) var(--spacing-3);
   border-radius: var(--radius-lg);
-  flex-shrink: 0;
 }
 
-.navbar-logo:hover {
+.navbar-brand:hover {
   background-color: var(--bg-tertiary);
 }
 
-.navbar-logo-icon {
+.navbar-brand-icon {
   display: flex;
   align-items: center;
+  font-size: 24px;
+}
+
+.navbar-brand-text {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--primary);
+  letter-spacing: -0.01em;
+}
+
+/* Burger Menu Button */
+.navbar-burger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg);
+  background-color: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 0;
+}
+
+.navbar-burger:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--primary);
+}
+
+.navbar-burger:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Sidebar Backdrop */
+.navbar-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Sliding Sidebar Drawer */
+.navbar-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 340px;
+  background-color: var(--bg-primary);
+  box-shadow: var(--shadow-xl);
+  z-index: 1001;
+  overflow-y: auto;
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.navbar-sidebar-content {
+  padding: var(--spacing-6) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Sidebar Navigation Items */
+.navbar-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4) var(--spacing-6);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: var(--transition);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  text-align: left;
+  width: 100%;
+}
+
+.navbar-sidebar-item:hover {
+  background-color: var(--bg-secondary);
+  color: var(--primary);
+  padding-left: calc(var(--spacing-6) + var(--spacing-1));
+}
+
+.navbar-sidebar-item:active {
+  background-color: var(--primary-lightest);
+  color: var(--primary);
+}
+
+.navbar-sidebar-item svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: currentColor;
+}
+
+/* Sidebar Primary Button (Inscription) */
+.navbar-sidebar-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white !important;
+  margin: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-bold);
+}
+
+.navbar-sidebar-primary:hover {
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  padding-left: var(--spacing-6);
+}
+
+/* Sidebar Logout Button */
+.navbar-sidebar-logout {
+  color: var(--error);
+}
+
+.navbar-sidebar-logout:hover {
+  background-color: var(--error-light);
+  color: var(--error);
+}
+
+/* Sidebar Divider */
+.navbar-sidebar-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: var(--spacing-3) 0;
+}
+
+/* Responsive - Mobile Adjustments */
+@media (max-width: 480px) {
+  .navbar-header {
+    height: 60px;
+  }
+
+  .navbar-header-content {
+    padding: 0 var(--spacing-3);
+  }
+
+  .navbar-brand-text {
+    font-size: var(--text-base);
+  }
+
+  .navbar-brand-icon {
+    font-size: 20px;
+  }
+
+  .navbar-sidebar {
+    max-width: 100%;
+  }
+
+  .navbar-sidebar-item {
+    padding: var(--spacing-3) var(--spacing-4);
+    gap: var(--spacing-3);
+  }
+
+  .navbar-sidebar-item svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .navbar-sidebar-primary {
+    margin: var(--spacing-2) var(--spacing-3);
+  }
+}
+
+/* Accessibility */
+.navbar-sidebar-item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+/* Hide Utilities (Keep for compatibility) */
+.hidden-mobile {
+  display: block;
+}
+
+.visible-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+
+  .visible-mobile {
+    display: block !important;
+  }
+}
   justify-content: center;
   width: 36px;
   height: 36px;

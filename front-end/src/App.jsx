@@ -6,6 +6,8 @@ import Home from './pages/Home';
 import Announcements from './pages/Announcements';
 import AnnouncementDetail from './pages/AnnouncementDetail';
 import CreateAnnouncement from './pages/CreateAnnouncement';
+import CreateAd from './pages/CreateAd';
+import Tarifs from './pages/Tarifs';
 import Dashboard from './pages/Dashboard';
 import AdvertiserDashboard from './pages/AdvertiserDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -24,7 +26,6 @@ import Success from './pages/Success';
 import PaymentError from './pages/PaymentError';
 import ProtectedRoute from './components/ProtectedRoute';
 
-function App() {
   return (
     <div className="app">
       <Navbar />
@@ -33,6 +34,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/announcements" element={<Announcements />} />
           <Route path="/announcements/:id" element={<AnnouncementDetail />} />
+          <Route path="/tarifs" element={<Tarifs />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/help" element={<Help />} />
@@ -62,6 +64,11 @@ function App() {
           <Route path="/create" element={
             <ProtectedRoute>
               <CreateAnnouncement />
+            </ProtectedRoute>
+          } />
+          <Route path="/create-ad" element={
+            <ProtectedRoute>
+              <CreateAd />
             </ProtectedRoute>
           } />
           <Route path="/dashboard" element={

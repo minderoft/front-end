@@ -1,60 +1,29 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import {
-  Home,
-  ShoppingBag,
-  MessageCircle,
-  Bell,
-  HelpCircle,
-  LogOut,
-  ChevronDown,
-  Menu,
-  X,
-  Plus,
-  Search,
-  MapPin,
-  Heart,
-  User,
-  Settings,
-  MoreHorizontal,
-} from 'lucide-react';
+import { Menu, X, LogOut, Home, FileText, Zap, DollarSign, MessageCircle, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import Button from './Button';
 import './Navbar.css';
-
-const categories = [
-  { id: 'immobilier', name: 'Immobilier' },
-  { id: 'vehicule', name: 'Véhicules' },
-  { id: 'materiaux', name: 'Matériaux BTP' },
-  { id: 'technicien', name: 'Techniciens' },
-  { id: 'services', name: 'Services' },
-];
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
-  const [unreadMessages, setUnreadMessages] = useState(0);
-  const [notificationCount, setNotificationCount] = useState(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/');
-    setIsUserMenuOpen(false);
-    setIsMobileMenuOpen(false);
+    setIsSidebarOpen(false);
   };
 
-  const isActive = (path) => location.pathname === path;
+  const closeMenu = () => {
+    setIsSidebarOpen(false);
+  };
 
   useEffect(() => {
     const handleKey = (event) => {
       if (event.key === 'Escape') {
-        setIsUserMenuOpen(false);
-        setIsMobileMenuOpen(false);
-        setIsCategoriesOpen(false);
+        setIsSidebarOpen(false);
       }
     };
     window.addEventListener('keydown', handleKey);
@@ -62,355 +31,138 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    setIsUserMenuOpen(false);
-    setIsMobileMenuOpen(false);
-    setIsCategoriesOpen(false);
+    setIsSidebarOpen(false);
   }, [location]);
 
   return (
     <>
-      {/* Main Navigation Bar */}
-      <nav className="navbar">
-        <div className="navbar-container">
+      {/* Premium Minimalist Header */}
+      <header className="navbar-header">
+        <div className="navbar-header-content">
           {/* Logo */}
-          <Link to="/" className="navbar-logo">
-            <div className="navbar-logo-icon">🏠</div>
-            <span className="navbar-logo-text">LocaPlus</span>
+          <Link to="/" className="navbar-brand">
+            <span className="navbar-brand-icon">🏠</span>
+            <span className="navbar-brand-text">LocaPlus</span>
           </Link>
 
-          {/* Search Bar (Desktop Only) */}
-          <div className="navbar-search-desktop hidden-mobile">
-            <div className="navbar-search-wrapper">
-              <Search className="navbar-search-icon" size={20} />
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                className="navbar-search-input"
-              />
-            </div>
-          </div>
+          {/* Burger Menu Button */}
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="navbar-burger"
+            aria-label="Toggle menu"
+            aria-expanded={isSidebarOpen}
+          >
+            {isSidebarOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        </div>
+      </header>
 
-          {/* Right Section */}
-          <div className="navbar-right">
-            {/* Categories Dropdown (Desktop) */}
-            <div className="navbar-categories hidden-mobile">
-              <button
-                className="navbar-categories-toggle"
-                onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+      {/* Sliding Sidebar Drawer */}
+      {isSidebarOpen && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="navbar-backdrop"
+            onClick={closeMenu}
+            role="presentation"
+          />
+
+          {/* Sidebar Menu */}
+          <nav className="navbar-sidebar">
+            <div className="navbar-sidebar-content">
+              {/* Main Navigation Items */}
+              <Link
+                to="/"
+                className="navbar-sidebar-item"
+                onClick={closeMenu}
               >
-                <ShoppingBag size={18} />
-                <span>Catégories</span>
-                <ChevronDown size={16} className={isCategoriesOpen ? 'open' : ''} />
-              </button>
+                <Home size={20} />
+                <span>Accueil</span>
+              </Link>
 
-              {isCategoriesOpen && (
-                <div className="navbar-categories-menu">
-                  {categories.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      to={`/announcements?category=${cat.id}`}
-                      className="navbar-categories-item"
-                      onClick={() => setIsCategoriesOpen(false)}
-                    >
-                      {cat.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+              <Link
+                to="/announcements"
+                className="navbar-sidebar-item"
+                onClick={closeMenu}
+              >
+                <FileText size={20} />
+                <span>Déposer une Annonce</span>
+              </Link>
 
-            {/* Icons Section */}
-            <div className="navbar-icons">
-              {user && (
+              <Link
+                to="/create-ad"
+                className="navbar-sidebar-item"
+                onClick={closeMenu}
+              >
+                <Zap size={20} />
+                <span>Créer une Publicité</span>
+              </Link>
+
+              <Link
+                to="/tarifs"
+                className="navbar-sidebar-item"
+                onClick={closeMenu}
+              >
+                <DollarSign size={20} />
+                <span>Tarifs</span>
+              </Link>
+
+              {/* Divider */}
+              <div className="navbar-sidebar-divider" />
+
+              {/* User-Specific Items */}
+              {user ? (
                 <>
                   <Link
                     to="/messages"
-                    className={`navbar-icon-btn ${isActive('/messages') ? 'active' : ''}`}
-                    title="Messages"
+                    className="navbar-sidebar-item"
+                    onClick={closeMenu}
                   >
                     <MessageCircle size={20} />
-                    {unreadMessages > 0 && (
-                      <span className="navbar-badge">{unreadMessages}</span>
-                    )}
+                    <span>Messages</span>
                   </Link>
 
                   <Link
-                    to="/notifications"
-                    className={`navbar-icon-btn ${isActive('/notifications') ? 'active' : ''}`}
-                    title="Notifications"
+                    to="/dashboard"
+                    className="navbar-sidebar-item"
+                    onClick={closeMenu}
                   >
-                    <Bell size={20} />
-                    {notificationCount > 0 && (
-                      <span className="navbar-badge">{notificationCount}</span>
-                    )}
+                    <User size={20} />
+                    <span>Mon Compte</span>
                   </Link>
 
-                  <Link
-                    to="/favorites"
-                    className={`navbar-icon-btn ${isActive('/favorites') ? 'active' : ''}`}
-                    title="Favoris"
+                  <div className="navbar-sidebar-divider" />
+
+                  <button
+                    onClick={handleLogout}
+                    className="navbar-sidebar-item navbar-sidebar-logout"
                   >
-                    <Heart size={20} />
+                    <LogOut size={20} />
+                    <span>Déconnexion</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="navbar-sidebar-divider" />
+                  <Link
+                    to="/login"
+                    className="navbar-sidebar-item"
+                    onClick={closeMenu}
+                  >
+                    <span>Connexion</span>
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="navbar-sidebar-item navbar-sidebar-primary"
+                    onClick={closeMenu}
+                  >
+                    <span>Inscription</span>
                   </Link>
                 </>
               )}
-
-              <Link to="/help" className="navbar-icon-btn" title="Aide">
-                <HelpCircle size={20} />
-              </Link>
             </div>
-
-            {/* Publish Button */}
-            <Button
-              variant="cta"
-              size="md"
-              className="navbar-publish-btn hidden-mobile"
-              onClick={() => navigate('/create')}
-              icon={Plus}
-            >
-              Publier
-            </Button>
-
-            {/* Auth Section */}
-            {user ? (
-              <div className="navbar-user-section">
-                <button
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="navbar-user-btn"
-                  title={user.name}
-                >
-                  <div className="navbar-avatar">
-                    {user.name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                  <span className="navbar-username hidden-mobile">
-                    {user.name?.split(' ')[0]}
-                  </span>
-                  <ChevronDown
-                    size={16}
-                    className={`navbar-chevron ${isUserMenuOpen ? 'open' : ''}`}
-                  />
-                </button>
-
-                {/* User Menu Dropdown */}
-                {isUserMenuOpen && (
-                  <div className="navbar-user-menu">
-                    <div className="navbar-user-header">
-                      <div className="navbar-user-avatar">{user.name?.charAt(0).toUpperCase() || 'U'}</div>
-                      <div>
-                        <div className="navbar-user-name">{user.name}</div>
-                        <div className="navbar-user-email">{user.email}</div>
-                      </div>
-                    </div>
-                    <div className="navbar-menu-divider"></div>
-                    <Link
-                      to="/dashboard"
-                      className="navbar-menu-item"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      <Home size={18} />
-                      <span>Tableau de bord</span>
-                    </Link>
-                    <Link
-                      to="/my-listings"
-                      className="navbar-menu-item"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      <ShoppingBag size={18} />
-                      <span>Mes annonces</span>
-                    </Link>
-                    <Link
-                      to="/profile"
-                      className="navbar-menu-item"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      <User size={18} />
-                      <span>Mon profil</span>
-                    </Link>
-                    <Link
-                      to="/settings"
-                      className="navbar-menu-item"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      <Settings size={18} />
-                      <span>Paramètres</span>
-                    </Link>
-                    <Link
-                      to="/help"
-                      className="navbar-menu-item"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      <HelpCircle size={18} />
-                      <span>Aide</span>
-                    </Link>
-                    <div className="navbar-menu-divider"></div>
-                    <button
-                      onClick={handleLogout}
-                      className="navbar-menu-item navbar-menu-item--danger"
-                    >
-                      <LogOut size={18} />
-                      <span>Déconnexion</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="navbar-auth-buttons">
-                <Button
-                  variant="ghost"
-                  size="md"
-                  onClick={() => navigate('/login')}
-                  className="hidden-mobile"
-                >
-                  Connexion
-                </Button>
-                <Button
-                  variant="cta"
-                  size="md"
-                  onClick={() => navigate('/register')}
-                >
-                  Inscription
-                </Button>
-              </div>
-            )}
-
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="navbar-mobile-toggle visible-mobile"
-              aria-label="Toggle menu"
-            >
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Search Bar Mobile */}
-        <div className="navbar-search-mobile visible-mobile">
-          <div className="navbar-search-wrapper">
-            <Search className="navbar-search-icon" size={20} />
-            <input
-              type="text"
-              placeholder="Rechercher..."
-              className="navbar-search-input"
-            />
-          </div>
-        </div>
-      </nav>
-
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="navbar-mobile-menu">
-          <Link
-            to="/"
-            className={`navbar-mobile-item ${isActive('/') ? 'active' : ''}`}
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <Home size={18} />
-            <span>Accueil</span>
-          </Link>
-          <Link
-            to="/announcements"
-            className={`navbar-mobile-item ${isActive('/announcements') ? 'active' : ''}`}
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <ShoppingBag size={18} />
-            <span>Annonces</span>
-          </Link>
-
-          {/* Mobile Categories */}
-          <button
-            className="navbar-mobile-item"
-            onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-          >
-            <ShoppingBag size={18} />
-            <span>Catégories</span>
-            <ChevronDown size={16} className={isCategoriesOpen ? 'open' : ''} />
-          </button>
-          {isCategoriesOpen && (
-            <div className="navbar-mobile-categories">
-              {categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  to={`/announcements?category=${cat.id}`}
-                  className="navbar-mobile-category-item"
-                  onClick={() => {
-                    setIsCategoriesOpen(false);
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  {cat.name}
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {user && (
-            <>
-              <Link
-                to="/create"
-                className="navbar-mobile-item"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <Plus size={18} />
-                <span>Publier une annonce</span>
-              </Link>
-              <Link
-                to="/dashboard"
-                className="navbar-mobile-item"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <Home size={18} />
-                <span>Tableau de bord</span>
-              </Link>
-            </>
-          )}
-
-          <div className="navbar-mobile-divider"></div>
-
-          <Link
-            to="/help"
-            className="navbar-mobile-item"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <HelpCircle size={18} />
-            <span>Aide</span>
-          </Link>
-
-          {!user && (
-            <div className="navbar-mobile-auth">
-              <Button
-                variant="ghost"
-                size="md"
-                onClick={() => {
-                  navigate('/login');
-                  setIsMobileMenuOpen(false);
-                }}
-              >
-                Connexion
-              </Button>
-              <Button
-                variant="cta"
-                size="md"
-                onClick={() => {
-                  navigate('/register');
-                  setIsMobileMenuOpen(false);
-                }}
-              >
-                Inscription
-              </Button>
-            </div>
-          )}
-
-          {user && (
-            <button
-              onClick={handleLogout}
-              className="navbar-mobile-logout"
-            >
-              <LogOut size={18} />
-              <span>Déconnexion</span>
-            </button>
-          )}
-        </div>
+          </nav>
+        </>
       )}
     </>
   );
