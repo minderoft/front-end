@@ -1,4 +1,5 @@
 // filepath: front-end/src/App.jsx
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -26,6 +27,8 @@ import Success from './pages/Success';
 import PaymentError from './pages/PaymentError';
 import ProtectedRoute from './components/ProtectedRoute';
 
+const App = () => {
+  console.log('App component loaded');
   return (
     <div className="app">
       <Navbar />
@@ -98,6 +101,6 @@ import ProtectedRoute from './components/ProtectedRoute';
       <Footer />
     </div>
   );
-}
+};
 
 export default App;
