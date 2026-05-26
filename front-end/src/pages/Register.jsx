@@ -282,21 +282,6 @@ const Register = () => {
 };
 
 export default Register;
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Confirmer le mot de passe</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              className="form-input"
-              placeholder="••••••••"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              autoComplete="new-password"
-            />
-            {fieldErrors.confirmPassword && <span className="form-error">{fieldErrors.confirmPassword}</span>}
-          </div>
 
           <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '24px' }}>
             <input
