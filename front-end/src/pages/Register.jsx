@@ -282,36 +282,3 @@ const Register = () => {
 };
 
 export default Register;
-
-          <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '24px' }}>
-            <input
-              type="checkbox"
-              id="acceptPrivacy"
-              checked={acceptedPrivacy}
-              onChange={(e) => {
-                setAcceptedPrivacy(e.target.checked);
-                setFieldErrors(prev => ({ ...prev, acceptedPrivacy: '' }));
-                setError('');
-              }}
-              style={{ width: '24px', height: '24px', minWidth: '24px', minHeight: '24px', cursor: 'pointer' }}
-            />
-            <label htmlFor="acceptPrivacy" style={{ fontSize: '0.95rem', lineHeight: '1.5', cursor: 'pointer' }}>
-              J'accepte la <a href="/privacy-policy.html" target="_blank" rel="noreferrer">Politique de Confidentialité</a>
-            </label>
-          </div>
-          {fieldErrors.acceptedPrivacy && <span className="form-error" style={{ display: 'block', marginBottom: '16px' }}>{fieldErrors.acceptedPrivacy}</span>}
-
-          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading || !acceptedPrivacy}>
-            {loading ? 'Inscription...' : 'Créer un compte'}
-          </button>
-        </form>
-
-        <div className="auth-footer">
-          <p>Déjà un compte ? <Link to="/login">Se connecter</Link></p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default Register;
