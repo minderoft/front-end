@@ -136,6 +136,28 @@ const CreateAnnouncement = () => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
+    
+    // Validation: Check if more than 2 files are selected
+    if (files.length > 2) {
+      alert('Vous ne pouvez télécharger que 2 images maximum. Veuillez sélectionner moins de fichiers.');
+      // Clear the input
+      e.target.value = '';
+      setFieldErrors(prev => ({ ...prev, images: 'Maximum 2 images autorisées.' }));
+      return;
+    }
+    
+    // Validation: Check that all files are images
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    const invalidFiles = files.filter(file => !validTypes.includes(file.type));
+    
+    if (invalidFiles.length > 0) {
+      alert('Seuls les fichiers image sont autorisés (JPEG, PNG, WebP, GIF).');
+      // Clear the input
+      e.target.value = '';
+      setFieldErrors(prev => ({ ...prev, images: 'Seuls les fichiers image sont autorisés.' }));
+      return;
+    }
+    
     const remaining = 10 - formData.images.length;
     if (remaining <= 0) {
       setFieldErrors(prev => ({ ...prev, images: 'Limite de 10 images atteinte.' }));

@@ -1,13 +1,52 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FileText, Zap, Building2, Truck, HardHat, Wrench } from 'lucide-react';
+import { FileText, Zap, Building2, Truck, HardHat, Wrench, MapPin, Phone, Flag, Rocket, Eye } from 'lucide-react';
+import { announcementService } from '../services/api';
+import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
+import { formatPrice } from '../utils/formatPrice';
 import './Home.css';
 
 const Home = () => {
   const navigate = useNavigate();
+  const [recentAnnouncements, setRecentAnnouncements] = useState([]);
+  const [sponsoredAds, setSponsoredAds] = useState([]);
+  const [loadingAnnouncements, setLoadingAnnouncements] = useState(true);
+  const [loadingSponsored, setLoadingSponsored] = useState(true);
 
   useEffect(() => {
     document.title = 'LocaPlus - La marketplace sécurisée en Côte d\'Ivoire';
+  }, []);
+
+  // Fetch latest 4 announcements for homepage
+  useEffect(() => {
+    const fetchRecentAnnouncements = async () => {
+      try {
+        const response = await announcementService.getAll({ limit: 4, page: 1 });
+        const results = response.data?.announcements ?? [];
+        setRecentAnnouncements(Array.isArray(results) ? results : []);
+      } catch (error) {
+        console.error('Erreur fetch recent announcements:', error);
+        setRecentAnnouncements([]);
+      } finally {
+        setLoadingAnnouncements(false);
+      }
+    };
+
+    const fetchSponsoredAds = async () => {
+      try {
+        const response = await announcementService.getSponsored({ limit: 4 });
+        const results = response.data?.announcements ?? [];
+        setSponsoredAds(Array.isArray(results) ? results : []);
+      } catch (error) {
+        console.error('Erreur fetch sponsored ads:', error);
+        setSponsoredAds([]);
+      } finally {
+        setLoadingSponsored(false);
+      }
+    };
+
+    fetchRecentAnnouncements();
+    fetchSponsoredAds();
   }, []);
 
   const categories = [
@@ -16,6 +55,36 @@ const Home = () => {
     { id: 'materiaux', name: 'Matériaux de construction', icon: HardHat },
     { id: 'technicien', name: 'Techniciens', icon: Wrench },
   ];
+
+  const categoryIcon = (category) => {
+    switch (category?.toLowerCase()) {
+      case 'immobilier':
+        return <Flag size={18} />;
+      case 'vehicule':
+        return <Rocket size={18} />;
+      case 'materiaux':
+        return <MapPin size={18} />;
+      case 'technicien':
+        return <Phone size={18} />;
+      default:
+        return <FileText size={18} />;
+    }
+  };
+
+  const getCategoryBadgeColor = (category) => {
+    switch (category?.toLowerCase()) {
+      case 'immobilier':
+        return 'badge-immobilier';
+      case 'vehicule':
+        return 'badge-vehicule';
+      case 'materiaux':
+        return 'badge-materiaux';
+      case 'technicien':
+        return 'badge-technicien';
+      default:
+        return 'badge-default';
+    }
+  };
 
   return (
     <div className="home-page">
@@ -82,6 +151,171 @@ const Home = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Section: Annonces Récentes */}
+      <section className="recent-announcements-section">
+        <div className="section-container">
+          <div className="section-header">
+            <h2 className="section-title">Annonces Récentes</h2>
+            <Link to="/announcements" className="view-all-link">
+              Voir toutes les annonces →
+            </Link>
+          </div>
+
+          {loadingAnnouncements ? (
+            <div className="announcements-grid">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="announcement-card-loading">
+                  <div className="card-skeleton-image" />
+                  <div className="card-skeleton-content">
+                    <div className="skeleton-line skeleton-title" />
+                    <div className="skeleton-line skeleton-desc" />
+                    <div className="skeleton-line skeleton-desc-short" />
+                    <div className="skeleton-line skeleton-price" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : recentAnnouncements.length > 0 ? (
+            <div className="announcements-grid">
+              {recentAnnouncements.map((announcement) => {
+                const announcementId = announcement._id || announcement.id;
+                const parsedImages = parseImages(announcement.images);
+                const rawImage = announcement.image_url || parsedImages[0];
+                const imageUrl = resolveImageUrl(rawImage);
+                const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
+
+                return (
+                  <Link
+                    key={announcementId || announcement.title}
+                    to={`/announcements/${announcementId}`}
+                    className="announcement-card home-announcement-card"
+                  >
+                    {/* Thumbnail Container */}
+                    <div className="card-thumbnail">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={announcement.title}
+                          className="card-thumbnail-image"
+                          loading="lazy"
+                          onError={handleImageError}
+                        />
+                      ) : (
+                        <div className="card-thumbnail-placeholder">
+                          {categoryIcon(announcement.category)}
+                        </div>
+                      )}
+                      {isBoosted && (
+                        <div className="card-badge-boosted">
+                          <Rocket size={12} />
+                          <span>Boosté</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card Content */}
+                    <div className="card-content">
+                      {/* Category Badge */}
+                      <span className={`card-category-badge ${getCategoryBadgeColor(announcement.category)}`}>
+                        {announcement.category || 'Annonce'}
+                      </span>
+
+                      {/* Title */}
+                      <h3 className="card-title">{announcement.title}</h3>
+
+                      {/* Location */}
+                      <div className="card-location">
+                        <MapPin size={14} />
+                        <span>{announcement.location || 'Localisation non spécifiée'}</span>
+                      </div>
+
+                      {/* Price */}
+                      <div className="card-price">
+                        {announcement.category === 'technicien' || announcement.price === 0
+                          ? 'Sur devis'
+                          : formatPrice(announcement.price)}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="no-announcements">
+              <p>Aucune annonce disponible pour le moment.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Section: Publicités Sponsorisées */}
+      <section className="sponsored-ads-section">
+        <div className="section-container">
+          <div className="section-header">
+            <div className="sponsored-header">
+              <Zap size={24} className="sponsored-icon" />
+              <h2 className="section-title">Publicités Sponsorisées</h2>
+            </div>
+            <Link to="/announcements?boosted=true" className="view-all-link">
+              Voir plus →
+            </Link>
+          </div>
+
+          {loadingSponsored ? (
+            <div className="sponsored-grid">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="sponsored-banner-loading">
+                  <div className="skeleton-banner" />
+                </div>
+              ))}
+            </div>
+          ) : sponsoredAds.length > 0 ? (
+            <div className="sponsored-grid">
+              {sponsoredAds.map((ad) => {
+                const adId = ad._id || ad.id;
+                const parsedImages = parseImages(ad.images);
+                const rawImage = ad.image_url || parsedImages[0];
+                const imageUrl = resolveImageUrl(rawImage);
+
+                return (
+                  <Link
+                    key={adId || ad.title}
+                    to={`/announcements/${adId}`}
+                    className="sponsored-banner"
+                  >
+                    <div className="sponsored-banner-image">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={ad.title}
+                          className="sponsored-banner-img"
+                          loading="lazy"
+                          onError={handleImageError}
+                        />
+                      ) : (
+                        <div className="sponsored-banner-placeholder">
+                          <Zap size={32} />
+                          <span>{ad.title}</span>
+                        </div>
+                      )}
+                      <div className="sponsored-overlay">
+                        <span className="sponsored-label">
+                          <Zap size={14} /> Sponsorisé
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="no-ads">
+              <p>Aucune publicité sponsorisée pour le moment.</p>
+            </div>
+          )}
         </div>
       </section>
     </div>

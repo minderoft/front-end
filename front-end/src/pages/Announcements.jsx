@@ -1,11 +1,12 @@
 // filepath: front-end/src/pages/Announcements.jsx
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { MapPin, Phone, Flag, Rocket, Search, Eye } from 'lucide-react';
+import { MapPin, Phone, Flag, Rocket, Search, Eye, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { announcementService, reportService } from '../services/api';
 import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
 import { formatPrice } from '../utils/formatPrice';
+import './Announcements.css';
 
 const setPageMeta = (title, description) => {
   document.title = title;
@@ -31,6 +32,25 @@ const categoryIcon = (category) => {
     default:
       return <Search size={18} />;
   }
+};
+
+const getCategoryBadgeClass = (category) => {
+  switch (category?.toLowerCase()) {
+    case 'immobilier':
+      return 'badge-immobilier';
+    case 'vehicule':
+      return 'badge-vehicule';
+    case 'materiaux':
+      return 'badge-materiaux';
+    case 'technicien':
+      return 'badge-technicien';
+    default:
+      return 'badge-default';
+  }
+};
+
+const getTypeBadgeClass = (type) => {
+  return type === 'vente' ? 'badge-vente' : 'badge-location';
 };
 
 const Announcements = () => {
@@ -137,15 +157,15 @@ const Announcements = () => {
   };
 
   return (
-    <div className="bg-bg-primary min-h-screen">
+    <div className="announcements-page">
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary to-primary-light py-16 lg:py-20">
+      <div className="announcements-header">
         <div className="container">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4">
+          <div className="header-content">
+            <h1 className="header-title">
               Découvrez les Annonces
             </h1>
-            <p className="text-lg text-primary-lightest">
+            <p className="header-subtitle">
               Explorez des milliers d'annonces immobilières, véhicules, matériaux et services dans votre région.
             </p>
           </div>
@@ -154,23 +174,24 @@ const Announcements = () => {
 
       {/* Main Content */}
       <div className="container py-12 lg:py-16">
-        <div className="grid lg:grid-2 gap-8">
+        <div className="announcements-layout">
           {/* Sidebar Filtres */}
-          <div className="lg:col-span-1">
-            <div className="card sticky top-24 lg:sticky lg:top-24">
-              <div className="card-header">
-                <h3 className="text-xl font-bold">Filtrer</h3>
+          <aside className="filters-sidebar">
+            <div className="filters-card">
+              <div className="filters-header">
+                <Search size={20} />
+                <h3 className="filters-title">Filtrer</h3>
               </div>
-              <div className="card-body space-y-6">
+              <div className="filters-body">
                 {/* Recherche */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-text-primary">
+                <div className="filter-group">
+                  <label className="filter-label">
                     Recherche
                   </label>
                   <input
                     type="text"
                     name="search"
-                    className="input w-full"
+                    className="filter-input"
                     placeholder="Mots-clés..."
                     value={filters.search}
                     onChange={handleFilterChange}
@@ -178,13 +199,13 @@ const Announcements = () => {
                 </div>
 
                 {/* Catégorie */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-text-primary">
+                <div className="filter-group">
+                  <label className="filter-label">
                     Catégorie
                   </label>
                   <select
                     name="category"
-                    className="input w-full"
+                    className="filter-select"
                     value={filters.category}
                     onChange={handleFilterChange}
                   >
@@ -197,13 +218,13 @@ const Announcements = () => {
                 </div>
 
                 {/* Type */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-text-primary">
+                <div className="filter-group">
+                  <label className="filter-label">
                     Type
                   </label>
                   <select
                     name="type"
-                    className="input w-full"
+                    className="filter-select"
                     value={filters.type}
                     onChange={handleFilterChange}
                   >
@@ -214,14 +235,14 @@ const Announcements = () => {
                 </div>
 
                 {/* Localisation */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-text-primary">
+                <div className="filter-group">
+                  <label className="filter-label">
                     Localisation
                   </label>
                   <input
                     type="text"
                     name="location"
-                    className="input w-full"
+                    className="filter-input"
                     placeholder="Ville..."
                     value={filters.location}
                     onChange={handleFilterChange}
@@ -229,14 +250,14 @@ const Announcements = () => {
                 </div>
 
                 {/* Prix min */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-text-primary">
+                <div className="filter-group">
+                  <label className="filter-label">
                     Prix minimum (FCFA)
                   </label>
                   <input
                     type="number"
                     name="minPrice"
-                    className="input w-full"
+                    className="filter-input"
                     placeholder="0"
                     value={filters.minPrice}
                     onChange={handleFilterChange}
@@ -244,14 +265,14 @@ const Announcements = () => {
                 </div>
 
                 {/* Prix max */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-text-primary">
+                <div className="filter-group">
+                  <label className="filter-label">
                     Prix maximum (FCFA)
                   </label>
                   <input
                     type="number"
                     name="maxPrice"
-                    className="input w-full"
+                    className="filter-input"
                     placeholder="∞"
                     value={filters.maxPrice}
                     onChange={handleFilterChange}
@@ -259,7 +280,7 @@ const Announcements = () => {
                 </div>
 
                 {/* Boutons */}
-                <div className="flex flex-col gap-3 pt-4 border-t border-border-color">
+                <div className="filter-actions">
                   <button
                     onClick={applyFilters}
                     className="btn btn-primary btn-block"
@@ -276,34 +297,33 @@ const Announcements = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </aside>
 
           {/* Contenu Principal */}
-          <div className="lg:col-span-1">
-
+          <main className="announcements-main">
             {/* Résultats */}
             {loading ? (
-              <div className="grid gap-6">
+              <div className="announcements-grid">
                 {Array.from({ length: 6 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="card animate-pulse"
-                  >
-                    <div className="flex gap-4">
-                      <div className="w-32 h-32 bg-slate-200 rounded-lg flex-shrink-0" />
-                      <div className="flex-1 space-y-3">
-                        <div className="h-4 bg-slate-200 rounded w-3/4" />
-                        <div className="h-3 bg-slate-200 rounded w-full" />
-                        <div className="h-3 bg-slate-200 rounded w-2/3" />
+                  <div key={index} className="announcement-card-loading">
+                    <div className="card-skeleton-image" />
+                    <div className="card-skeleton-content">
+                      <div className="skeleton-badges" />
+                      <div className="skeleton-line skeleton-title" />
+                      <div className="skeleton-line skeleton-desc" />
+                      <div className="skeleton-line skeleton-desc-short" />
+                      <div className="skeleton-footer">
+                        <div className="skeleton-line skeleton-location" />
+                        <div className="skeleton-line skeleton-price" />
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : error ? (
-              <div className="card bg-error-light border-error">
-                <div className="card-body text-center">
-                  <p className="text-error font-semibold mb-4">{error}</p>
+              <div className="error-card">
+                <div className="error-content">
+                  <p className="error-text">{error}</p>
                   <button
                     onClick={fetchAnnouncements}
                     className="btn btn-primary"
@@ -313,20 +333,18 @@ const Announcements = () => {
                 </div>
               </div>
             ) : (announcements?.length || 0) > 0 ? (
-              <div className="space-y-6">
+              <div className="announcements-results">
                 {/* Compteur */}
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-text-tertiary">
-                    <span className="font-semibold text-text-primary">
-                      {pagination.total}
-                    </span>{' '}
+                <div className="results-header">
+                  <p className="results-count">
+                    <span className="count-number">{pagination.total}</span>{' '}
                     annonce{pagination.total !== 1 ? 's' : ''} trouvée
                     {pagination.total !== 1 ? 's' : ''}
                   </p>
                 </div>
 
                 {/* Grille d'annonces */}
-                <div className="space-y-4">
+                <div className="announcements-grid">
                   {announcements.map((announcement) => {
                     const announcementId = announcement._id || announcement.id;
                     const parsedImages = parseImages(announcement.images);
@@ -348,115 +366,102 @@ const Announcements = () => {
                       <Link
                         to={`/announcements/${announcementId}`}
                         key={announcementId || announcement.title}
-                        className="card group hover:shadow-xl transition-all overflow-hidden"
+                        className="announcement-card"
                       >
-                        <div className="flex gap-6">
-                          {/* Image */}
-                          <div className="w-40 h-40 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100">
-                            {imageUrl ? (
-                              <img
-                                src={imageUrl}
-                                alt={announcement.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                loading="lazy"
-                                onError={handleImageError}
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-slate-400">
-                                {categoryIcon(announcement.category)}
-                              </div>
-                            )}
-                            {isBoosted && (
-                              <div className="absolute top-2 right-2 badge badge-accent">
-                                <Rocket size={14} />
-                                Boosté
-                              </div>
+                        {/* Thumbnail Container */}
+                        <div className="card-thumbnail">
+                          {imageUrl ? (
+                            <img
+                              src={imageUrl}
+                              alt={announcement.title}
+                              className="card-thumbnail-image"
+                              loading="lazy"
+                              onError={handleImageError}
+                            />
+                          ) : (
+                            <div className="card-thumbnail-placeholder">
+                              {categoryIcon(announcement.category)}
+                            </div>
+                          )}
+                          {isBoosted && (
+                            <div className="card-badge-boosted">
+                              <Rocket size={12} />
+                              <span>Boosté</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Card Content */}
+                        <div className="card-body">
+                          {/* Badges */}
+                          <div className="card-badges">
+                            <span className={`card-category-badge ${getCategoryBadgeClass(announcement.category)}`}>
+                              {announcement.category || 'Annonce'}
+                            </span>
+                            {announcement.type && (
+                              <span className={`card-type-badge ${getTypeBadgeClass(announcement.type)}`}>
+                                {announcement.type === 'vente' ? 'Vente' : 'Location'}
+                              </span>
                             )}
                           </div>
 
-                          {/* Contenu */}
-                          <div className="flex-1 flex flex-col justify-between py-2">
-                            <div>
-                              {/* Badges */}
-                              <div className="flex items-center gap-2 mb-3 flex-wrap">
-                                <span className="badge badge-primary">
-                                  {announcement.category || 'Annonce'}
-                                </span>
-                                {announcement.type && (
-                                  <span className="badge badge-accent text-xs">
-                                    {announcement.type === 'vente'
-                                      ? 'Vente'
-                                      : 'Location'}
-                                  </span>
-                                )}
-                              </div>
+                          {/* Title */}
+                          <h3 className="card-title">{announcement.title}</h3>
 
-                              {/* Titre */}
-                              <h3 className="text-lg font-semibold text-text-primary mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                                {announcement.title}
-                              </h3>
+                          {/* Description */}
+                          <p className="card-description">
+                            {announcement.description?.substring(0, 100)}
+                          </p>
 
-                              {/* Description */}
-                              <p className="text-sm text-text-tertiary mb-4 line-clamp-2">
-                                {announcement.description?.substring(0, 100)}
-                              </p>
+                          {/* Location */}
+                          <div className="card-location">
+                            <MapPin size={14} />
+                            <span>{location}</span>
+                          </div>
+                        </div>
 
-                              {/* Info supplémentaires */}
-                              <div className="flex items-center gap-4 text-sm text-text-tertiary">
-                                <span className="flex items-center gap-1">
-                                  <MapPin size={16} />
-                                  {location}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Prix et Actions */}
-                            <div className="flex items-end justify-between pt-4 border-t border-border-color">
-                              <div>
-                                <p className="text-xs text-text-tertiary">Prix</p>
-                                <p className="text-2xl font-bold text-accent">
-                                  {announcement.category === 'technicien' ||
-                                  announcement.price === 0
-                                    ? 'Sur devis'
-                                    : formatPrice(announcement.price)}
-                                </p>
-                              </div>
-
-                              <div className="flex items-center gap-2">
-                                {sellerPhone ? (
-                                  <a
-                                    href={`https://wa.me/${sellerPhone
-                                      .replace(/\D/g, '')}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn btn-accent btn-sm"
-                                    onClick={(e) => e.preventDefault()}
-                                  >
-                                    <Phone size={16} />
-                                    Contacter
-                                  </a>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    className="btn btn-secondary btn-sm"
-                                    disabled
-                                  >
-                                    Pas de contact
-                                  </button>
-                                )}
-                                <button
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleReport(announcementId);
-                                  }}
-                                  className="btn btn-text text-text-tertiary hover:text-error"
-                                  title="Signaler"
-                                >
-                                  <Flag size={18} />
-                                </button>
-                              </div>
-                            </div>
+                        {/* Card Footer */}
+                        <div className="card-footer">
+                          <div className="price-section">
+                            <span className="price-label">Prix</span>
+                            <span className="card-price">
+                              {announcement.category === 'technicien' || announcement.price === 0
+                                ? 'Sur devis'
+                                : formatPrice(announcement.price)}
+                            </span>
+                          </div>
+                          <div className="action-section">
+                            {sellerPhone ? (
+                              <a
+                                href={`https://wa.me/${sellerPhone.replace(/\D/g, '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-accent btn-sm"
+                                onClick={(e) => e.preventDefault()}
+                              >
+                                <Phone size={14} />
+                                Contacter
+                              </a>
+                            ) : (
+                              <button
+                                type="button"
+                                className="btn btn-secondary btn-sm"
+                                disabled
+                              >
+                                Pas de contact
+                              </button>
+                            )}
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleReport(announcementId);
+                              }}
+                              className="btn-icon"
+                              title="Signaler"
+                            >
+                              <Flag size={16} />
+                            </button>
                           </div>
                         </div>
                       </Link>
@@ -466,7 +471,7 @@ const Announcements = () => {
 
                 {/* Pagination */}
                 {pagination.pages > 1 && (
-                  <div className="flex items-center justify-between pt-8 border-t border-border-color">
+                  <div className="pagination">
                     <button
                       className="btn btn-secondary"
                       disabled={pagination.page === 1}
@@ -475,7 +480,7 @@ const Announcements = () => {
                       ← Précédent
                     </button>
 
-                    <span className="text-sm text-text-secondary font-medium">
+                    <span className="pagination-info">
                       Page {pagination.page} sur {pagination.pages}
                     </span>
 
@@ -490,13 +495,11 @@ const Announcements = () => {
                 )}
               </div>
             ) : (
-              <div className="card">
-                <div className="card-body text-center py-16">
-                  <Search size={48} className="text-slate-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-text-secondary mb-2">
-                    Aucune annonce trouvée
-                  </h3>
-                  <p className="text-text-tertiary mb-6">
+              <div className="empty-state">
+                <div className="empty-content">
+                  <Search size={48} className="empty-icon" />
+                  <h3 className="empty-title">Aucune annonce trouvée</h3>
+                  <p className="empty-text">
                     Aucune annonce ne correspond à vos critères de recherche.
                   </p>
                   <button onClick={clearFilters} className="btn btn-primary">
@@ -505,7 +508,7 @@ const Announcements = () => {
                 </div>
               </div>
             )}
-          </div>
+          </main>
         </div>
       </div>
     </div>
