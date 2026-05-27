@@ -1,12 +1,10 @@
 // filepath: front-end/src/components/Footer.jsx
 import { Link } from 'react-router-dom';
 import {
-  Facebook,
-  Twitter,
-  Linkedin,
+  Globe,
+  Send,
+  Users,
   Mail,
-  CreditCard,
-  Smartphone,
 } from 'lucide-react';
 import './Footer.css';
 
@@ -35,10 +33,10 @@ const Footer = () => {
     { label: 'Cookies', to: '/legal' },
   ];
 
-  const socialLinks = [
-    { icon: Facebook, label: 'Facebook', href: '#' },
-    { icon: Twitter, label: 'Twitter', href: '#' },
-    { icon: Linkedin, label: 'LinkedIn', href: '#' },
+const socialLinks = [
+    { icon: Globe, label: 'Site web', href: '#' },
+    { icon: Send, label: 'Contact', href: '#' },
+    { icon: Users, label: 'Communauté', href: '#' },
     { icon: Mail, label: 'Email', href: 'mailto:info@locaplus.ci' },
   ];
 
