@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { announcementService, paymentService, pricingService } from '../services/api';
 import LocationPicker from '../components/LocationPicker';
 import { formatPrice } from '../utils/formatPrice';
+import './CreateAnnouncement.css';
 
 const categories = {
   immobilier: {
@@ -314,355 +315,329 @@ const CreateAnnouncement = () => {
   const selectedCategory = categories[formData.category];
 
   return (
-    <div className="announcements-section" style={{ maxWidth: '800px' }}>
-      <h1 className="mb-4">Publier une annonce</h1>
+    <div className="create-announcement-page">
+      <div className="create-announcement-container">
+        <h1 className="create-announcement-title">Publier une annonce</h1>
 
-      {/* Progress Steps */}
-      <div className="d-flex gap-2 mb-4" style={{ justifyContent: 'center' }}>
-        <span style={{ 
-          padding: '8px 16px', 
-          backgroundColor: step >= 1 ? 'var(--primary)' : 'var(--border)',
-          color: step >= 1 ? 'white' : 'var(--text-light)',
-          borderRadius: 'var(--radius-md)',
-          fontWeight: '600'
-        }}>
-          1. Détails
-        </span>
-        <span style={{ 
-          padding: '8px 16px', 
-          backgroundColor: step >= 2 ? 'var(--primary)' : 'var(--border)',
-          color: step >= 2 ? 'white' : 'var(--text-light)',
-          borderRadius: 'var(--radius-md)',
-          fontWeight: '600'
-        }}>
-          2. Paiement
-        </span>
-      </div>
+        {/* Progress Steps */}
+        <div className="progress-steps">
+          <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>
+            <span className="progress-step-number">1</span>
+            <span className="progress-step-label">Détails</span>
+          </div>
+          <div className="progress-step-line"></div>
+          <div className={`progress-step ${step >= 2 ? 'active' : ''}`}>
+            <span className="progress-step-number">2</span>
+            <span className="progress-step-label">Paiement</span>
+          </div>
+        </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
-      {success && <div className="alert alert-success">{success}</div>}
+        {error && <div className="alert alert-error">{error}</div>}
+        {success && <div className="alert alert-success">{success}</div>}
 
-      {step === 1 && (
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="card" style={{ padding: 'var(--spacing-xl)' }}>
-            <h3 className="mb-3">Informations de l'annonce</h3>
+        {step === 1 && (
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="form-card">
+              <h3 className="form-card-title">Informations de l'annonce</h3>
 
-            {/* Catégorie */}
-            <div className="form-group">
-              <label className="form-label">Catégorie *</label>
-              <select
-                name="category"
-                className="form-select"
-                value={formData.category}
-                onChange={handleChange}
-              >
-                <option value="">Sélectionner une catégorie</option>
-                {Object.entries(categories).map(([key, cat]) => (
-                  <option key={key} value={key}>{cat.name}</option>
-                ))}
-              </select>
-              {fieldErrors.category && <span className="form-error">{fieldErrors.category}</span>}
-            </div>
-
-            {/* Type (pour immobilier et véhicule) */}
-            {(selectedCategory?.types?.length || 0) > 0 && (
+              {/* Catégorie */}
               <div className="form-group">
-                <label className="form-label">Type *</label>
+                <label className="form-label">Catégorie *</label>
                 <select
-                  name="type"
-                  className="form-select"
-                  value={formData.type}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Sélectionner le type</option>
-                  {selectedCategory.types.map(t => (
-                    <option key={t} value={t}>{t === 'vente' ? 'À vendre' : 'À louer'}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Sous-catégorie */}
-            {selectedCategory && (
-              <div className="form-group">
-                <label className="form-label">Sous-catégorie *</label>
-                <select
-                  name="subcategory"
-                  className="form-select"
-                  value={formData.subcategory}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Sélectionner</option>
-                  {selectedCategory.subcategories.map(sc => (
-                    <option key={sc} value={sc}>{sc.charAt(0).toUpperCase() + sc.slice(1)}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Titre */}
-            <div className="form-group">
-              <label className="form-label">Titre *</label>
-              <input
-                type="text"
-                name="title"
-                className="form-input"
-                placeholder="Titre de l'annonce"
-                value={formData.title}
-                onChange={handleChange}
-                minLength={3}
-              />
-              {fieldErrors.title && <span className="form-error">{fieldErrors.title}</span>}
-            </div>
-
-            {/* Description */}
-            <div className="form-group">
-              <label className="form-label">Description *</label>
-              <textarea
-                name="description"
-                className="form-textarea"
-                placeholder="Décrivez votre bien ou service en détail..."
-                value={formData.description}
-                onChange={handleChange}
-                rows={5}
-              />
-              {fieldErrors.description && <span className="form-error">{fieldErrors.description}</span>}
-            </div>
-
-            {formData.category === 'technicien' && (
-              <div className="form-group">
-                <div className="form-note" style={{ background: '#eff6ff', borderLeft: '4px solid #3b82f6', borderRadius: '8px', padding: '12px 16px', color: '#1e3a8a' }}>
-                  <strong>Note :</strong> pour la catégorie Technicien, le prix n'est pas saisi dans le formulaire. Le tarif sera négocié sur site avec le client.
-                </div>
-              </div>
-            )}
-            {formData.category !== 'technicien' && (
-              <div className="form-group">
-                <label className="form-label">Prix (FCFA) *</label>
-                <input
-                  type="number"
-                  name="price"
+                  name="category"
                   className="form-input"
-                  placeholder="Prix en FCFA"
-                  value={formData.price}
+                  value={formData.category}
                   onChange={handleChange}
-                  min={pricing[formData.category] || MIN_PRICE}
-                />
-                <span className="form-help">
-                  Prix minimum: {formatPrice(Math.max(MIN_PRICE, pricing[formData.category] ?? MIN_PRICE))} pour cette catégorie.
-                </span>
-                {fieldErrors.price && <span className="form-error">{fieldErrors.price}</span>}
+                >
+                  <option value="">Sélectionner une catégorie</option>
+                  {Object.entries(categories).map(([key, cat]) => (
+                    <option key={key} value={key}>{cat.name}</option>
+                  ))}
+                </select>
+                {fieldErrors.category && <span className="form-error">{fieldErrors.category}</span>}
               </div>
-            )}
 
-            {/* Localisation */}
-            <div className="form-group">
-              <label className="form-label">Localisation *</label>
-              <input
-                type="text"
-                name="location"
-                className="form-input"
-                placeholder="Ville, Quartier"
-                value={formData.location}
-                onChange={handleChange}
-              />
-              {fieldErrors.location && <span className="form-error">{fieldErrors.location}</span>}
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Position précise</label>
-              <LocationPicker
-                position={formData.latitude && formData.longitude ? [Number(formData.latitude), Number(formData.longitude)] : null}
-                onChange={(position) => {
-                  setFormData(prev => ({
-                    ...prev,
-                    latitude: position.lat.toFixed(8),
-                    longitude: position.lng.toFixed(8),
-                  }));
-                  setFieldErrors(prev => ({ ...prev, locationPicker: '' }));
-                }}
-              />
-              <div className="grid gap-3 sm:grid-cols-2 mt-3">
-                <div>
-                  <label className="form-label">Latitude</label>
-                  <input
-                    type="text"
-                    name="latitude"
-                    className="form-input"
-                    value={formData.latitude}
-                    readOnly
-                    placeholder="Cliquer sur la carte"
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Longitude</label>
-                  <input
-                    type="text"
-                    name="longitude"
-                    className="form-input"
-                    value={formData.longitude}
-                    readOnly
-                    placeholder="Cliquer sur la carte"
-                  />
-                </div>
-              </div>
-              {fieldErrors.locationPicker && <span className="form-error">{fieldErrors.locationPicker}</span>}
-            </div>
-
-            {/* Numéro de téléphone */}
-            <div className="form-group">
-              <label className="form-label">Numéro de téléphone *</label>
-              <input
-                type="tel"
-                name="phone"
-                className="form-input"
-                placeholder="Ex: +225 07 12 34 56 78"
-                value={formData.phone}
-                onChange={handleChange}
-              />
-              {fieldErrors.phone && <span className="form-error">{fieldErrors.phone}</span>}
-              <small className="text-muted">Ce numéro sera affiché avec votre annonce pour que les intéressés puissent vous contacter</small>
-            </div>
-
-            {/* Champs dynamiques selon la catégorie */}
-            {selectedCategory?.fields?.map(field => (
-              <div className="form-group" key={field.name}>
-                <label className="form-label">{field.label}</label>
-                {field.type === 'select' ? (
+              {/* Type (pour immobilier et véhicule) */}
+              {(selectedCategory?.types?.length || 0) > 0 && (
+                <div className="form-group">
+                  <label className="form-label">Type *</label>
                   <select
-                    name={field.name}
-                    className="form-select"
-                    value={formData.metadata[field.name] || ''}
-                    onChange={handleMetadataChange}
+                    name="type"
+                    className="form-input"
+                    value={formData.type}
+                    onChange={handleChange}
+                    required
                   >
-                    <option value="">Sélectionner</option>
-                    {field.options.map(opt => (
-                      <option key={opt} value={opt}>{opt.replace('_', ' ')}</option>
+                    <option value="">Sélectionner le type</option>
+                    {selectedCategory.types.map(t => (
+                      <option key={t} value={t}>{t === 'vente' ? 'À vendre' : 'À louer'}</option>
                     ))}
                   </select>
-                ) : field.type === 'textarea' ? (
-                  <textarea
-                    name={field.name}
-                    className="form-textarea"
-                    value={formData.metadata[field.name] || ''}
-                    onChange={handleMetadataChange}
-                    rows={3}
-                  />
-                ) : (
-                  <input
-                    type={field.type}
-                    name={field.name}
-                    className="form-input"
-                    value={formData.metadata[field.name] || ''}
-                    onChange={handleMetadataChange}
-                  />
-                )}
-              </div>
-            ))}
-
-            {/* Images */}
-            <div className="form-group">
-              <label className="form-label">Images (max 10)</label>
-              <input
-                type="file"
-                className="form-input"
-                onChange={handleImageChange}
-                accept="image/*"
-                multiple
-              />
-              {fieldErrors.images && <span className="form-error">{fieldErrors.images}</span>}
-              {(formData.images?.length || 0) > 0 && (
-                <div className="d-flex gap-2 mt-2" style={{ flexWrap: 'wrap' }}>
-                  {formData.images.map((img, index) => (
-                    <div key={index} style={{ position: 'relative' }}>
-                      <img 
-                        src={previewUrls[index]} 
-                        alt={`Preview ${index + 1}`}
-                        style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }}
-                        onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder.svg'; }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        style={{
-                          position: 'absolute',
-                          top: '-8px',
-                          right: '-8px',
-                          background: 'var(--error)',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '50%',
-                          width: '20px',
-                          height: '20px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
                 </div>
               )}
+
+              {/* Sous-catégorie */}
+              {selectedCategory && (
+                <div className="form-group">
+                  <label className="form-label">Sous-catégorie *</label>
+                  <select
+                    name="subcategory"
+                    className="form-input"
+                    value={formData.subcategory}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Sélectionner</option>
+                    {selectedCategory.subcategories.map(sc => (
+                      <option key={sc} value={sc}>{sc.charAt(0).toUpperCase() + sc.slice(1)}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Titre */}
+              <div className="form-group">
+                <label className="form-label">Titre *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  name="title"
+                  placeholder="Titre de l'annonce"
+                  value={formData.title}
+                  onChange={handleChange}
+                  minLength={3}
+                />
+                {fieldErrors.title && <span className="form-error">{fieldErrors.title}</span>}
+              </div>
+
+              {/* Description */}
+              <div className="form-group">
+                <label className="form-label">Description *</label>
+                <textarea
+                  className="form-input form-textarea"
+                  name="description"
+                  placeholder="Décrivez votre bien ou service en détail..."
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows={5}
+                />
+                {fieldErrors.description && <span className="form-error">{fieldErrors.description}</span>}
+              </div>
+
+              {formData.category === 'technicien' && (
+                <div className="form-group">
+                  <div className="form-note">
+                    <strong>Note :</strong> pour la catégorie Technicien, le prix n'est pas saisi dans le formulaire. Le tarif sera négocié sur site avec le client.
+                  </div>
+                </div>
+              )}
+              {formData.category !== 'technicien' && (
+                <div className="form-group">
+                  <label className="form-label">Prix (FCFA) *</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    name="price"
+                    placeholder="Prix en FCFA"
+                    value={formData.price}
+                    onChange={handleChange}
+                    min={pricing[formData.category] || MIN_PRICE}
+                  />
+                  <span className="form-help">
+                    Prix minimum: {formatPrice(Math.max(MIN_PRICE, pricing[formData.category] ?? MIN_PRICE))} pour cette catégorie.
+                  </span>
+                  {fieldErrors.price && <span className="form-error">{fieldErrors.price}</span>}
+                </div>
+              )}
+
+              {/* Localisation */}
+              <div className="form-group">
+                <label className="form-label">Localisation *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  name="location"
+                  placeholder="Ville, Quartier"
+                  value={formData.location}
+                  onChange={handleChange}
+                />
+                {fieldErrors.location && <span className="form-error">{fieldErrors.location}</span>}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Position précise</label>
+                <LocationPicker
+                  position={formData.latitude && formData.longitude ? [Number(formData.latitude), Number(formData.longitude)] : null}
+                  onChange={(position) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      latitude: position.lat.toFixed(8),
+                      longitude: position.lng.toFixed(8),
+                    }));
+                    setFieldErrors(prev => ({ ...prev, locationPicker: '' }));
+                  }}
+                />
+                <div className="form-grid-2">
+                  <div>
+                    <label className="form-label">Latitude</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      name="latitude"
+                      value={formData.latitude}
+                      readOnly
+                      placeholder="Cliquer sur la carte"
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Longitude</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      name="longitude"
+                      value={formData.longitude}
+                      readOnly
+                      placeholder="Cliquer sur la carte"
+                    />
+                  </div>
+                </div>
+                {fieldErrors.locationPicker && <span className="form-error">{fieldErrors.locationPicker}</span>}
+              </div>
+
+              {/* Numéro de téléphone */}
+              <div className="form-group">
+                <label className="form-label">Numéro de téléphone *</label>
+                <input
+                  type="tel"
+                  className="form-input"
+                  name="phone"
+                  placeholder="Ex: +225 07 12 34 56 78"
+                  value={formData.phone}
+                  onChange={handleChange}
+                />
+                {fieldErrors.phone && <span className="form-error">{fieldErrors.phone}</span>}
+                <small className="form-help">Ce numéro sera affiché avec votre annonce pour que les intéressés puissent vous contacter</small>
+              </div>
+
+              {/* Champs dynamiques selon la catégorie */}
+              {selectedCategory?.fields?.map(field => (
+                <div className="form-group" key={field.name}>
+                  <label className="form-label">{field.label}</label>
+                  {field.type === 'select' ? (
+                    <select
+                      name={field.name}
+                      className="form-input"
+                      value={formData.metadata[field.name] || ''}
+                      onChange={handleMetadataChange}
+                    >
+                      <option value="">Sélectionner</option>
+                      {field.options.map(opt => (
+                        <option key={opt} value={opt}>{opt.replace('_', ' ')}</option>
+                      ))}
+                    </select>
+                  ) : field.type === 'textarea' ? (
+                    <textarea
+                      name={field.name}
+                      className="form-input form-textarea"
+                      value={formData.metadata[field.name] || ''}
+                      onChange={handleMetadataChange}
+                      rows={3}
+                    />
+                  ) : (
+                    <input
+                      type={field.type}
+                      className="form-input"
+                      name={field.name}
+                      value={formData.metadata[field.name] || ''}
+                      onChange={handleMetadataChange}
+                    />
+                  )}
+                </div>
+              ))}
+
+              {/* Images */}
+              <div className="form-group">
+                <label className="form-label">Images (max 2)</label>
+                <input
+                  type="file"
+                  className="form-input form-file-input"
+                  onChange={handleImageChange}
+                  accept="image/*"
+                  multiple
+                />
+                {fieldErrors.images && <span className="form-error">{fieldErrors.images}</span>}
+                {(formData.images?.length || 0) > 0 && (
+                  <div className="image-preview-grid">
+                    {formData.images.map((img, index) => (
+                      <div key={index} className="image-preview-item">
+                        <img 
+                          src={previewUrls[index]} 
+                          alt={`Preview ${index + 1}`}
+                          className="image-preview-thumb"
+                          onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder.svg'; }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="image-preview-remove"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group form-checkbox-group">
+                <input
+                  type="checkbox"
+                  id="acceptPrivacy"
+                  checked={acceptedPrivacy}
+                  onChange={(e) => {
+                    setAcceptedPrivacy(e.target.checked);
+                    setFieldErrors(prev => ({ ...prev, acceptedPrivacy: '' }));
+                    setError('');
+                  }}
+                  className="form-checkbox"
+                />
+                <label htmlFor="acceptPrivacy" className="form-checkbox-label">
+                  J'accepte la <a href="/privacy-policy.html" target="_blank" rel="noreferrer">Politique de Confidentialité</a>
+                </label>
+              </div>
+              {fieldErrors.acceptedPrivacy && <span className="form-error">{fieldErrors.acceptedPrivacy}</span>}
+
+              <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+                {loading ? 'Création...' : 'Créer l\'annonce'}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {step === 2 && (
+          <div className="form-card">
+            <h3 className="form-card-title">Paiement pour valider votre annonce</h3>
+            
+            <div className="payment-summary">
+              <p className="payment-label">Frais de publication</p>
+              <p className="payment-amount">
+                {pricing[formData.category] != null ? formatPrice(pricing[formData.category]) : '0 FCFA'}
+              </p>
+              <p className="payment-note">
+                Paiement sécurisé par PayStack
+              </p>
             </div>
 
-            <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
-              <input
-                type="checkbox"
-                id="acceptPrivacy"
-                checked={acceptedPrivacy}
-                onChange={(e) => {
-                  setAcceptedPrivacy(e.target.checked);
-                  setFieldErrors(prev => ({ ...prev, acceptedPrivacy: '' }));
-                  setError('');
-                }}
-                style={{ width: '24px', height: '24px', minWidth: '24px', minHeight: '24px', cursor: 'pointer' }}
-              />
-              <label htmlFor="acceptPrivacy" style={{ fontSize: '0.95rem', lineHeight: '1.5', cursor: 'pointer' }}>
-                J'accepte la <a href="/privacy-policy.html" target="_blank" rel="noreferrer">Politique de Confidentialité</a>
-              </label>
-            </div>
-            {fieldErrors.acceptedPrivacy && <span className="form-error" style={{ display: 'block', marginBottom: '16px' }}>{fieldErrors.acceptedPrivacy}</span>}
-
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
-              {loading ? 'Création...' : 'Créer l\'annonce'}
+            <button 
+              onClick={handlePayment}
+              className="btn btn-accent btn-block btn-lg"
+              disabled={loading}
+            >
+              {loading ? 'Redirection vers le paiement...' : 'Payer maintenant'}
             </button>
           </div>
-        </form>
-      )}
-
-      {step === 2 && (
-        <div className="card" style={{ padding: 'var(--spacing-xl)' }}>
-          <h3 className="mb-3">Paiement pour valider votre annonce</h3>
-          
-          <div style={{ 
-            backgroundColor: 'var(--background)', 
-            padding: 'var(--spacing-lg)', 
-            borderRadius: 'var(--radius-md)',
-            marginBottom: 'var(--spacing-lg)',
-            textAlign: 'center'
-          }}>
-            <p style={{ marginBottom: '8px' }}>Frais de publication</p>
-            <p className="text-accent" style={{ fontSize: '2rem', fontWeight: '700' }}>
-              {pricing[formData.category] != null ? formatPrice(pricing[formData.category]) : '0 FCFA'}
-            </p>
-            <p className="text-muted" style={{ fontSize: '0.9rem' }}>
-              Paiement sécurisé par PayStack
-            </p>
-          </div>
-
-          <button 
-            onClick={handlePayment}
-            className="btn btn-accent" 
-            style={{ width: '100%', padding: '16px', fontSize: '1.1rem' }}
-            disabled={loading}
-          >
-            {loading ? 'Redirection vers le paiement...' : 'Payer maintenant'}
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

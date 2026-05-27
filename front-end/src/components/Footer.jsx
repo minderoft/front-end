@@ -71,7 +71,7 @@ const socialLinks = [
                   title={social.label}
                   className="footer-social-link"
                 >
-                  <Icon size={18} />
+                  <Icon size={16} />
                 </a>
               );
             })}
@@ -134,7 +134,7 @@ const socialLinks = [
 
           {/* Center: Payment Methods */}
           <div className="footer-payments">
-            <span className="footer-payments-label">Moyens de paiement:</span>
+            <span className="footer-payments-label">Paiement:</span>
             <div className="footer-payment-icons">
               {paymentMethods.map((method) => (
                 <div key={method.name} className="footer-payment-icon" title={method.name}>

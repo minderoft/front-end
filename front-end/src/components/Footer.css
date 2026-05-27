@@ -1,6 +1,6 @@
 /* ============================================
-   Footer - LocaPlus
-   Professional 4-column layout
+   Footer - LocaPlus (Compact Version)
+   Professional 4-column layout - Reduced height
    ============================================ */
 
 .footer {
@@ -14,21 +14,21 @@
 .footer-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: var(--spacing-20) var(--spacing-6);
+  padding: var(--spacing-10) var(--spacing-6);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-12);
+  gap: var(--spacing-8);
 }
 
 /* Footer Section */
 .footer-section {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-6);
+  gap: var(--spacing-4);
 }
 
 .footer-section--brand {
-  gap: var(--spacing-8);
+  gap: var(--spacing-5);
 }
 
 /* Logo */
@@ -42,15 +42,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-lg);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
   background-color: rgba(255, 255, 255, 0.2);
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
 }
 
 .footer-logo-text {
-  font-size: var(--text-2xl);
+  font-size: var(--text-xl);
   font-weight: var(--font-bold);
   color: white;
   letter-spacing: -0.02em;
@@ -58,26 +58,26 @@
 
 /* Brand Pitch */
 .footer-pitch {
-  font-size: var(--text-sm);
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.9);
-  max-width: 280px;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 260px;
 }
 
 /* Social Links */
 .footer-socials {
   display: flex;
   align-items: center;
-  gap: var(--spacing-3);
+  gap: var(--spacing-2);
 }
 
 .footer-social-link {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-lg);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
   background-color: rgba(255, 255, 255, 0.1);
   color: white;
   transition: var(--transition);
@@ -91,13 +91,13 @@
 
 /* Section Title */
 .footer-title {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--font-bold);
   color: white;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0;
-  padding-bottom: var(--spacing-2);
+  padding-bottom: var(--spacing-1);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -108,11 +108,11 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-3);
+  gap: var(--spacing-2);
 }
 
 .footer-link {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
   transition: var(--transition);
@@ -133,7 +133,7 @@
 /* Bottom Section */
 .footer-bottom {
   background-color: rgba(0, 0, 0, 0.1);
-  padding: var(--spacing-6);
+  padding: var(--spacing-4);
 }
 
 .footer-bottom-container {
@@ -142,19 +142,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-8);
+  gap: var(--spacing-4);
   flex-wrap: wrap;
 }
 
 /* Copyright */
 .footer-copyright {
   flex: 1;
-  min-width: 200px;
+  min-width: 180px;
 }
 
 .footer-copyright p {
-  font-size: var(--text-sm);
-  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--text-xs);
+  color: rgba(255, 255, 255, 0.65);
   margin: 0;
 }
 
@@ -162,31 +162,31 @@
 .footer-payments {
   display: flex;
   align-items: center;
-  gap: var(--spacing-4);
+  gap: var(--spacing-3);
 }
 
 .footer-payments-label {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.75);
   white-space: nowrap;
 }
 
 .footer-payment-icons {
   display: flex;
   align-items: center;
-  gap: var(--spacing-2);
+  gap: var(--spacing-1);
 }
 
 .footer-payment-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
   background-color: rgba(255, 255, 255, 0.1);
-  font-size: var(--text-lg);
+  font-size: var(--text-sm);
   cursor: default;
   transition: var(--transition);
 }
@@ -208,14 +208,14 @@
 @media (max-width: 1024px) {
   .footer-container {
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-8);
-    padding: var(--spacing-16) var(--spacing-6);
+    gap: var(--spacing-6);
+    padding: var(--spacing-8) var(--spacing-4);
   }
 
   .footer-bottom-container {
     flex-direction: column;
     text-align: center;
-    gap: var(--spacing-4);
+    gap: var(--spacing-3);
   }
 
   .footer-copyright {
@@ -231,32 +231,32 @@
 @media (max-width: 768px) {
   .footer-container {
     grid-template-columns: 1fr;
-    gap: var(--spacing-6);
-    padding: var(--spacing-12) var(--spacing-4);
+    gap: var(--spacing-5);
+    padding: var(--spacing-8) var(--spacing-4);
   }
 
   .footer-section--brand {
-    padding-bottom: var(--spacing-6);
+    padding-bottom: var(--spacing-4);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .footer-bottom {
-    padding: var(--spacing-4);
+    padding: var(--spacing-3);
   }
 
   .footer-bottom-container {
-    padding: 0 var(--spacing-3);
+    padding: 0 var(--spacing-2);
   }
 
   .footer-payments {
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--spacing-2);
+    gap: var(--spacing-1);
   }
 
   .footer-payment-icons {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
   }
 
   .footer-copyright p {
@@ -266,12 +266,21 @@
 
 @media (max-width: 480px) {
   .footer-container {
-    gap: var(--spacing-6);
-    padding: var(--spacing-8) var(--spacing-3);
+    gap: var(--spacing-4);
+    padding: var(--spacing-6) var(--spacing-3);
   }
 
   .footer-logo {
     gap: var(--spacing-2);
+  }
+
+  .footer-logo-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .footer-logo-text {
+    font-size: var(--text-lg);
   }
 
   .footer-pitch {
@@ -287,17 +296,17 @@
   }
 
   .footer-social-link {
-    width: 36px;
-    height: 36px;
+    width: 28px;
+    height: 28px;
   }
 
   .footer-social-link svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
   }
 
   .footer-bottom {
-    padding: var(--spacing-3);
+    padding: var(--spacing-2);
   }
 
   .footer-bottom-container {
@@ -314,9 +323,9 @@
   }
 
   .footer-payment-icon {
-    width: 28px;
-    height: 28px;
-    font-size: var(--text-base);
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
   }
 }
 

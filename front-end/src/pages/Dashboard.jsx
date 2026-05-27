@@ -5,6 +5,8 @@ import { announcementService, paymentService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
 import { formatPrice } from '../utils/formatPrice';
+import { Plus, Eye, Trash2, Rocket, CheckCircle, Clock } from 'lucide-react';
+import './Dashboard.css';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -60,6 +62,12 @@ const Dashboard = () => {
     expired: 'Expirée',
   };
 
+  const statusColors = {
+    active: 'status-active',
+    pending: 'status-pending',
+    expired: 'status-expired',
+  };
+
   const categoryLabels = {
     immobilier: 'Immobilier',
     vehicule: 'Véhicule',
@@ -67,68 +75,97 @@ const Dashboard = () => {
     technicien: 'Technicien',
   };
 
+  const getCategoryBadgeClass = (category) => {
+    switch (category?.toLowerCase()) {
+      case 'immobilier': return 'badge-immobilier';
+      case 'vehicule': return 'badge-vehicule';
+      case 'materiaux': return 'badge-materiaux';
+      case 'technicien': return 'badge-technicien';
+      default: return 'badge-default';
+    }
+  };
+
   return (
-    <div className="dashboard">
+    <div className="dashboard-page">
       <div className="dashboard-header">
-        <h1>Mon Dashboard</h1>
-        <p className="text-muted">Bienvenue, {user?.name} !</p>
+        <div className="dashboard-header-content">
+          <h1 className="dashboard-title">Mon Dashboard</h1>
+          <p className="dashboard-subtitle">Bienvenue, {user?.name} !</p>
+        </div>
       </div>
 
-      {/* Stats */}
-      <div className="dashboard-stats">
+      {/* Stats Grid */}
+      <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-value">{stats.total}</div>
-          <div className="stat-label">Total annonces</div>
+          <div className="stat-icon stat-icon-total">
+            <Eye size={20} />
+          </div>
+          <div className="stat-content">
+            <div className="stat-value">{stats.total}</div>
+            <div className="stat-label">Total annonces</div>
+          </div>
         </div>
         <div className="stat-card">
-          <div className="stat-value" style={{ color: 'var(--success)' }}>{stats.active}</div>
-          <div className="stat-label">Annonces actives</div>
+          <div className="stat-icon stat-icon-active">
+            <CheckCircle size={20} />
+          </div>
+          <div className="stat-content">
+            <div className="stat-value stat-value-active">{stats.active}</div>
+            <div className="stat-label">Annonces actives</div>
+          </div>
         </div>
         <div className="stat-card">
-          <div className="stat-value" style={{ color: 'var(--warning)' }}>{stats.pending}</div>
-          <div className="stat-label">En attente</div>
+          <div className="stat-icon stat-icon-pending">
+            <Clock size={20} />
+          </div>
+          <div className="stat-content">
+            <div className="stat-value stat-value-pending">{stats.pending}</div>
+            <div className="stat-label">En attente</div>
+          </div>
         </div>
-        <div className="stat-card">
-          <Link to="/create" className="btn btn-accent" style={{ width: '100%' }}>
-            + Nouvelle annonce
+        <div className="stat-card stat-card-action">
+          <Link to="/create" className="stat-action-btn">
+            <Plus size={20} />
+            <span>Nouvelle annonce</span>
           </Link>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="dashboard-tabs">
-        <div 
+        <button
           className={`dashboard-tab ${activeTab === 'announcements' ? 'active' : ''}`}
           onClick={() => setActiveTab('announcements')}
         >
           Mes annonces
-        </div>
-        <div 
+        </button>
+        <button
           className={`dashboard-tab ${activeTab === 'payments' ? 'active' : ''}`}
           onClick={() => setActiveTab('payments')}
         >
           Historique des paiements
-        </div>
+        </button>
       </div>
 
       {/* Content */}
       {loading ? (
-        <div className="loading">
+        <div className="loading-state">
           <div className="spinner"></div>
+          <p>Chargement...</p>
         </div>
       ) : (
         <>
           {activeTab === 'announcements' && (
             <>
               {error ? (
-                <div className="alert alert-error">
+                <div className="error-state">
                   <p>{error}</p>
                   <button type="button" className="btn btn-primary" onClick={fetchData}>
                     Réessayer
                   </button>
                 </div>
               ) : (announcements?.length || 0) > 0 ? (
-                <div className="announcements-grid">
+                <div className="dashboard-announcements-grid">
                   {announcements.map(announcement => {
                     const parsedImages = parseImages(announcement.images);
                     const rawImage = announcement.image_url || parsedImages[0];
@@ -136,97 +173,68 @@ const Dashboard = () => {
                     const location = announcement.location || announcement.geolocalisation || '';
                     const isBoosted = announcement.is_boosted ?? announcement.statut_boost ?? false;
 
-                    if (import.meta.env.DEV) {
-                      console.log('DEBUG Dashboard image', {
-                        announcementId: announcement.id,
-                        rawImages: announcement.images,
-                        parsedImages,
-                        imageUrl,
-                      });
-                    }
-
                     return (
-                      <div key={announcement.id} className="card announcement-card">
-                        {imageUrl ? (
-                          <img 
-                            src={imageUrl} 
-                            alt={announcement.title}
-                            className="card-image"
-                            loading="lazy"
-                            onError={handleImageError}
-                          />
-                        ) : (
-                        <div className="card-image" style={{ 
-                          backgroundColor: '#E2E8F0', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center',
-                          fontSize: '3rem'
-                        }}>
-                          🏠
+                      <div key={announcement.id} className="dashboard-card">
+                        <div className="dashboard-card-image">
+                          {imageUrl ? (
+                            <img 
+                              src={imageUrl} 
+                              alt={announcement.title}
+                              loading="lazy"
+                              onError={handleImageError}
+                            />
+                          ) : (
+                            <div className="dashboard-card-placeholder">
+                              🏠
+                            </div>
+                          )}
+                          {isBoosted && (
+                            <div className="dashboard-card-badge-boosted">
+                              <Rocket size={12} />
+                              <span>Boosté</span>
+                            </div>
+                          )}
                         </div>
-                      )}
-                      <div className="card-body">
-                        <div className="d-flex justify-between align-center mb-2" style={{ gap: '8px' }}>
-                          <span style={{ 
-                            fontSize: '0.75rem', 
-                            color: 'var(--accent)',
-                            textTransform: 'uppercase',
-                            fontWeight: '600'
-                          }}>
-                            {categoryLabels[announcement.category]}
-                          </span>
-                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            {isBoosted && (
-                              <span style={{
-                                fontSize: '0.75rem',
-                                backgroundColor: '#ffebc2',
-                                color: '#b45309',
-                                padding: '2px 8px',
-                                borderRadius: '4px'
-                              }}>
-                                🚀 Boosté
-                              </span>
-                            )}
-                            <span style={{ 
-                              fontSize: '0.75rem',
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              backgroundColor: announcement.status === 'active' ? 'var(--success)' : 'var(--warning)',
-                              color: 'white'
-                            }}>
+                        <div className="dashboard-card-body">
+                          <div className="dashboard-card-header">
+                            <span className={`dashboard-card-category ${getCategoryBadgeClass(announcement.category)}`}>
+                              {categoryLabels[announcement.category]}
+                            </span>
+                            <span className={`dashboard-card-status ${statusColors[announcement.status]}`}>
                               {statusLabels[announcement.status]}
                             </span>
                           </div>
-                        </div>
-                        <h3 className="card-title">{announcement.title}</h3>
-                        <p className="card-text">{location}</p>
-                        <div className="card-price">{formatPrice(announcement.price)}</div>
-                        <div className="d-flex gap-2 mt-3">
-                          <Link 
-                            to={`/announcements/${announcement.id}`} 
-                            className="btn btn-outline btn-sm"
-                            style={{ flex: 1 }}
-                          >
-                            Voir
-                          </Link>
-                          <button 
-                            onClick={() => handleDelete(announcement.id)}
-                            className="btn btn-ghost btn-sm"
-                            style={{ color: 'var(--error)' }}
-                          >
-                            Supprimer
-                          </button>
+                          <h3 className="dashboard-card-title">{announcement.title}</h3>
+                          <p className="dashboard-card-location">{location}</p>
+                          <div className="dashboard-card-price">{formatPrice(announcement.price)}</div>
+                          <div className="dashboard-card-actions">
+                            <Link 
+                              to={`/announcements/${announcement.id}`} 
+                              className="btn btn-outline btn-sm"
+                            >
+                              <Eye size={14} />
+                              Voir
+                            </Link>
+                            <button 
+                              onClick={() => handleDelete(announcement.id)}
+                              className="btn btn-ghost btn-sm btn-danger"
+                            >
+                              <Trash2 size={14} />
+                              Supprimer
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
                     );
                   })}
                 </div>
               ) : (
-                <div className="text-center" style={{ padding: '64px' }}>
-                  <p className="text-muted">Vous n'avez pas encore d'annonces.</p>
-                  <Link to="/create" className="btn btn-primary mt-3">
+                <div className="empty-state">
+                  <div className="empty-icon">📋</div>
+                  <h3 className="empty-title">Vous n'avez pas encore d'annonces</h3>
+                  <p className="empty-text">Créez votre première annonce pour commencer à vendre ou louer.</p>
+                  <Link to="/create" className="btn btn-primary">
+                    <Plus size={18} />
                     Créer ma première annonce
                   </Link>
                 </div>
@@ -237,40 +245,34 @@ const Dashboard = () => {
           {activeTab === 'payments' && (
             <>
               {(payments?.length || 0) > 0 ? (
-                <div className="card" style={{ padding: 0 }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div className="payments-table-wrapper">
+                  <table className="payments-table">
                     <thead>
-                      <tr style={{ backgroundColor: 'var(--background)' }}>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Date</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Annonce</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Montant</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Méthode</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Statut</th>
+                      <tr>
+                        <th>Date</th>
+                        <th>Annonce</th>
+                        <th>Montant</th>
+                        <th>Méthode</th>
+                        <th>Statut</th>
                       </tr>
                     </thead>
                     <tbody>
                       {payments.map(payment => (
-                        <tr key={payment.id} style={{ borderTop: '1px solid var(--border)' }}>
-                          <td style={{ padding: '12px' }}>
+                        <tr key={payment.id}>
+                          <td>
                             {new Date(payment.created_at).toLocaleDateString('fr-FR')}
                           </td>
-                          <td style={{ padding: '12px' }}>
+                          <td className="payment-announcement">
                             {payment.announcement_title || 'Annonce supprimée'}
                           </td>
-                          <td style={{ padding: '12px', fontWeight: '600' }}>
+                          <td className="payment-amount">
                             {formatPrice(payment.amount)}
                           </td>
-                          <td style={{ padding: '12px' }}>
+                          <td className="payment-method">
                             {payment.method.replace('_', ' ')}
                           </td>
-                          <td style={{ padding: '12px' }}>
-                            <span style={{ 
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              backgroundColor: payment.status === 'completed' ? 'var(--success)' : 'var(--error)',
-                              color: 'white',
-                              fontSize: '0.75rem'
-                            }}>
+                          <td>
+                            <span className={`payment-status payment-status-${payment.status === 'completed' ? 'success' : 'failed'}`}>
                               {payment.status === 'completed' ? 'Succès' : 'Échoué'}
                             </span>
                           </td>
@@ -280,8 +282,10 @@ const Dashboard = () => {
                   </table>
                 </div>
               ) : (
-                <div className="text-center" style={{ padding: '64px' }}>
-                  <p className="text-muted">Aucun paiement enregistré.</p>
+                <div className="empty-state">
+                  <div className="empty-icon">💳</div>
+                  <h3 className="empty-title">Aucun paiement enregistré</h3>
+                  <p className="empty-text">Vos transactions apparaîtront ici une fois effectuées.</p>
                 </div>
               )}
             </>
