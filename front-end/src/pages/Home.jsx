@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FileText, Zap, Building2, Truck, HardHat, Wrench, MapPin, Phone, Flag, Rocket, Eye } from 'lucide-react';
-import { announcementService } from '../services/api';
+import { announcementService, adService } from '../services/api';
 import { parseImages, resolveImageUrl, handleImageError } from '../utils/imageUtils';
 import { formatPrice } from '../utils/formatPrice';
 import './Home.css';
@@ -10,8 +10,10 @@ const Home = () => {
   const navigate = useNavigate();
   const [recentAnnouncements, setRecentAnnouncements] = useState([]);
   const [sponsoredAds, setSponsoredAds] = useState([]);
+  const [bannerAds, setBannerAds] = useState([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(true);
   const [loadingSponsored, setLoadingSponsored] = useState(true);
+  const [loadingBanners, setLoadingBanners] = useState(true);
 
   useEffect(() => {
     document.title = 'LocaPlus - La marketplace sécurisée en Côte d\'Ivoire';
@@ -45,8 +47,22 @@ const Home = () => {
       }
     };
 
+    const fetchBannerAds = async () => {
+      try {
+        const response = await adService.getActive({ limit: 6 });
+        const results = response.data?.ads ?? [];
+        setBannerAds(Array.isArray(results) ? results : []);
+      } catch (error) {
+        console.error('Erreur fetch banner ads:', error);
+        setBannerAds([]);
+      } finally {
+        setLoadingBanners(false);
+      }
+    };
+
     fetchRecentAnnouncements();
     fetchSponsoredAds();
+    fetchBannerAds();
   }, []);
 
   const categories = [
@@ -314,6 +330,100 @@ const Home = () => {
           ) : (
             <div className="no-ads">
               <p>Aucune publicité sponsorisée pour le moment.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Section: Partenaires & Publicités (Banner Ads) */}
+      <section className="partners-ads-section">
+        <div className="section-container">
+          <div className="section-header">
+            <div className="sponsored-header">
+              <Zap size={24} className="sponsored-icon" />
+              <h2 className="section-title">Partenaires & Publicités</h2>
+            </div>
+            <Link to="/create-ad" className="ad-create-link">
+              Créer une publicité →
+            </Link>
+          </div>
+
+          {loadingBanners ? (
+            <div className="partners-banner-grid">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className="partners-banner-loading">
+                  <div className="skeleton-banner" />
+                </div>
+              ))}
+            </div>
+          ) : bannerAds.length > 0 ? (
+            <div className="partners-banner-grid">
+              {bannerAds.map((ad) => {
+                const adId = ad.id;
+                const parsedImages = typeof ad.images === 'string' 
+                  ? JSON.parse(ad.images || '[]') 
+                  : ad.images || [];
+                const rawImage = ad.image_url || parsedImages[0];
+                const imageUrl = rawImage 
+                  ? (rawImage.startsWith('http') ? rawImage : `${import.meta.env.VITE_BACKEND_URL || 'https://backend-ovbc.onrender.com'}${rawImage}`)
+                  : null;
+
+                return (
+                  <a
+                    key={adId}
+                    href={ad.link_url || '#'}
+                    target={ad.link_url ? '_blank' : '_self'}
+                    rel="noopener noreferrer"
+                    className="partners-banner-card"
+                    onClick={(e) => {
+                      if (!ad.link_url) {
+                        e.preventDefault();
+                      }
+                    }}
+                  >
+                    <div className="partners-banner-image">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={ad.title}
+                          className="partners-banner-img"
+                          loading="lazy"
+                          onError={handleImageError}
+                        />
+                      ) : (
+                        <div className="partners-banner-placeholder">
+                          <Zap size={32} />
+                          <span>{ad.title}</span>
+                        </div>
+                      )}
+                      <div className="partners-banner-overlay">
+                        <span className="partners-banner-label">
+                          <Zap size={12} /> Partenaire
+                        </span>
+                      </div>
+                    </div>
+                    <div className="partners-banner-content">
+                      <h3 className="partners-banner-title">{ad.title}</h3>
+                      {ad.description && (
+                        <p className="partners-banner-desc line-clamp-2">{ad.description}</p>
+                      )}
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="no-partners-ads">
+              <div className="no-partners-content">
+                <Zap size={48} className="no-ads-icon" />
+                <h3 className="no-ads-title">Espace Publicitaire Disponible</h3>
+                <p className="no-ads-text">
+                  Soyez le premier à afficher votre publicité dans cet espace premium.
+                </p>
+                <Link to="/create-ad" className="btn btn-accent btn-lg">
+                  Créer une Publicité
+                </Link>
+              </div>
             </div>
           )}
         </div>

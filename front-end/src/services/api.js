@@ -231,4 +231,28 @@ export const chatService = {
   sendMessage: (data) => api.post('/chat/messages', data),
 };
 
+// ============================================
+// ADS - Sponsored Advertisement Banners
+// ============================================
+export const adService = {
+  getAll: (params) => api.get('/ads', { params }),
+  getActive: (params) => api.get('/ads/active', { params }),
+  getById: (id) => api.get(`/ads/${id}`),
+  create: (data) => {
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+      if (key === 'images') {
+        data.images.forEach(image => formData.append('images', image));
+      } else {
+        formData.append(key, data[key]);
+      }
+    });
+    return api.post('/ads', formData);
+  },
+  updateStatus: (id, data) => api.patch(`/ads/${id}/status`, data),
+  delete: (id) => api.delete(`/ads/${id}`),
+  getMyAds: () => api.get('/ads/user/my-ads'),
+  trackClick: (id) => api.post(`/ads/${id}/track-click`, {}),
+};
+
 export default api;
