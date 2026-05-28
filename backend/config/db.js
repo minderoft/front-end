@@ -293,6 +293,33 @@ const initDatabase = async () => {
     `);
     console.log('✅ [DB] messages table ready');
 
+    // Create ads table (for sponsored advertisement banners)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ads (
+        id VARCHAR(36) PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        image_url TEXT,
+        images TEXT,
+        target_category VARCHAR(100),
+        link_url TEXT,
+        priority INTEGER DEFAULT 0,
+        status VARCHAR(50) DEFAULT 'pending',
+        pack_type VARCHAR(50) DEFAULT 'image_2days',
+        price DECIMAL(10,2) DEFAULT 0,
+        start_date TIMESTAMP,
+        end_date TIMESTAMP,
+        paid_at TIMESTAMP,
+        views_count INTEGER DEFAULT 0,
+        clicks_count INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('✅ [DB] ads table ready');
+
     console.log('✅ [DB] Database initialization complete\n');
     return true;
   } catch (err) {

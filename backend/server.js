@@ -10,6 +10,7 @@ const { initDatabase } = require('./config/db');
 const { ipTracking } = require('./middleware/ipTracking');
 const authRoutes = require('./routes/auth');
 const announcementRoutes = require('./routes/announcements');
+const adRoutes = require('./routes/ads');
 const paymentRoutes = require('./routes/payments');
 const reviewRoutes = require('./routes/reviews');
 const reportRoutes = require('./routes/reports');
@@ -186,6 +187,7 @@ app.use((req, res, next) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/announcements', announcementRoutes);
+app.use('/api/ads', adRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/reports', reportRoutes);
