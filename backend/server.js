@@ -15,8 +15,9 @@ const {
   threatDetector,
   checkUserStatus,
   generalRateLimiter,
-  sensitiveRateLimiter
-} = require('./middleware/security');
+  sensitiveRateLimiter,
+  authRateLimiter
+} = require('./middleware/securityGuard');
 
 // Activity logging
 const { activityLogger, logActivity } = require('./middleware/activityLogger');
@@ -160,12 +161,7 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // Rate Limiting plus strict pour l'authentification
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10, // 10 tentatives de connexion
-  message: { error: 'Trop de tentatives. Veuillez réessayer plus tard.' },
-});
-app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/login', authRateLimiter);
 
 // ============================================
 // MIDDLEWARE

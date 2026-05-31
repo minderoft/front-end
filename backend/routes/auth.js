@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const { pool } = require('../config/db');
 const { generateToken, authenticateToken } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
+const { logActivity } = require('../middleware/activityLogger');
 
 const router = express.Router();
 
@@ -163,6 +164,20 @@ router.post('/login', validate('login'), async (req, res) => {
     const totalElapsed = Date.now() - startTime;
     console.log(`✅ [LOGIN] Connexion réussie en ${totalElapsed}ms pour: ${email}\n`);
 
+    await logActivity({
+      userId: user.id,
+      actionType: 'Login',
+      resourceType: 'auth',
+      resourceId: user.id,
+      details: {
+        email,
+        route: '/auth/login',
+        elapsedMs: totalElapsed,
+      },
+      status: 'success',
+      req
+    }).catch(() => {});
+
     res.status(200).json({
       message: 'Connexion réussie',
       user: {
@@ -201,6 +216,28 @@ router.post('/login', validate('login'), async (req, res) => {
       detail: error.detail || error.message,
       timestamp: new Date().toISOString()
     });
+  }
+});
+
+// Déconnexion utilisateur
+router.post('/logout', authenticateToken, async (req, res) => {
+  try {
+    await logActivity({
+      userId: req.user.id,
+      actionType: 'Logout',
+      resourceType: 'auth',
+      resourceId: req.user.id,
+      details: {
+        route: '/auth/logout',
+      },
+      status: 'success',
+      req
+    }).catch(() => {});
+
+    res.json({ message: 'Déconnexion réussie' });
+  } catch (error) {
+    console.error('❌ [LOGOUT] Erreur journalisation déconnexion:', error.message);
+    res.status(500).json({ error: 'Erreur serveur lors de la déconnexion' });
   }
 });
 
