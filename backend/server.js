@@ -6,8 +6,24 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 require('dotenv').config();
 
-const { initDatabase } = require('./config/db');
+const { initDatabase, pool } = require('./config/db');
 const { ipTracking } = require('./middleware/ipTracking');
+
+// Security middleware
+const {
+  inputSanitizer,
+  threatDetector,
+  checkUserStatus,
+  generalRateLimiter,
+  sensitiveRateLimiter
+} = require('./middleware/security');
+
+// Activity logging
+const { activityLogger, logActivity } = require('./middleware/activityLogger');
+
+// App settings
+const { exposePublicSettings, checkMaintenanceMode, getSetting } = require('./middleware/appSettings');
+
 const authRoutes = require('./routes/auth');
 const announcementRoutes = require('./routes/announcements');
 const adRoutes = require('./routes/ads');
@@ -19,6 +35,10 @@ const contactRoutes = require('./routes/contact');
 const pricingRoutes = require('./routes/pricing');
 const chatRoutes = require('./routes/chat');
 const adminRoutes = require('./routes/admin');
+
+// New routes for security and settings
+const securityRoutes = require('./routes/security');
+const settingsRoutes = require('./routes/settings');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -173,13 +193,39 @@ app.get('/', (req, res) => {
 });
 
 // ============================================
+// MIDDLEWARE DE SÉCURITÉ AVANCÉE
+// ============================================
+
+// Exposer les paramètres publics à toutes les routes
+app.use(exposePublicSettings);
+
+// Vérifier le mode maintenance (sauf routes exemptées)
+app.use(checkMaintenanceMode);
+
+// Input sanitizer - Nettoie toutes les entrées
+app.use(inputSanitizer);
+
+// Threat detector - Détecte les attaques potentielles
+app.use(threatDetector);
+
+// Activity logger - Journalise les activités
+app.use(activityLogger({
+  skipPaths: ['/api/health', '/api/public/settings', '/api/settings/public'],
+  skipMethods: ['OPTIONS']
+}));
+
+// ============================================
 // ROUTES API
 // ============================================
 
-// Middleware pour tracker IP et dernière connexion (après authentification)
+// Middleware pour tracker IP, vérifier statut utilisateur et dernière connexion
 app.use((req, res, next) => {
   if (req.user) {
-    ipTracking(req, res, next);
+    // Vérifier le statut utilisateur avant chaque requête
+    checkUserStatus(req, res, (err) => {
+      if (err) return next(err);
+      ipTracking(req, res, next);
+    });
   } else {
     next();
   }
@@ -196,6 +242,8 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/pricing', pricingRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/security', securityRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Route de santé avec CORS debug info
 app.get('/api/health', (req, res) => {

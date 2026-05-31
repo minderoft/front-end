@@ -320,6 +320,95 @@ const initDatabase = async () => {
     `);
     console.log('✅ [DB] ads table ready');
 
+    // Create security_alerts table (for threat detection and security monitoring)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS security_alerts (
+        id VARCHAR(36) PRIMARY KEY,
+        user_id VARCHAR(36),
+        ip_address VARCHAR(100) NOT NULL,
+        user_agent TEXT,
+        referer TEXT,
+        request_method VARCHAR(10),
+        request_path VARCHAR(500),
+        threat_type VARCHAR(50) NOT NULL,
+        threat_details JSONB,
+        severity VARCHAR(20) DEFAULT 'medium',
+        action_taken VARCHAR(50) DEFAULT 'logged',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('✅ [DB] security_alerts table ready');
+
+    // Create activity_logs table (for audit trail and traffic monitoring)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS activity_logs (
+        id VARCHAR(36) PRIMARY KEY,
+        user_id VARCHAR(36),
+        action_type VARCHAR(50) NOT NULL,
+        resource_type VARCHAR(50),
+        resource_id VARCHAR(36),
+        ip_address VARCHAR(100),
+        user_agent TEXT,
+        details JSONB,
+        status VARCHAR(20) DEFAULT 'success',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('✅ [DB] activity_logs table ready');
+
+    // Create app_settings table (for dynamic application configuration)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS app_settings (
+        id VARCHAR(36) PRIMARY KEY,
+        setting_key VARCHAR(100) UNIQUE NOT NULL,
+        setting_value TEXT NOT NULL,
+        setting_type VARCHAR(20) DEFAULT 'string',
+        category VARCHAR(50) DEFAULT 'general',
+        description TEXT,
+        is_public BOOLEAN DEFAULT FALSE,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_by VARCHAR(36)
+      )
+    `);
+    console.log('✅ [DB] app_settings table ready');
+
+    // Seed default app settings
+    const existingSettings = await pool.query('SELECT COUNT(*) as count FROM app_settings');
+    if (Number(existingSettings.rows[0].count) === 0) {
+      console.log('🔧 [DB] Seed default app settings');
+      await pool.query(`
+        INSERT INTO app_settings (id, setting_key, setting_value, setting_type, category, description, is_public) VALUES
+        ('setting-maintenance', 'isMaintenanceMode', 'false', 'boolean', 'system', 'Mode maintenance de l''application', FALSE),
+        ('setting-max-images', 'maxImageUploads', '5', 'number', 'uploads', 'Nombre maximum d''images par annonce', FALSE),
+        ('setting-max-file-size', 'maxFileSizeMB', '5', 'number', 'uploads', 'Taille maximale des fichiers en MB', FALSE),
+        ('setting-ad-base-price', 'adBasePriceFCFA', '1000', 'number', 'pricing', 'Prix de base pour les annonces en FCFA', FALSE),
+        ('setting-ad-sponsor-day-price', 'adSponsorDayPriceFCFA', '500', 'number', 'pricing', 'Prix du sponsoring par jour en FCFA', FALSE),
+        ('setting-ad-boost-hour-price', 'adBoostHourPriceFCFA', '100', 'number', 'pricing', 'Prix du boost par heure en FCFA', FALSE),
+        ('setting-session-timeout', 'sessionTimeoutHours', '24', 'number', 'auth', 'Durée de session en heures', FALSE),
+        ('setting-max-login-attempts', 'maxLoginAttempts', '5', 'number', 'auth', 'Nombre maximum de tentatives de connexion', FALSE),
+        ('setting-contact-email', 'contactEmail', 'contact@locaplus.com', 'string', 'contact', 'Email de contact principal', TRUE),
+        ('setting-support-phone', 'supportPhone', '+22507070707', 'string', 'contact', 'Téléphone de support', TRUE)
+      `);
+      console.log('✅ [DB] Default app settings seeded');
+    }
+
+    // Add status column to users table if not exists
+    await pool.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'active'
+    `);
+    console.log('✅ [DB] users.status column ready');
+
+    // Add last_ip and last_login_at columns to users table if not exists
+    await pool.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS last_ip VARCHAR(100)
+    `);
+    await pool.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP
+    `);
+    console.log('✅ [DB] users.last_ip and last_login_at columns ready');
+
     console.log('✅ [DB] Database initialization complete\n');
     return true;
   } catch (err) {
