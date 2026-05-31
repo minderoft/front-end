@@ -107,6 +107,7 @@ api.interceptors.response.use(
 export const authService = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
+  logout: () => api.post('/auth/logout'),
   getProfile: () => api.get('/auth/me'),
   updateProfile: (data) => api.put('/auth/profile', data),
   changePassword: (data) => api.put('/auth/password', data),
@@ -188,6 +189,48 @@ export const adminService = {
   getStats: () => api.get('/admin/stats'),
   getAnnouncements: () => api.get('/admin/announcements'),
   updateAnnouncementStatus: (id, data) => api.patch(`/admin/announcements/${id}/status`, data),
+  verifyUser: (userId, isVerified) => api.put(`/admin/users/${userId}/verify`, { isVerified }),
+  boostAnnouncement: (announcementId, durationHours) => api.put(`/admin/announcements/${announcementId}/boost`, { durationHours }),
+  getBoostedAnnouncements: () => api.get('/admin/announcements/boosted'),
+};
+
+// ============================================
+// SECURITY - Security Command Center
+// ============================================
+export const securityService = {
+  // Security Alerts
+  getAlerts: (params) => api.get('/security/alerts', { params }),
+  getAlertStats: (timeRange) => api.get('/security/alerts/stats', { params: { timeRange } }),
+  
+  // User Management
+  updateUserStatus: (userId, status, reason) => api.put(`/security/users/${userId}/status`, { status, reason }),
+  getFlaggedUsers: (status) => api.get('/security/users/flagged', { params: { status } }),
+  
+  // Audit Logs
+  getAuditLogs: (params) => api.get('/security/audit-logs', { params }),
+  getAuditStats: (timeRange) => api.get('/security/audit-logs/stats', { params: { timeRange } }),
+};
+
+// ============================================
+// SETTINGS - Dynamic Application Settings
+// ============================================
+export const settingsService = {
+  // Public settings
+  getPublicSettings: () => api.get('/public/settings'),
+  
+  // Admin settings
+  getAll: (category) => api.get('/settings', { params: { category } }),
+  update: (key, value) => api.put(`/settings/${key}`, { value }),
+  updateBulk: (settings) => api.post('/settings/bulk', { settings }),
+  
+  // Specific settings
+  getMaintenance: () => api.get('/settings/maintenance'),
+  setMaintenance: (enabled, message) => api.put('/settings/maintenance', { enabled, message }),
+  
+  getPricing: () => api.get('/settings/pricing'),
+  updatePricing: (settings) => api.put('/settings/pricing', settings),
+  
+  getUploads: () => api.get('/settings/uploads'),
 };
 
 // ============================================

@@ -184,6 +184,18 @@
   padding-left: var(--spacing-6);
 }
 
+.navbar-sidebar-admin {
+  background: linear-gradient(135deg, #0f172a, #2563eb);
+  color: white !important;
+  margin: 0 var(--spacing-4);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-bold);
+}
+
+.navbar-sidebar-admin:hover {
+  background: linear-gradient(135deg, #1d4ed8, #0f172a);
+}
+
 /* Sidebar Logout Button */
 .navbar-sidebar-logout {
   color: var(--error);
@@ -261,16 +273,6 @@
   .visible-mobile {
     display: block !important;
   }
-}
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  color: white;
-  font-weight: var(--font-bold);
-  font-size: var(--text-lg);
-  flex-shrink: 0;
 }
 
 .navbar-logo-text {

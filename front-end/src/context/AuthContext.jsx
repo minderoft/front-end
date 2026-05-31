@@ -78,7 +78,13 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.warn('⚠️ Logout backend call failed, déconnexion locale effectuée');
+    }
+
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);

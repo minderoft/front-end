@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, Home, FileText, Zap, DollarSign, MessageCircle, User } from 'lucide-react';
+import { Menu, X, LogOut, Home, FileText, Zap, DollarSign, MessageCircle, User, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
@@ -130,6 +130,17 @@ const Navbar = () => {
                     <User size={20} />
                     <span>Mon Compte</span>
                   </Link>
+
+                  {user.role === 'admin' && (
+                    <Link
+                      to="/admin"
+                      className="navbar-sidebar-item navbar-sidebar-admin"
+                      onClick={closeMenu}
+                    >
+                      <LayoutDashboard size={20} />
+                      <span>Tableau de Bord</span>
+                    </Link>
+                  )}
 
                   <div className="navbar-sidebar-divider" />
 
