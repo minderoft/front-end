@@ -122,7 +122,7 @@ const Register = () => {
           <div className="card-body">
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
               {/* Full Name */}
-              <div className="space-y-2">
+              <div className="flex flex-col gap-1.5 mb-4">
                 <label className="block text-sm font-semibold text-text-primary">
                   <User size={16} className="inline mr-2 text-primary" />
                   Nom Complet
@@ -130,7 +130,7 @@ const Register = () => {
                 <input
                   type="text"
                   name="name"
-                  className={`input w-full ${fieldErrors.name ? 'border-error' : ''}`}
+                  className={`w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm text-sm outline-none block ${fieldErrors.name ? 'border-red-300 focus:ring-red-500' : ''}`}
                   placeholder="Votre nom complet"
                   value={formData.name}
                   onChange={handleChange}
@@ -141,7 +141,7 @@ const Register = () => {
               </div>
 
               {/* Email */}
-              <div className="space-y-2">
+              <div className="flex flex-col gap-1.5 mb-4">
                 <label className="block text-sm font-semibold text-text-primary">
                   <Mail size={16} className="inline mr-2 text-primary" />
                   Email
@@ -149,7 +149,7 @@ const Register = () => {
                 <input
                   type="email"
                   name="email"
-                  className={`input w-full ${fieldErrors.email ? 'border-error' : ''}`}
+                  className={`w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm text-sm outline-none block ${fieldErrors.email ? 'border-red-300 focus:ring-red-500' : ''}`}
                   placeholder="votre@email.com"
                   value={formData.email}
                   onChange={handleChange}
@@ -161,7 +161,7 @@ const Register = () => {
               </div>
 
               {/* Phone */}
-              <div className="space-y-2">
+              <div className="flex flex-col gap-1.5 mb-4">
                 <label className="block text-sm font-semibold text-text-primary">
                   <Phone size={16} className="inline mr-2 text-primary" />
                   Téléphone <span className="text-text-tertiary text-xs">(optionnel)</span>
@@ -169,7 +169,7 @@ const Register = () => {
                 <input
                   type="tel"
                   name="phone"
-                  className="input w-full"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm text-sm outline-none block"
                   placeholder="+225 XX XXX XXX"
                   value={formData.phone}
                   onChange={handleChange}
@@ -177,7 +177,7 @@ const Register = () => {
               </div>
 
               {/* Password */}
-              <div className="space-y-2">
+              <div className="flex flex-col gap-1.5 mb-4">
                 <label className="block text-sm font-semibold text-text-primary">
                   <Lock size={16} className="inline mr-2 text-primary" />
                   Mot de Passe
@@ -185,7 +185,7 @@ const Register = () => {
                 <input
                   type="password"
                   name="password"
-                  className={`input w-full ${fieldErrors.password ? 'border-error' : ''}`}
+                  className={`w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm text-sm outline-none block ${fieldErrors.password ? 'border-red-300 focus:ring-red-500' : ''}`}
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
@@ -198,7 +198,7 @@ const Register = () => {
               </div>
 
               {/* Confirm Password */}
-              <div className="space-y-2">
+              <div className="flex flex-col gap-1.5 mb-4">
                 <label className="block text-sm font-semibold text-text-primary">
                   <Lock size={16} className="inline mr-2 text-primary" />
                   Confirmer le Mot de Passe
@@ -206,7 +206,7 @@ const Register = () => {
                 <input
                   type="password"
                   name="confirmPassword"
-                  className={`input w-full ${fieldErrors.confirmPassword ? 'border-error' : ''}`}
+                  className={`w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm text-sm outline-none block ${fieldErrors.confirmPassword ? 'border-red-300 focus:ring-red-500' : ''}`}
                   placeholder="••••••••"
                   value={formData.confirmPassword}
                   onChange={handleChange}

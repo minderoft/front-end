@@ -80,7 +80,7 @@ const Login = () => {
           <div className="card-body">
             <form onSubmit={handleSubmit} noValidate className="space-y-6">
               {/* Email Field */}
-              <div className="space-y-2">
+              <div className="flex flex-col gap-1.5 mb-4">
                 <label className="block text-sm font-semibold text-text-primary">
                   <Mail size={16} className="inline mr-2 text-primary" />
                   Email
@@ -88,7 +88,7 @@ const Login = () => {
                 <input
                   type="email"
                   name="email"
-                  className={`input w-full ${fieldErrors.email ? 'border-error' : ''}`}
+                  className={`w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm text-sm outline-none block ${fieldErrors.email ? 'border-red-300 focus:ring-red-500' : ''}`}
                   placeholder="votre@email.com"
                   value={formData.email}
                   onChange={handleChange}
@@ -100,7 +100,7 @@ const Login = () => {
               </div>
 
               {/* Password Field */}
-              <div className="space-y-2">
+              <div className="flex flex-col gap-1.5 mb-4">
                 <label className="block text-sm font-semibold text-text-primary">
                   <Lock size={16} className="inline mr-2 text-primary" />
                   Mot de passe
@@ -108,7 +108,7 @@ const Login = () => {
                 <input
                   type="password"
                   name="password"
-                  className={`input w-full ${fieldErrors.password ? 'border-error' : ''}`}
+                  className={`w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm text-sm outline-none block ${fieldErrors.password ? 'border-red-300 focus:ring-red-500' : ''}`}
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}

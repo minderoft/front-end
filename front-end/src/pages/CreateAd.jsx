@@ -268,7 +268,7 @@ const CreateAd = () => {
           <div className="form-section">
             <h2 className="form-section-title">Informations de la Publicité</h2>
 
-            <div className="form-group">
+            <div className="flex flex-col gap-1.5 mb-4">
               <label htmlFor="title" className="form-label">
                 Titre de la Publicité
               </label>
@@ -279,11 +279,11 @@ const CreateAd = () => {
                 value={formData.title}
                 onChange={handleInputChange}
                 placeholder="Ex: Nouvelle collection 2024"
-                className="form-input"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm text-sm outline-none block"
               />
             </div>
 
-            <div className="form-group">
+            <div className="flex flex-col gap-1.5 mb-4">
               <label htmlFor="description" className="form-label">
                 Description
               </label>
@@ -294,7 +294,7 @@ const CreateAd = () => {
                 onChange={handleInputChange}
                 placeholder="Décrivez votre offre en détail pour attirer les clients..."
                 rows="5"
-                className="form-textarea"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm text-sm outline-none block min-h-[120px]"
               />
             </div>
           </div>

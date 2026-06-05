@@ -49,12 +49,12 @@ const Contact = () => {
 
       <form onSubmit={handleSubmit}>
         <div className="card" style={{ padding: 'var(--spacing-xl)' }}>
-          <div className="form-group">
+          <div className="flex flex-col gap-1.5 mb-4">
             <label className="form-label">Nom complet *</label>
             <input
               type="text"
               name="name"
-              className="form-input"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm text-sm outline-none block"
               placeholder="Votre nom"
               value={formData.name}
               onChange={handleChange}
@@ -62,12 +62,12 @@ const Contact = () => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="flex flex-col gap-1.5 mb-4">
             <label className="form-label">Email *</label>
             <input
               type="email"
               name="email"
-              className="form-input"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm text-sm outline-none block"
               placeholder="votre@email.com"
               value={formData.email}
               onChange={handleChange}
@@ -75,11 +75,11 @@ const Contact = () => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="flex flex-col gap-1.5 mb-4">
             <label className="form-label">Sujet *</label>
             <select
               name="subject"
-              className="form-select"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm text-sm outline-none block"
               value={formData.subject}
               onChange={handleChange}
               required
@@ -93,11 +93,11 @@ const Contact = () => {
             </select>
           </div>
 
-          <div className="form-group">
+          <div className="flex flex-col gap-1.5 mb-4">
             <label className="form-label">Message *</label>
             <textarea
               name="message"
-              className="form-textarea"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm text-sm outline-none block min-h-[120px]"
               placeholder="Décrivez votre demande en détail..."
               value={formData.message}
               onChange={handleChange}
