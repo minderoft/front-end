@@ -26,14 +26,10 @@ const normalizeAnnouncement = (announcement) => {
     }
   }
 
+  normalized.images = Array.isArray(normalized.images) ? normalized.images : [];
+
   // Exposer un champ image_url pratique (première image) pour le frontend
-  try {
-    normalized.image_url = Array.isArray(normalized.images) && normalized.images.length > 0
-      ? normalized.images[0]
-      : null;
-  } catch (err) {
-    normalized.image_url = null;
-  }
+  normalized.image_url = normalized.images.length > 0 ? normalized.images[0] : null;
 
   if (typeof normalized.metadata === 'string') {
     try {
@@ -351,7 +347,7 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
       return res.status(400).json({ error: 'Tarif de publication introuvable pour cette catégorie' });
     }
 
-    const images = req.files?.map((f) => '/uploads/' + f.filename) || [];
+    const images = Array.isArray(req.files) ? req.files.map((f) => '/uploads/' + f.filename) : [];
     const firstImage = images.length > 0 ? images[0] : null;
     let metadataValue = {};
 

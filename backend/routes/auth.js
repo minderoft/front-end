@@ -32,6 +32,10 @@ router.post('/register', validate('register'), async (req, res) => {
       throw dbError;
     }
 
+    if (!password || typeof password !== 'string' || password.length < 6) {
+      return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caractères.' });
+    }
+
     // Hasher le mot de passe
     const hashedPassword = await bcrypt.hash(password, 12);
     const id = uuidv4();

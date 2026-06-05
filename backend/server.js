@@ -67,78 +67,33 @@ app.use(helmet({
 // CORS - Configuration sécurisée
 // ============================================
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://loca-plus-hub.vercel.app';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://front-anac2ypr1-minderofts-projects.vercel.app';
 const DEV_URL = 'http://localhost:5173';
 
 const allowedOrigins = [
   FRONTEND_URL,
-  'https://loca-plus-hub.vercel.app',
-  'https://front-end-hazel-chi.vercel.app',
-  'https://front-end-git-main-minderofts-projects.vercel.app', // Vercel backup project autorisé
-  DEV_URL,
+  'https://front-anac2ypr1-minderofts-projects.vercel.app',
+  'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173',
 ];
 
-// Fonction pour vérifier les origins
 const corsOptions = {
   origin: function (origin, callback) {
-    // Accepter les requêtes sans origin (mobile apps, curl requests, certains navigateurs)
-    if (!origin) {
-      console.log('🔄 CORS: No origin header - allowing non-browser or mobile/curl request');
-      return callback(null, true);
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
     }
-
-    // Vérifier si l'origin est dans la liste blanche
-    if (allowedOrigins.includes(origin)) {
-      console.log(`✅ CORS: Origin ${origin} allowed`);
-      return callback(null, true);
-    }
-
-    console.warn(`❌ CORS: Origin ${origin} not allowed. Allowed origins:`, allowedOrigins);
-    return callback(new Error('CORS: Origin not allowed'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization',
-    'X-Requested-With',
-    'Accept',
-  ],
-  exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
-  maxAge: 86400,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   optionsSuccessStatus: 200,
 };
 
-// Appliquer CORS globalement
 app.use(cors(corsOptions));
-
-// Logger les requêtes preflight OPTIONS
-app.use((req, res, next) => {
-  if (req.method === 'OPTIONS') {
-    console.log(`🔄 OPTIONS request: ${req.method} ${req.path} from origin: ${req.get('origin')}`);
-  }
-  next();
-});
-
-// Gérer les requêtes preflight OPTIONS explicitement
 app.options('*', cors(corsOptions));
-
-// Fallback CORS headers pour les réponses
-app.use((req, res, next) => {
-  const origin = req.get('origin');
-  if (origin && allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  } else if (!origin) {
-    // Autoriser les requêtes sans origine
-    res.header('Access-Control-Allow-Origin', '*');
-  }
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
-  next();
-});
 
 // Middleware optionnel pour logger les requêtes CORS en développement
 if (process.env.NODE_ENV !== 'production') {
