@@ -328,8 +328,35 @@ router.get('/:id', async (req, res) => {
 // CREATE
 router.post('/', authenticateToken, upload.array('images', 10), validate('announcement'), async (req, res) => {
   try {
-    debugLog('Création annonce - Début:', { userId: req.user.id, category: req.body.category });
-    const { category, type, title, description, price, location, phone, metadata, latitude, longitude } = req.body;
+    debugLog('Création annonce - Début:', { userId: req.user?.id, category: req.body?.category });
+
+    const category = typeof req.body?.category === 'string' ? req.body.category.trim() : req.body?.category;
+    const type = typeof req.body?.type === 'string' ? req.body.type.trim() : req.body?.type;
+    const title = typeof req.body?.title === 'string' ? req.body.title.trim() : '';
+    const description = typeof req.body?.description === 'string' ? req.body.description.trim() : '';
+    const price = req.body?.price;
+    const location = typeof req.body?.location === 'string' ? req.body.location.trim() : '';
+    const phone = typeof req.body?.phone === 'string' ? req.body.phone.trim() : req.body?.phone;
+    const metadata = req.body?.metadata;
+    const latitude = req.body?.latitude;
+    const longitude = req.body?.longitude;
+
+    const hasImages = req.files && Array.isArray(req.files) && req.files.length > 0;
+    const images = hasImages ? req.files.map((file) => '/uploads/' + file.filename) : [];
+    const firstImage = images.length > 0 ? images[0] : null;
+
+    if (typeof title !== 'string' || title.length === 0) {
+      return res.status(400).json({ error: 'Le titre est requis' });
+    }
+
+    if (typeof category !== 'string' || category.length === 0) {
+      return res.status(400).json({ error: 'La catégorie est requise' });
+    }
+
+    if (typeof location !== 'string' || location.length === 0) {
+      return res.status(400).json({ error: 'La localisation est requise' });
+    }
+
     const listingPrice = Number(price || 0);
 
     // Pour les techniciens, le prix peut être 0 (à négocier)
@@ -347,8 +374,6 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
       return res.status(400).json({ error: 'Tarif de publication introuvable pour cette catégorie' });
     }
 
-    const images = Array.isArray(req.files) ? req.files.map((f) => '/uploads/' + f.filename) : [];
-    const firstImage = images.length > 0 ? images[0] : null;
     let metadataValue = {};
 
     if (typeof metadata === 'string' && metadata.trim() !== '') {
@@ -373,9 +398,9 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     debugLog('Création annonce - Avant INSERT:', { id, userId: req.user.id });
 
     // Allow optional ad-related fields for sponsored listings
-    const isSponsored = req.body.is_sponsored === 'true' || req.body.is_sponsored === true ? true : false;
-    const adPackType = req.body.ad_pack_type || null;
-    const adTargetCategory = req.body.ad_target_category || null;
+    const isSponsored = req.body?.is_sponsored === 'true' || req.body?.is_sponsored === true;
+    const adPackType = req.body?.ad_pack_type || null;
+    const adTargetCategory = req.body?.ad_target_category || null;
 
     await pool.query(
       `INSERT INTO announcements (id, user_id, category, type, title, description, price, location, latitude, longitude, phone, images, image_url, metadata, status, payment_status, is_sponsored, ad_pack_type, ad_target_category, created_at)
@@ -408,12 +433,8 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
 
     res.status(201).json(savedAnnouncement);
   } catch (error) {
-    return sendAnnouncementError(res, error, {
-      userId: req.user?.id,
-      category: req.body?.category,
-      type: req.body?.type,
-      title: req.body?.title,
-    });
+    console.error('Erreur création annonce:', error);
+    return res.status(500).json({ message: error?.message || 'Erreur création annonce' });
   }
 });
 
