@@ -434,7 +434,10 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     res.status(201).json(savedAnnouncement);
   } catch (error) {
     console.error('Erreur création annonce:', error);
-    return res.status(500).json({ message: error?.message || 'Erreur création annonce' });
+    return res.status(500).json({
+      success: false,
+      message: error?.message || 'Erreur création annonce',
+    });
   }
 });
 
