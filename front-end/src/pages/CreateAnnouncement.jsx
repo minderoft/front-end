@@ -136,7 +136,8 @@ const CreateAnnouncement = () => {
   };
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
+    const files = Array.from(e.target.files || []);
+    const currentImages = Array.isArray(formData.images) ? formData.images : [];
     
     // Validation: Check if more than 2 files are selected
     if (files.length > 2) {
@@ -159,13 +160,16 @@ const CreateAnnouncement = () => {
       return;
     }
     
-    const remaining = 10 - formData.images.length;
+    const remaining = 10 - currentImages.length;
     if (remaining <= 0) {
       setFieldErrors(prev => ({ ...prev, images: 'Limite de 10 images atteinte.' }));
       return;
     }
     const newFiles = files.slice(0, remaining);
-    setFormData(prev => ({ ...prev, images: [...prev.images, ...newFiles] }));
+    setFormData(prev => ({
+      ...prev,
+      images: [...(Array.isArray(prev.images) ? prev.images : []), ...newFiles],
+    }));
     setFieldErrors(prev => ({ ...prev, images: '' }));
     setError('');
     setSuccess('');
