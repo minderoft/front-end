@@ -242,18 +242,23 @@ const CreateAnnouncement = () => {
     setLoading(true);
 
     try {
+      const images = Array.isArray(formData.images) ? formData.images : [];
       const announcementData = new FormData();
-      announcementData.append('category', formData.category);
-      announcementData.append('type', formData.type);
-      announcementData.append('title', formData.title.trim());
-      announcementData.append('description', formData.description.trim());
-      announcementData.append('price', formData.category === 'technicien' ? 0 : Number(formData.price));
-      announcementData.append('location', formData.location.trim());
-      announcementData.append('phone', formData.phone.trim());
-      announcementData.append('metadata', JSON.stringify(formData.metadata));
-      if (formData.latitude) announcementData.append('latitude', formData.latitude);
-      if (formData.longitude) announcementData.append('longitude', formData.longitude);
-      formData.images.forEach((image) => announcementData.append('images', image));
+      announcementData.append('category', formData.category || '');
+      announcementData.append('type', formData.type || '');
+      announcementData.append('subcategory', formData.subcategory || '');
+      announcementData.append('title', (formData.title || '').trim());
+      announcementData.append('description', (formData.description || '').trim());
+      announcementData.append('price', String(formData.category === 'technicien' ? 0 : Number(formData.price || 0)));
+      announcementData.append('location', (formData.location || '').trim());
+      announcementData.append('phone', (formData.phone || '').trim());
+      announcementData.append('metadata', JSON.stringify(formData.metadata || {}));
+      if (formData.latitude) announcementData.append('latitude', String(formData.latitude));
+      if (formData.longitude) announcementData.append('longitude', String(formData.longitude));
+
+      if (images.length > 0) {
+        images.forEach((image) => announcementData.append('images', image));
+      }
 
       const response = await announcementService.create(announcementData);
       const announcement = response.data;
