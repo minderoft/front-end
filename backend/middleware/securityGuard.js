@@ -349,7 +349,7 @@ const sensitiveRateLimiter = createAdvancedRateLimiter({
 });
 
 module.exports = {
-  inputSanitizer,
+  inputSanitizer: inputGuard,
   threatDetector: threatGuard,
   checkUserStatus,
   authRateLimiter,

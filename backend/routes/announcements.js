@@ -330,12 +330,17 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
   try {
     debugLog('Création annonce - Début:', { userId: req.user?.id, category: req.body?.category });
 
+    const hasTitle = req.body && typeof req.body.title === 'string' && req.body.title.trim().length > 0;
+    const hasDescription = req.body && typeof req.body.description === 'string' && req.body.description.trim().length > 0;
+    const hasCategory = req.body && typeof req.body.category === 'string' && req.body.category.trim().length > 0;
+    const hasLocation = req.body && typeof req.body.location === 'string' && req.body.location.trim().length > 0;
+
     const category = typeof req.body?.category === 'string' ? req.body.category.trim() : req.body?.category;
     const type = typeof req.body?.type === 'string' ? req.body.type.trim() : req.body?.type;
-    const title = typeof req.body?.title === 'string' ? req.body.title.trim() : '';
-    const description = typeof req.body?.description === 'string' ? req.body.description.trim() : '';
+    const title = hasTitle ? req.body.title.trim() : '';
+    const description = hasDescription ? req.body.description.trim() : '';
     const price = req.body?.price;
-    const location = typeof req.body?.location === 'string' ? req.body.location.trim() : '';
+    const location = hasLocation ? req.body.location.trim() : '';
     const phone = typeof req.body?.phone === 'string' ? req.body.phone.trim() : req.body?.phone;
     const metadata = req.body?.metadata;
     const latitude = req.body?.latitude;
@@ -345,15 +350,15 @@ router.post('/', authenticateToken, upload.array('images', 10), validate('announ
     const images = hasImages ? req.files.map((file) => '/uploads/' + file.filename) : [];
     const firstImage = images.length > 0 ? images[0] : null;
 
-    if (typeof title !== 'string' || title.length === 0) {
+    if (!hasTitle || title.length === 0) {
       return res.status(400).json({ error: 'Le titre est requis' });
     }
 
-    if (typeof category !== 'string' || category.length === 0) {
+    if (!hasCategory || category.length === 0) {
       return res.status(400).json({ error: 'La catégorie est requise' });
     }
 
-    if (typeof location !== 'string' || location.length === 0) {
+    if (!hasLocation || location.length === 0) {
       return res.status(400).json({ error: 'La localisation est requise' });
     }
 
