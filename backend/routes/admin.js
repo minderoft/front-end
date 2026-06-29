@@ -39,7 +39,7 @@ router.get('/announcements', authenticateToken, requireAdmin, async (req, res) =
              a.user_id,
              u.name AS user_name,
              u.email AS user_email,
-             a.created_at,
+             a.created_at
              a.updated_at
       FROM announcements a
       LEFT JOIN users u ON a.user_id = u.id
